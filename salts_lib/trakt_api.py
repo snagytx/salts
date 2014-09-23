@@ -238,22 +238,29 @@ class Trakt_API():
             except (ssl.SSLError,socket.timeout)  as e:
                 if cached_result:
                     result = cached_result
-                    log_utils.log('Temporary Trakt Error (%s). Using Cached Page Instead' % (str(e)), xbmc.LOGWARNING)
+                    log_utils.log('Temporary Trakt Error (%s). Using Cached Page Instead.' % (str(e)), xbmc.LOGWARNING)
                 else:
                     raise TransientTraktError('Temporary Trakt Error: '+str(e))
-            except urllib2.HTTPError as e:
-                if e.code in TEMP_ERRORS:
+            except urllib2.URLError as e:
+                if isinstance(e, urllib2.HTTPError):
+                    if e.code in TEMP_ERRORS:
+                        if cached_result:
+                            result = cached_result
+                            log_utils.log('Temporary Trakt Error (%s). Using Cached Page Instead.' % (str(e)), xbmc.LOGWARNING)
+                        else:
+                            raise TransientTraktError('Temporary Trakt Error: '+str(e))
+                    elif e.code == 404:
+                        return
+                    else:
+                        raise
+                elif isinstance(e.reason, socket.timeout):
                     if cached_result:
                         result = cached_result
                         log_utils.log('Temporary Trakt Error (%s). Using Cached Page Instead' % (str(e)), xbmc.LOGWARNING)
                     else:
                         raise TransientTraktError('Temporary Trakt Error: '+str(e))
-                elif e.code == 404:
-                    return
                 else:
-                    raise
-            except Exception as e:
-                raise TraktError('Trakt Error: '+str(e))
+                    raise TraktError('Trakt Error: '+str(e))
 
         response=json.loads(result)
 

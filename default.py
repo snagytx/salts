@@ -919,6 +919,16 @@ def copy_list(section, slug, username):
     builtin = "XBMC.Notification(%s,List Copied: (A:%s/ E:%s/ S:%s), 5000, %s)" % (_SALTS.get_name(), response['inserted'], response['already_exist'], response['skipped'], ICON_PATH)
     xbmc.executebuiltin(builtin)
 
+@ url_dispatcher.register(MODES.TOGGLE_TITLE, ['slug'])
+def toggle_title(slug):
+    filter_list = utils.get_force_title_list()
+    if slug in filter_list:
+        del filter_list[filter_list.index(slug)]
+    else:
+        filter_list.append(slug)
+    filter_str = '|'.join(filter_list)
+    _SALTS.set_setting('force_title_match', filter_str)
+
 @ url_dispatcher.register(MODES.TOGGLE_WATCHED, ['section', 'id_type', 'show_id'], ['watched', 'season', 'episode'])
 def toggle_watched(section, id_type, show_id, watched=True, season='', episode=''):
     log_utils.log('In Watched: |%s|%s|%s|%s|%s|%s|' % (section, id_type, show_id, season, episode, watched), xbmc.LOGDEBUG)
@@ -1303,7 +1313,6 @@ def make_item(section_params, show, menu_items=None):
             runstring = 'Container.Update(%s)' % _SALTS.build_plugin_url(queries)
         menu_items.insert(0, ('Select Source', runstring), )
         
-    menu_items.append(('Show Information', 'XBMC.Action(Info)'), )
     if VALID_ACCOUNT:
         show_id=utils.show_id(show)
         queries = {'mode': MODES.ADD_TO_COLL, 'section': section_params['section']}
@@ -1344,12 +1353,24 @@ def make_item(section_params, show, menu_items=None):
         runstring = 'RunPlugin(%s)' % _SALTS.build_plugin_url(queries)
         menu_items.append(('Set Addic7ed TVShowID', runstring,))
 
+    if section_params['section'] == SECTIONS.TV:
+        if slug in utils.get_force_title_list():
+            label = 'Use default episode matching'
+        else:
+            label = "Use Episode Titles only"
+        queries = {'mode': MODES.TOGGLE_TITLE, 'slug': slug}
+        runstring = 'RunPlugin(%s)' % _SALTS.build_plugin_url(queries)
+        menu_items.append((label, runstring,))
+
     queries = {'mode': MODES.SET_URL_SEARCH, 'video_type': section_params['video_type'], 'title': show['title'], 'year': show['year']}
     menu_items.append(('Set Related Url (Search)', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
     queries = {'mode': MODES.SET_URL_MANUAL, 'video_type': section_params['video_type'], 'title': show['title'], 'year': show['year']}
     menu_items.append(('Set Related Url (Manual)', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+    if len(menu_items)<10:
+        menu_items.insert(0, ('Show Information', 'XBMC.Action(Info)'), )
     liz.addContextMenuItems(menu_items, replaceItems=True)
  
+
     liz.setProperty('resumetime',str(0))
     liz.setProperty('totaltime',str(1))
     return liz, liz_url
