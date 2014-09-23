@@ -127,6 +127,9 @@
          <setting id="Shush.se-enable" type="bool" label="Shush.se Enabled" default="true" visible="true"/>
          <setting id="Shush.se-base_url" type="text" label="     Base Url" default="http://shush.se" visible="eq(-1,true)"/>
          <setting id="Shush.se-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>
+         <setting id="IWatchOnline-enable" type="bool" label="IWatchOnline Enabled" default="true" visible="true"/>
+         <setting id="IWatchOnline-base_url" type="text" label="     Base Url" default="http://www.iwatchonline.to" visible="eq(-1,true)"/>
+         <setting id="IWatchOnline-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>
     </category>
 
     <category label="Subtitles">
