@@ -197,7 +197,7 @@ class Scraper(object):
         if cookies is None: cookies={}
         log_utils.log('Getting Url: %s cookie=|%s| data=|%s|' % (url, cookies, data))
         db_connection = DB_Connection()
-        html = db_connection.get_cached_url(url, cache_limit)
+        _, html = db_connection.get_cached_url(url, cache_limit)
         if html:
             log_utils.log('Returning cached result for: %s' % (url), xbmc.LOGDEBUG)
             return html
