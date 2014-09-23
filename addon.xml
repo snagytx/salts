@@ -14,5 +14,7 @@
         <summary>Stream video from many difference sources</summary>
         <description>This addon uses trakt.tv for most show and movie meta data and uses a variety of websites for hoster sources</description>
         <platform>all</platform>
-    </extension>
+        <website>http://tvaddons.ag/</website>
+		<forum>http://forums.tvaddons.ag/forums/180-TKNORRIS-RELEASE-REPOSITORY</forum>
+	</extension>
 </addon>
