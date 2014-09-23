@@ -502,7 +502,7 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
     worker_count=0
     hosters=[]
     workers=[]
-    video=ScraperVideo(video_type, title, year, season, episode, ep_title, slug)
+    video=ScraperVideo(video_type, title, year, slug, season, episode, ep_title)
     if utils.P_MODE != P_MODES.NONE: q = utils.Queue()
     begin = time.time()
     fails={}
