@@ -1355,9 +1355,9 @@ def make_item(section_params, show, menu_items=None):
 
     if section_params['section'] == SECTIONS.TV:
         if slug in utils.get_force_title_list():
-            label = 'Use default episode matching'
+            label = 'Use Default episode matching'
         else:
-            label = "Use Episode Titles only"
+            label = 'Use Episode Title matching'
         queries = {'mode': MODES.TOGGLE_TITLE, 'slug': slug}
         runstring = 'RunPlugin(%s)' % _SALTS.build_plugin_url(queries)
         menu_items.append((label, runstring,))
