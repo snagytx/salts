@@ -12,7 +12,7 @@ from . import scraper # just to avoid editor warning
 from . import *
 
 class ScraperVideo:
-    def __init__(self, video_type, title, year, season='', episode='', ep_title=''):
+    def __init__(self, video_type, title, year, slug, season='', episode='', ep_title=''):
         assert(video_type in (VIDEO_TYPES.__dict__[k] for k in VIDEO_TYPES.__dict__ if not k.startswith('__')))
         self.video_type=video_type
         self.title=title
@@ -20,6 +20,7 @@ class ScraperVideo:
         self.season=season
         self.episode=episode
         self.ep_title=ep_title
+        self.slug = slug
     
     def __str__(self):
         return '|%s|%s|%s|%s|%s|%s|' % (self.video_type, self.title, self.year, self.season, self.episode, self.ep_title)
