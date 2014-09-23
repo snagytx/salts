@@ -502,7 +502,7 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
     worker_count=0
     hosters=[]
     workers=[]
-    video=ScraperVideo(video_type, title, year, season, episode, ep_title)
+    video=ScraperVideo(video_type, title, year, season, episode, ep_title, slug)
     if utils.P_MODE != P_MODES.NONE: q = utils.Queue()
     begin = time.time()
     fails={}
@@ -728,7 +728,7 @@ def set_related_url(mode, video_type, title, year, slug, season='', episode='', 
     workers=[]
     if utils.P_MODE != P_MODES.NONE: q = utils.Queue()
     begin = time.time()
-    video=ScraperVideo(video_type, title, year, season, episode, ep_title)
+    video=ScraperVideo(video_type, title, year, season, episode, ep_title, slug)
     for cls in utils.relevant_scrapers(video_type):
         if utils.P_MODE == P_MODES.NONE:
             related={}
@@ -928,6 +928,7 @@ def toggle_title(slug):
         filter_list.append(slug)
     filter_str = '|'.join(filter_list)
     _SALTS.set_setting('force_title_match', filter_str)
+    xbmc.executebuiltin("XBMC.Container.Refresh")
 
 @ url_dispatcher.register(MODES.TOGGLE_WATCHED, ['section', 'id_type', 'show_id'], ['watched', 'season', 'episode'])
 def toggle_watched(section, id_type, show_id, watched=True, season='', episode=''):
@@ -1085,7 +1086,7 @@ def add_to_library(video_type, title, year, slug, require_source=False):
                 final_path = os.path.join(save_path, show_folder, 'Season %s' % (season_num), filename)
                 strm_string = _SALTS.build_plugin_url({'mode': MODES.GET_SOURCES, 'video_type': VIDEO_TYPES.EPISODE, 'title': title, 'year': year, 'season': season_num, 
                                                        'episode': ep_num, 'slug': slug, 'ep_title': episode['title'], 'dialog': True})
-                write_strm(strm_string, final_path, VIDEO_TYPES.EPISODE, title, year, season_num, ep_num, require_source)
+                write_strm(strm_string, final_path, VIDEO_TYPES.EPISODE, title, year, slug, season_num, ep_num, require_source)
                 
     elif video_type == VIDEO_TYPES.MOVIE:
         save_path = _SALTS.get_setting('movie-folder')
@@ -1094,9 +1095,9 @@ def add_to_library(video_type, title, year, slug, require_source=False):
         filename = utils.filename_from_title(title, VIDEO_TYPES.MOVIE, year)
         dir_name = title if not year else '%s (%s)' % (title, year)
         final_path = os.path.join(save_path, dir_name, filename)
-        write_strm(strm_string, final_path, VIDEO_TYPES.MOVIE, title, year, require_source=require_source)
+        write_strm(strm_string, final_path, VIDEO_TYPES.MOVIE, title, year, slug, require_source=require_source)
 
-def write_strm(stream, path, video_type, title, year, season='', episode='', require_source=False):
+def write_strm(stream, path, video_type, title, year, slug, season='', episode='', require_source=False):
     path = xbmc.makeLegalFilename(path)
     if not xbmcvfs.exists(os.path.dirname(path)):
         try:
@@ -1116,7 +1117,7 @@ def write_strm(stream, path, video_type, title, year, season='', episode='', req
     # string will be blank if file doesn't exist or is blank
     if stream != old_strm_string:
         try:
-            if not require_source or utils.url_exists(ScraperVideo(video_type, title, year, season, episode)):
+            if not require_source or utils.url_exists(ScraperVideo(video_type, title, year, slug, season, episode)):
                 log_utils.log('Writing strm: %s' % stream)
                 file_desc = xbmcvfs.File(path, 'w')
                 file_desc.write(stream)
