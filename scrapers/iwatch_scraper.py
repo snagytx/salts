@@ -43,7 +43,7 @@ class IWatchOnline_Scraper(scraper.Scraper):
     
     @classmethod
     def get_name(cls):
-        return 'IWatchOnline'
+        return 'iWatchOnline'
     
     def resolve_link(self, link):
         url = urlparse.urljoin(self.base_url, link)
@@ -53,7 +53,7 @@ class IWatchOnline_Scraper(scraper.Scraper):
             return match.group(1)
     
     def format_source_label(self, item):
-        label='[%s] %s (%s/100) ' % (item['quality'], item['host'], item['rating'])
+        label='[%s] %s (%s/100)' % (item['quality'], item['host'], item['rating'])
         return label
     
     def get_sources(self, video):
@@ -66,24 +66,52 @@ class IWatchOnline_Scraper(scraper.Scraper):
             match = re.search('<table[^>]+id="streamlinks">(.*?)</table>', html, re.DOTALL)
             if match:
                 fragment = match.group(1)
-                pattern = 'href="([^"]+/play/[^"]+).*?/>\s+\.?([^<]+?)\s+.*?class="linkdate">(\d+).*?<td>([^<]+)'
-                max = 0
-                min = int(time.time())
+                pattern = 'href="([^"]+/play/[^"]+).*?/>\s+\.?([^\s]+)\s+.*?<td>.*?</td>\s*<td>(.*?)</td>\s*<td>(.*?)</td>'
+                max_age = 0
+                now = min_age = int(time.time())
                 for match in re.finditer(pattern, fragment, re.DOTALL):
                     url, host, age, quality = match.groups()
-                    age = int(age)
-                    if age>max: max=age
-                    if age<min: min=age
+                    age = self.__get_age(now, age)
+                    quality=quality.upper()
+                    if age>max_age: max_age=age
+                    if age<min_age: min_age=age
                     hoster = {'multi-part': False, 'class': self, 'url': url.replace(self.base_url,''), 'host': host, 'age': age, 'views': None, 'rating': None}
                     hoster['quality']=QUALITY_MAP[quality] if quality in QUALITY_MAP else None
                     hosters.append(hoster)
                 
-                unit=(max-min)/100
-                print '%s, %s, %s' % (min, max, unit)
+                unit=(max_age - min_age)/100
                 for hoster in hosters:
-                    hoster['rating']=(100-(hoster['age']-min)/unit)
+                    hoster['rating']=(hoster['age']-min_age)/unit
+                    #print '%s, %s' % (hoster['rating'], hoster['age'])
         return hosters
 
+    def __get_age(self, now, age_str):
+        age_str = age_str.replace('<span class="linkdate">', '')
+        age_str = age_str.replace('</span>','')
+        try:
+            age = int(age_str)
+        except ValueError:
+            match = re.search('(\d+)\s+(.*)', age_str)
+            if match:
+                num, unit = match.groups()
+                num = int(num)
+                unit = unit.lower()
+                if 'minute' in unit:
+                    mult = 60
+                elif 'hour' in unit:
+                    mult = (60*60)
+                elif 'day' in unit:
+                    mult = (60*60*24)
+                elif 'month' in unit:
+                    mult = (60*60*24*30)
+                elif 'year' in unit:
+                    mult = (60*60*24*365)
+                else:
+                    mult = 0
+                age = now - (num * mult)
+                #print '%s, %s, %s, %s' % (num, unit, mult, age)
+        return age
+        
     def get_url(self, video):
         return super(IWatchOnline_Scraper, self)._default_get_url(video)
     
@@ -100,10 +128,11 @@ class IWatchOnline_Scraper(scraper.Scraper):
         results=[]
         pattern = r'href="([^"]+)">(.*?)\s+\((\d{4})\)'
         for match in re.finditer(pattern, html):
-            url, title, year = match.groups('')
-            url = url.replace('/episode/', '/tv-shows/') # fix wrong url returned from search results
-            result={'url': url.replace(self.base_url,''), 'title': title, 'year': year}
-            results.append(result)
+            url, title, match_year = match.groups('')
+            if not year or not match_year or year == match_year:
+                url = url.replace('/episode/', '/tv-shows/') # fix wrong url returned from search results
+                result={'url': url.replace(self.base_url,''), 'title': title, 'year': match_year}
+                results.append(result)
         return results
     
     def _get_episode_url(self, show_url, season, episode, ep_title):
