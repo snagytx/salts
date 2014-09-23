@@ -255,14 +255,22 @@ class Scraper(object):
         return {'recaptcha_challenge_field':match.group(1),'recaptcha_response_field':solution}
     
     def _default_get_episode_url(self, show_url, video, episode_pattern, title_pattern=''):
-        log_utils.log('Default Episode Url: |%s|%s|%s|%s|%s|' % (self.base_url, show_url, video.season, video.episode, video.ep_title), xbmc.LOGDEBUG)
+        log_utils.log('Default Episode Url: |%s|%s|%s|' % (self.base_url, show_url, video), xbmc.LOGDEBUG)
         url = urlparse.urljoin(self.base_url, show_url)
         html = self._http_get(url, cache_limit=2)
-        match = re.search(episode_pattern, html, re.DOTALL)
-        if match:
-            url = match.group(1)
-            return url.replace(self.base_url, '')
-        elif xbmcaddon.Addon().getSetting('title-fallback')=='true' and video.ep_title and title_pattern:
+        slug_str = xbmcaddon.Addon().getSetting('force_title_match')
+        slug_list = slug_str.split('|') if slug_str else []
+        force_title = video.slug in slug_list
+        
+        if not force_title: 
+            match = re.search(episode_pattern, html, re.DOTALL)
+            if match:
+                url = match.group(1)
+                return url.replace(self.base_url, '')
+        else:
+            log_utils.log('Skipping S&E matching as title search is forced on: %s' % (video.slug), xbmc.LOGDEBUG)
+        
+        if (force_title or xbmcaddon.Addon().getSetting('title-fallback')=='true') and video.ep_title and title_pattern:
             norm_title = self._normalize_title(video.ep_title)
             for match in re.finditer(title_pattern, html, re.DOTALL | re.I):
                 url, title = match.groups()
