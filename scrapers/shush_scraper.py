@@ -60,7 +60,7 @@ class Shush_Scraper(scraper.Scraper):
             match = re.search('proxy\.link=([^&]+)', html)
             if match:
                 proxy_link = match.group(1)
-                url = 'http://player.shush.tv/43/plugins_player.php'
+                url = 'http://player.shush.tv/45/plugins_player.php'
                 data = {'url': proxy_link}
                 html = self._http_get(url, data=data, cache_limit=0)
                 print html
@@ -125,17 +125,17 @@ class Shush_Scraper(scraper.Scraper):
         search_url = urlparse.urljoin(self.base_url, '/index.php')
         if video_type == VIDEO_TYPES.MOVIE:
             search_url += '?movies'
-            pattern = '<div class="shows2">.*?href="([^"]+).*?alt="([^"]+) \((\d{4})\)'
+            pattern = '<div class="shows">.*?href="([^"]+).*?alt="([^"]+) \((\d{4})\)'
         else:
             search_url += '?shows'
-            pattern = '<div class="shows2">.*?href="([^"]+).*?alt="(?:Watch )?([^"]+?)(?: [Oo]nline|for free)[^"]+()"'
+            pattern = '<div class="shows">.*?href="([^"]+).*?alt="(?:Watch )?([^"]+?)(?: [Oo]nline|for free)[^"]+()"'
         html = self._http_get(search_url, cache_limit=.25)
         
         results=[]
         norm_title = self._normalize_title(title)
         for match in re.finditer(pattern, html, re.DOTALL):
             url, match_title, match_year = match.groups('')
-            if norm_title == self._normalize_title(match_title) and (not year or not match_year or year == match_year):
+            if norm_title in self._normalize_title(match_title) and (not year or not match_year or year == match_year):
                 if not url.startswith('/'): url = '/' + url
                 result = {'url': url, 'title': match_title, 'year': match_year}
                 results.append(result)
