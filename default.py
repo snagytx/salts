@@ -1252,9 +1252,10 @@ def make_episode_item(show, episode, fanart, show_subs=True):
         queries = {'mode': MODES.SELECT_SOURCE, 'video_type': VIDEO_TYPES.EPISODE, 'title': show['title'], 'year': show['year'], 'season': episode['season'], 'episode': episode_num, 
                    'ep_title': episode['title'], 'slug': trakt_api.get_slug(show['url'])}
         if _SALTS.get_setting('source-win')=='Dialog':
-            runstring = 'RunPlugin(%s)' % _SALTS.build_plugin_url(queries)
+            runstring = 'PlayMedia(%s)' % _SALTS.build_plugin_url(queries)
         else:
             runstring = 'Container.Update(%s)' % _SALTS.build_plugin_url(queries)
+        print 'RunString is: %s' % (runstring)
         menu_items.append(('Select Source', runstring), )
         
     menu_items.append(('Show Information', 'XBMC.Action(Info)'), )
@@ -1311,7 +1312,7 @@ def make_item(section_params, show, menu_items=None):
     if section_params['next_mode']==MODES.GET_SOURCES and _SALTS.get_setting('auto-play')=='true':
         queries = {'mode': MODES.SELECT_SOURCE, 'video_type': section_params['video_type'], 'title': show['title'], 'year': show['year'], 'slug': slug}
         if _SALTS.get_setting('source-win')=='Dialog':
-            runstring = 'RunPlugin(%s)' % _SALTS.build_plugin_url(queries)
+            runstring = 'PlayMedia(%s)' % _SALTS.build_plugin_url(queries)
         else:
             runstring = 'Container.Update(%s)' % _SALTS.build_plugin_url(queries)
         menu_items.insert(0, ('Select Source', runstring), )
