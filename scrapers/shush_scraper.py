@@ -142,8 +142,8 @@ class Shush_Scraper(scraper.Scraper):
         return results
     
     def _get_episode_url(self, show_url, video):
-        episode_pattern = '<div class="list2"><a\s+href="([^"]+)"[^<]+Season\s+%s\s+Episode:\s+%s' % (video.season, video.episode)
-        title_pattern= '<div class="list2"><a\s+href="([^"]+)"[^<]+Season\s+1\s+Episode:\s+\d+\s+-\s+([^<]+)'
+        episode_pattern = '<div class="list"><a\s+href="([^"]+)"[^<]+Season\s+%s\s+Episode:\s+%s' % (video.season, video.episode)
+        title_pattern= '<div class="list"><a\s+href="([^"]+)"[^<]+Season\s+1\s+Episode:\s+\d+\s+-\s+([^<]+)'
         url = super(Shush_Scraper, self)._default_get_episode_url(show_url, video, episode_pattern, title_pattern)
         if url and not url.startswith('/'): url = '/' + url
         return url
