@@ -228,9 +228,9 @@ def browse_friends(mode, section):
         if 'episode' in activity:
             show=activity['show']
             liz, liz_url = make_episode_item(show, activity['episode'], show['images']['fanart'], show_subs=False)
-            folder=_SALTS.get_setting('source-win')=='Directory'
+            folder=_SALTS.get_setting('source-win')=='Directory' and _SALTS.get_setting('auto-play')=='false'
             label=liz.getLabel()
-            label = '%s (%s) - %s' % (show['title'], show['year'], label)
+            label = '%s (%s) - %s' % (show['title'], show['year'], label.decode('utf-8', 'replace'))
             liz.setLabel(label) 
         else:
             liz, liz_url = make_item(section_params, activity[TRAKT_SECTIONS[section][:-1]])
@@ -243,7 +243,7 @@ def browse_friends(mode, section):
         action = ' [[COLOR blue]%s[/COLOR] [COLOR green]%s' % (activity['user']['username'], activity['action'])
         if activity['action']=='rating': action += ' - %s' % (activity['rating'])
         action += '[/COLOR]]'
-        label = '%s %s' % (action, label)
+        label = '%s %s' % (action, label.decode('utf-8', 'replace'))
         liz.setLabel(label)
         
         xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz,isFolder=folder,totalItems=totalItems)        
@@ -379,7 +379,7 @@ def show_progress():
                 fanart=item['show']['images']['fanart']
                 date=utils.make_day(time.strftime('%Y-%m-%d', time.localtime(item['next_episode']['first_aired'])))      
                 liz, liz_url = make_episode_item(show, item['next_episode'], fanart)
-                folder=_SALTS.get_setting('source-win')=='Directory'
+                folder=_SALTS.get_setting('source-win')=='Directory' and _SALTS.get_setting('auto-play')=='false'
                 label=liz.getLabel()
                 label = '[[COLOR deeppink]%s[/COLOR]] %s - %s' % (date, show['title'], label.decode('utf-8', 'replace'))
                 liz.setLabel(label) 
@@ -478,7 +478,7 @@ def browse_seasons(slug, fanart):
 
 @url_dispatcher.register(MODES.EPISODES, ['slug', 'season', 'fanart'])
 def browse_episodes(slug, season, fanart):
-    folder=_SALTS.get_setting('source-win')=='Directory'
+    folder=_SALTS.get_setting('source-win')=='Directory' and _SALTS.get_setting('auto-play')=='false'
     utils.set_view('episodes', False)
     show=trakt_api.get_show_details(slug)
     episodes=trakt_api.get_episodes(slug, season)
@@ -1189,6 +1189,7 @@ def make_dir_from_cal(mode, start_date, days):
     next_week = start_date + datetime.timedelta(days=7)
     last_week = datetime.datetime.strftime(last_week, '%Y%m%d')
     next_week = datetime.datetime.strftime(next_week, '%Y%m%d')
+    folder = _SALTS.get_setting('source-win')=='Directory' and _SALTS.get_setting('auto-play')=='false'
     
     liz = xbmcgui.ListItem(label='<< Previous Week', iconImage=art('previous.png'), thumbnailImage=art('previous.png'))
     liz_url = _SALTS.build_plugin_url({'mode': mode, 'start_date': last_week})
@@ -1207,8 +1208,9 @@ def make_dir_from_cal(mode, start_date, days):
             if episode['season']==1 and episode['number']==1:
                 label = '[COLOR green]%s[/COLOR]' % (label)
             liz.setLabel(label)
-            liz.setProperty('isPlayable', 'true')
-            xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz,isFolder=False,totalItems=totalItems)
+            if not folder:
+                liz.setProperty('isPlayable', 'true')
+            xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz,isFolder=folder,totalItems=totalItems)
 
     liz = xbmcgui.ListItem(label='Next Week >>', iconImage=art('next.png'), thumbnailImage=art('next.png'))
     liz_url = _SALTS.build_plugin_url({'mode': mode, 'start_date': next_week})
