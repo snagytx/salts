@@ -128,6 +128,9 @@
          <setting id="iWatchOnline-enable" type="bool" label="iWatchOnline Enabled" default="true" visible="true"/>
          <setting id="iWatchOnline-base_url" type="text" label="     Base Url" default="http://www.iwatchonline.to" visible="eq(-1,true)"/>
          <setting id="iWatchOnline-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>
+         <setting id="popcornered-enable" type="bool" label="popcornered Enabled" default="true" visible="true"/>
+         <setting id="popcornered-base_url" type="text" label="     Base Url" default="http://popcornered.com" visible="eq(-1,true)"/>
+         <setting id="popcornered-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>
     </category>
 
     <category label="Subtitles">
