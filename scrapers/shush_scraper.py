@@ -63,7 +63,6 @@ class Shush_Scraper(scraper.Scraper):
                 url = 'http://player.shush.tv/p/plugins_player.php'
                 data = {'url': proxy_link}
                 html = self._http_get(url, data=data, cache_limit=0)
-                print html
                 if 'fmt_stream_map' in html:
                     sources = self.__parse_fmt(html)
                 else:

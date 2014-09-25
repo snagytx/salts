@@ -48,6 +48,7 @@ class IStreamHD_Scraper(scraper.Scraper):
     
     def resolve_link(self, link):
         return link
+    
     def format_source_label(self, item):
         label='[%s] %s (%s) (%s/100) ' % (item['quality'], item['host'], item['format'], item['rating'])
         return label
