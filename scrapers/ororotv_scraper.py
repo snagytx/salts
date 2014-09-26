@@ -66,7 +66,6 @@ class OroroTV_Scraper(scraper.Scraper):
                     source_url = match.group(1)
                     url = urlparse.urljoin(self.base_url, source_url)
                     html = self._http_get(url, cache_limit=.5)
-                    print html
             else:
                 quality = QUALITIES.HIGH
                     
