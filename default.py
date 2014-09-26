@@ -371,10 +371,11 @@ def show_progress():
     items = trakt_api.get_progress(SORT_MAP[int(sort_index)])
     for item in items:
         if 'next_episode' in item and item['next_episode']:
-            if _SALTS.get_setting('show_unaired_next')=='true' or item['next_episode']['first_aired']<=time.time():
+            local_air_time = utils.get_local_airtime(item['next_episode']['first_aired'])
+            if _SALTS.get_setting('show_unaired_next')=='true' or local_air_time<=time.time():
                 show=item['show']
                 fanart=item['show']['images']['fanart']
-                date=utils.make_day(time.strftime('%Y-%m-%d', time.localtime(item['next_episode']['first_aired'])))      
+                date=utils.make_day(time.strftime('%Y-%m-%d', time.localtime(local_air_time)))
                 liz, liz_url = make_episode_item(show, item['next_episode'], fanart)
                 label=liz.getLabel()
                 label = '[[COLOR deeppink]%s[/COLOR]] %s - %s' % (date, show['title'], label.decode('utf-8', 'replace'))
@@ -477,8 +478,9 @@ def browse_episodes(slug, season, fanart):
     totalItems=len(episodes)
     now=time.time()
     for episode in episodes:
-        if _SALTS.get_setting('show_unaired')=='true' or episode['first_aired']<=now:
-            if _SALTS.get_setting('show_unknown')=='true' or episode['first_aired']:
+        local_air_time = utils.get_local_airtime(episode['first_aired'])
+        if _SALTS.get_setting('show_unaired')=='true' or local_air_time <= now:
+            if _SALTS.get_setting('show_unknown')=='true' or local_air_time:
                 liz, liz_url =make_episode_item(show, episode, fanart)
                 xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz,isFolder=(liz.getProperty('isPlayable')!='true'),totalItems=totalItems)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
@@ -1141,7 +1143,7 @@ def make_dir_from_list(section, list_data, slug=None):
             for item in progress:
                 for id_type in ['imdb_id', 'tvdb_id']:
                     if id_type in item['show'] and item['show'][id_type]:
-                        if item['next_episode'] and item['next_episode']['first_aired']<now:
+                        if item['next_episode'] and utils.get_local_airtime(item['next_episode']['first_aired'])<now:
                             watched[item['show'][id_type]]=False
                         else:
                             watched[item['show'][id_type]]=True
@@ -1214,7 +1216,7 @@ def make_episode_item(show, episode, fanart, show_subs=True):
     else:  episode_num=episode['number']
     label = '%sx%s %s' % (episode['season'], episode_num, episode['title'])
     
-    if _SALTS.get_setting('unaired_indicator')=='true' and (not episode['first_aired'] or episode['first_aired']>time.time()):
+    if _SALTS.get_setting('unaired_indicator')=='true' and (not episode['first_aired'] or utils.get_local_airtime(episode['first_aired'])>time.time()):
         label = '[I][COLOR chocolate]%s[/COLOR][/I]' % (label)
     if show_subs and utils.srt_indicators_enabled():
         srt_scraper=SRT_Scraper()
