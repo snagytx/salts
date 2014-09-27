@@ -81,8 +81,20 @@ def main_menu():
 
     _SALTS.add_directory({'mode': MODES.BROWSE, 'section': SECTIONS.MOVIES}, {'title': 'Movies'}, img=art('movies.png'))
     _SALTS.add_directory({'mode': MODES.BROWSE, 'section': SECTIONS.TV}, {'title': 'TV Shows'}, img=art('television.png'))
-    _SALTS.add_directory({'mode': MODES.SCRAPERS}, {'title': 'Scraper Settings'}, img=art('settings.png'))
+    _SALTS.add_directory({'mode': MODES.SCRAPERS}, {'title': 'Scraper Sort Order'}, img=art('settings.png'))
+    _SALTS.add_directory({'mode': MODES.RES_SETTINGS}, {'title': 'Url Resolver Settings'}, img=art('settings.png'))
+    _SALTS.add_directory({'mode': MODES.ADDON_SETTINGS}, {'title': 'Add-on Settings'}, img=art('settings.png'))
     xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=False)
+
+@url_dispatcher.register(MODES.RES_SETTINGS)
+def resolver_settings():
+    global urlresolver
+    import urlresolver
+    urlresolver.display_settings()
+
+@url_dispatcher.register(MODES.ADDON_SETTINGS)
+def addon_settings():
+    _SALTS.show_settings()
 
 @url_dispatcher.register(MODES.BROWSE, ['section'])
 def browse_menu(section):
