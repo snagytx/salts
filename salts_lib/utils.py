@@ -139,17 +139,19 @@ def make_info(item, show=''):
         info['rating']=int(item['ratings']['percentage'])/10.0
         info['votes']=item['ratings']['votes']
 
-    try:
-        if 'first_aired' in item: info['aired']=info['premiered']=time.strftime('%Y-%m-%d', time.localtime(item['first_aired']))
-    except ValueError: # windows throws a ValueError on negative values to localtime  
-        d=datetime.datetime.fromtimestamp(0) + datetime.timedelta(seconds=item['first_aired'])
-        info['aired']=info['premiered']=d.strftime('%Y-%m-%d')
+        if 'first_aired' in item:
+                local_air_time = get_local_airtime(item['first_aired'])
+                try: info['aired']=info['premiered']=time.strftime('%Y-%m-%d', time.localtime(local_air_time))
+                except ValueError: # windows throws a ValueError on negative values to localtime  
+                    d=datetime.datetime.fromtimestamp(0) + datetime.timedelta(seconds=local_air_time)
+                    info['aired']=info['premiered']=d.strftime('%Y-%m-%d')
         
-    try:
-        if 'released' in item: info['premiered']=time.strftime('%Y-%m-%d', time.localtime(item['released']))
-    except ValueError: # windows throws a ValueError on negative values to localtime
-        d=datetime.datetime.fromtimestamp(0) + datetime.timedelta(seconds=item['released'])
-        info['premiered']=d.strftime('%Y-%m-%d')
+        if 'released' in item:
+            local_released = get_local_airtime(item['released'])
+            try: info['premiered']=time.strftime('%Y-%m-%d', time.localtime(local_released))
+            except ValueError: # windows throws a ValueError on negative values to localtime
+                d=datetime.datetime.fromtimestamp(0) + datetime.timedelta(seconds=local_released)
+                info['premiered']=d.strftime('%Y-%m-%d')
          
 
     if 'seasons' in item:
