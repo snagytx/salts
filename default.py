@@ -1109,8 +1109,8 @@ def write_strm(stream, path, video_type, title, year, slug, season='', episode='
         try:
             try: xbmcvfs.mkdirs(os.path.dirname(path))
             except: os.mkdir(os.path.dirname(path))
-        except:
-            log_utils.log('Failed to create directory %s' % path, xbmc.LOGERROR)
+        except Exception as e:
+            log_utils.log('Failed to create directory %s: %s' % path, xbmc.LOGERROR, str(e))
 
     old_strm_string=''
     try:
@@ -1130,8 +1130,8 @@ def write_strm(stream, path, video_type, title, year, slug, season='', episode='
                 file_desc.close()
             else:
                 log_utils.log('No strm written for |%s|%s|%s|%s|%s|' % (video_type, title, year, season, episode), xbmc.LOGWARNING)
-        except Exception, e:
-            log_utils.log('Failed to create .strm file: %s\n%s' % (path, e), xbmc.LOGERROR)
+        except Exception as e:
+            log_utils.log('Failed to create .strm file (%s): %s' % (path, e), xbmc.LOGERROR)
     
 def show_pickable_list(slug, pick_label, pick_mode, section):
     if not slug:
