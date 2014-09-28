@@ -37,7 +37,6 @@ elif P_MODE == P_MODES.PROCESSES:
         import multiprocessing
         from multiprocessing import Queue
         from Queue import Empty
-        raise ImportError
     except ImportError:
         import threading
         from Queue import Queue, Empty
