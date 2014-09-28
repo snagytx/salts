@@ -1101,7 +1101,7 @@ def add_to_library(video_type, title, year, slug):
         filename = utils.filename_from_title(title, VIDEO_TYPES.MOVIE, year)
         dir_name = title if not year else '%s (%s)' % (title, year)
         final_path = os.path.join(save_path, dir_name, filename)
-        write_strm(strm_string, final_path, VIDEO_TYPES.MOVIE, show['title'], show['year'], slug, require_source=require_source)
+        write_strm(strm_string, final_path, VIDEO_TYPES.MOVIE, title, year, slug, require_source=require_source)
 
 def write_strm(stream, path, video_type, title, year, slug, season='', episode='', require_source=False):
     path = xbmc.makeLegalFilename(path)
