@@ -6,6 +6,7 @@ import datetime
 import xbmc
 import xbmcgui
 import xbmcplugin
+import xbmcaddon
 import log_utils
 import sys
 import hashlib
@@ -46,6 +47,17 @@ elif P_MODE == P_MODES.PROCESSES:
 
 trakt_api=Trakt_API(username,password, use_https, trakt_timeout)
 db_connection=DB_Connection()
+
+THEME_LIST = ['Shine', 'Luna_Blue', 'Iconic']
+THEME = THEME_LIST[int(ADDON.get_setting('theme'))]
+if xbmc.getCondVisibility('System.HasAddon(script.salts.themepak)'):
+    themepak_path = xbmcaddon.Addon('script.salts.themepak').getAddonInfo('path')
+else:
+    themepak_path=ADDON.get_path()
+THEME_PATH = os.path.join(themepak_path, 'art', 'themes', THEME)
+
+def art(name): 
+    return os.path.join(THEME_PATH, name)
 
 def choose_list(username=None):
     lists = trakt_api.get_lists(username)
@@ -104,13 +116,14 @@ def make_list_item(label, meta):
     return listitem
 
 def make_art(show, fanart=''):
-    art={'banner': '', 'fanart': fanart, 'thumb': '', 'poster': ''}
+    if not fanart: fanart = art('fanart.jpg')
+    art_dict={'banner': '', 'fanart': fanart, 'thumb': '', 'poster': ''}
     if 'images' in show:
-        if 'banner' in show['images']: art['banner']=show['images']['banner']
-        if 'fanart' in show['images']: art['fanart']=show['images']['fanart']
-        if 'poster' in show['images']: art['thumb']=art['poster']=show['images']['poster']
-        if 'screen' in show['images']: art['thumb']=art['poster']=show['images']['screen']
-    return art
+        if 'banner' in show['images']: art_dict['banner']=show['images']['banner']
+        if 'fanart' in show['images']: art_dict['fanart']=show['images']['fanart']
+        if 'poster' in show['images']: art_dict['thumb']=art_dict['poster']=show['images']['poster']
+        if 'screen' in show['images']: art_dict['thumb']=art_dict['poster']=show['images']['screen']
+    return art_dict
 
 def make_info(item, show=''):
     log_utils.log('Making Info: Show: %s' % (show), xbmc.LOGDEBUG)
