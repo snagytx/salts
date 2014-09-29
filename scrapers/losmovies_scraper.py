@@ -56,7 +56,7 @@ class LosMovies_Scraper(scraper.Scraper):
             html = self._http_get(url, cache_limit=.5)
             fragment = ''
             if video.video_type == VIDEO_TYPES.EPISODE:
-                pattern = '<div id="tabs-%s">(.*?)</table>' % (video.season)
+                pattern = 'Season\s+%s\s+Serie\s+%s</h3>(.*?)</table>' % (video.season, video.episode)
                 match = re.search(pattern, html, re.DOTALL)
                 if match:
                     fragment = match.group(1)
