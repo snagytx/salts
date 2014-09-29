@@ -12,7 +12,6 @@ import sys
 import hashlib
 from constants import *
 from scrapers import * # import all scrapers into this namespace
-from scrapers import ScraperVideo
 from addon.common.addon import Addon
 from trakt_api import Trakt_API
 from db_utils import DB_Connection

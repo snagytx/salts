@@ -24,7 +24,6 @@ import xbmcplugin
 import xbmcgui
 import xbmc
 import xbmcvfs
-import xbmcaddon
 from addon.common.addon import Addon
 from salts_lib.db_utils import DB_Connection
 from salts_lib.url_dispatcher import URL_Dispatcher
