@@ -169,6 +169,9 @@
          <setting id="WatchMovies-enable" type="bool" label="WatchMovies Enabled" default="true" visible="true"/>
          <setting id="WatchMovies-base_url" type="text" label="     Base Url" default="http://watchmovies.to" visible="eq(-1,true)"/>
          <setting id="WatchMovies-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>
+         <setting id="LosMovies-enable" type="bool" label="LosMovies Enabled" default="true" visible="true"/>
+         <setting id="LosMovies-base_url" type="text" label="     Base Url" default="http://losmovies.tv" visible="eq(-1,true)"/>
+         <setting id="LosMovies-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>
     </category>
 
     <category label="Subtitles">
