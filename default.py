@@ -489,6 +489,7 @@ def browse_episodes(slug, season, fanart):
     now=time.time()
     for episode in episodes:
         local_air_time = utils.get_local_airtime(episode['first_aired'])
+        log_utils.log('S/E: %s/%s fa: %s, la: %s' % (episode['season'], episode['episode'], time.ctime(episode['first_aired']), time.ctime(local_air_time)), xbmc.LOGDEBUG)
         if _SALTS.get_setting('show_unaired')=='true' or local_air_time <= now:
             if _SALTS.get_setting('show_unknown')=='true' or local_air_time:
                 liz, liz_url =make_episode_item(show, episode, fanart)
@@ -1222,7 +1223,8 @@ def make_dir_from_cal(mode, start_date, days):
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def make_episode_item(show, episode, fanart, show_subs=True):
-    log_utils.log('Make Episode: Show: %s, Episode: %s, Fanart: %s, Show Subs: %s' % (show, episode, fanart, show_subs), xbmc.LOGDEBUG)
+    #log_utils.log('Make Episode: Show: %s, Episode: %s, Fanart: %s, Show Subs: %s' % (show, episode, fanart, show_subs), xbmc.LOGDEBUG)
+    log_utils.log('Make Episode: Episode: %s' % (episode), xbmc.LOGDEBUG)
     folder = _SALTS.get_setting('source-win')=='Directory' and _SALTS.get_setting('auto-play')=='false'
     show['title']=re.sub(' \(\d{4}\)$','',show['title'])
     if 'episode' in episode: episode_num=episode['episode']
