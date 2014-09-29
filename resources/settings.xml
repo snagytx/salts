@@ -9,6 +9,22 @@
 	    <setting id="unaired_indicator" type="bool" label="     Show an Indicator on Unaired Episodes" default="true" enable="eq(-1,true)"/>
 	    <setting id="show_unknown" type="bool" label="     Show episodes with unknown air date" default="true" enable="eq(-2,false)"/>
 	</category>
+	<category label="User Interface">
+	    <setting id="show_trending" type="bool" label="Show Trending" default="true"/>
+	    <setting id="show_recommended" type="bool" label="Show Recommended" default="true"/>
+	    <setting id="show_collection" type="bool" label="Show Collection" default="true"/>
+	    <setting id="show_favorites" type="bool" label="Show Favorites" default="true"/>
+	    <setting id="show_subscriptions" type="bool" label="Show Subscriptions" default="true"/>
+	    <setting id="show_watchlist" type="bool" label="Show Watchlist" default="true"/>
+	    <setting id="show_my_lists" type="bool" label="Show My Lists" default="true"/>
+	    <setting id="show_other_lists" type="bool" label="Show Other Lists" default="true"/>
+	    <setting id="show_progress" type="bool" label="Show My Next Episodes" default="true"/>
+	    <setting id="show_my_cal" type="bool" label="Show My Calendar" default="true"/>
+	    <setting id="show_general_cal" type="bool" label="Show General Calendar" default="true"/>
+	    <setting id="show_premiere_cal" type="bool" label="Show Premiere Calendar" default="true"/>
+	    <setting id="show_friends" type="bool" label="Show Friends" default="true"/>
+	    <setting id="show_search" type="bool" label="Show Search" default="true"/>
+	</category>
 	<category label="Trakt.tv">
 		<setting id="username" type="text" label="Trakt Username" default=""/>
 		<setting id="password" type="text" label="Trakt Password" default="" option="hidden"/>

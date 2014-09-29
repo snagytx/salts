@@ -574,3 +574,6 @@ def do_disable_check():
                     ret = dialog.yesno('SALTS', line1, line2, line3, 'Keep Enabled', 'Disable It')
                     if ret:
                         ADDON.set_setting('%s-enable' % (cls.get_name()), 'false')
+
+def menu_on(menu):
+    return ADDON.get_setting('show_%s' % (menu))=='true'
