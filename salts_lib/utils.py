@@ -470,7 +470,13 @@ def iso_2_utc(iso_ts):
     return delta.total_seconds()
 
 def fa_2_utc(first_aired):
-    return first_aired - (8*60*60 - time.timezone)
+    """
+    This should only require subtracting off the difference between PST and UTC, but it doesn't
+    and I don't know why. Regardless, this works.
+    """
+    # dif in seconds between local timezone and gmt timezone
+    utc_dif = time.mktime(time.gmtime()) - time.mktime(time.localtime())
+    return first_aired - (8*60*60 - utc_dif)
 
 def valid_account():
     username=ADDON.get_setting('username')
