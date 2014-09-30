@@ -834,15 +834,12 @@ def rate_media(section, id_type, show_id, season='', episode=''):
     if False and xbmc.getCondVisibility('System.HasAddon(script.trakt)'):
         run = 'RunScript(script.trakt, action=rate, media_type=%s, remoteid=%s'
         if section == SECTIONS.MOVIES:
-            rating_type = 'movie'
-            run = run + ')' % (rating_type, show_id)
+            run = (run + ')') % ('movie', show_id)
         else:
             if season and episode:
-                rating_type = 'episode'
-                run = (run +', season=%s, episode=%s)') % (rating_type, show_id, season, episode)
+                run = (run +', season=%s, episode=%s)') % ('episode', show_id, season, episode)
             else:
-                rating_type = 'show'
-                run = run + ')' % (rating_type, show_id)
+                run = (run + ')') % ('show', show_id)
         xbmc.executebuiltin(run)
     else:
         item = {id_type: show_id}
