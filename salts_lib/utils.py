@@ -150,19 +150,18 @@ def make_info(item, show=''):
         info['rating']=int(item['ratings']['percentage'])/10.0
         info['votes']=item['ratings']['votes']
 
-        if 'first_aired' in item:
-                local_air_time = get_local_airtime(item['first_aired'])
-                try: info['aired']=info['premiered']=time.strftime('%Y-%m-%d', time.localtime(local_air_time))
-                except ValueError: # windows throws a ValueError on negative values to localtime  
-                    d=datetime.datetime.fromtimestamp(0) + datetime.timedelta(seconds=local_air_time)
-                    info['aired']=info['premiered']=d.strftime('%Y-%m-%d')
-        
-        if 'released' in item:
-            local_released = get_local_airtime(item['released'])
-            try: info['premiered']=time.strftime('%Y-%m-%d', time.localtime(local_released))
-            except ValueError: # windows throws a ValueError on negative values to localtime
-                d=datetime.datetime.fromtimestamp(0) + datetime.timedelta(seconds=local_released)
-                info['premiered']=d.strftime('%Y-%m-%d')
+    if 'first_aired_iso' in item or 'first_aired' in item:
+        utc_air_time = iso_2_utc(item['first_aired_iso']) if 'first_aired_iso' in item else fa_2_utc(item['first_aired'])
+        try: info['aired']=info['premiered']=time.strftime('%Y-%m-%d', time.localtime(utc_air_time))
+        except ValueError: # windows throws a ValueError on negative values to localtime  
+            d=datetime.datetime.fromtimestamp(0) + datetime.timedelta(seconds=utc_air_time)
+            info['aired']=info['premiered']=d.strftime('%Y-%m-%d')
+     
+    if 'released' in item:
+        try: info['premiered']=time.strftime('%Y-%m-%d', time.localtime(item['released']))
+        except ValueError: # windows throws a ValueError on negative values to localtime
+            d=datetime.datetime.fromtimestamp(0) + datetime.timedelta(seconds=item['released'])
+            info['premiered']=d.strftime('%Y-%m-%d')
          
 
     if 'seasons' in item:
@@ -442,8 +441,36 @@ def make_day(date):
 
     return date
 
-def get_local_airtime(air_time):
-    return air_time - (8*60*60 - time.timezone)
+def iso_2_utc(iso_ts):
+    if not iso_ts or iso_ts is None: return 0
+    delim = iso_ts.rfind('+')
+    if delim == -1:  delim = iso_ts.rfind('-')
+    
+    if delim>-1:
+        ts = iso_ts[:delim]
+        sign = iso_ts[delim]
+        tz = iso_ts[delim+1:]
+    else:
+        ts = iso_ts
+        tz = None
+    
+    try: d=datetime.datetime.strptime(ts,'%Y-%m-%dT%H:%M:%S')
+    except TypeError: d = datetime.datetime(*(time.strptime(ts, '%Y-%m-%dT%H:%M:%S')[0:6]))
+    
+    hours, minutes = tz.split(':')
+    hours = int(hours)
+    minutes= int(minutes)
+    if sign == '-':
+        hours = -hours
+        minutes = -minutes
+    dif = datetime.timedelta(minutes=minutes, hours=hours)
+    utc_dt = d - dif
+    epoch = datetime.datetime.utcfromtimestamp(0)
+    delta = utc_dt - epoch
+    return delta.total_seconds()
+
+def fa_2_utc(first_aired):
+    return first_aired - (8*60*60 - time.timezone)
 
 def valid_account():
     username=ADDON.get_setting('username')
