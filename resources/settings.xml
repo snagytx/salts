@@ -172,6 +172,9 @@
          <setting id="LosMovies-enable" type="bool" label="LosMovies Enabled" default="true" visible="true"/>
          <setting id="LosMovies-base_url" type="text" label="     Base Url" default="http://losmovies.tv" visible="eq(-1,true)"/>
          <setting id="LosMovies-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>
+         <setting id="Movie4K-enable" type="bool" label="Movie4K Enabled" default="true" visible="true"/>
+         <setting id="Movie4K-base_url" type="text" label="     Base Url" default="http://www.movie4k.to" visible="eq(-1,true)"/>
+         <setting id="Movie4K-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>
     </category>
 
     <category label="Subtitles">
