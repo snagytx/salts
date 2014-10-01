@@ -97,7 +97,7 @@ class MyVidLinks_Scraper(scraper.Scraper):
         hosters=[]
         for match in re.finditer(pattern, html):
             url=match.group(1)
-            hoster={'multi-part': False, 'class': self, 'views': views, 'url': url, 'rating': None, 'quality': quality}
+            hoster={'multi-part': False, 'class': self, 'views': views, 'url': url, 'rating': None, 'quality': quality, 'direct': False}
             hoster['host']=urlparse.urlsplit(url).hostname
             hosters.append(hoster)
         return hosters
