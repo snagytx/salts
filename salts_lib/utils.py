@@ -260,13 +260,15 @@ def make_source_sort_key():
     sso=ADDON.get_setting('source_sort_order')
     sort_key={}
     i=0
+    scrapers = relevant_scrapers(include_disabled=True)
+    scraper_names = [scraper.get_name() for scraper in scrapers]
     if sso:
         sources = sso.split('|')
         sort_key={}
         for i,source in enumerate(sources):
-            sort_key[source]=-i
+            if source in scraper_names:
+                sort_key[source]=-i
         
-    scrapers = relevant_scrapers(include_disabled=True)
     for j, scraper in enumerate(scrapers):
         if scraper.get_name() not in sort_key:
             sort_key[scraper.get_name()]=-(i+j)
