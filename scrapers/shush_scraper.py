@@ -78,12 +78,12 @@ class Shush_Scraper(scraper.Scraper):
 
                         if sources:
                             for source in sources:
-                                hoster = {'multi-part': False, 'url': source, 'class': self, 'quality': sources[source], 'host': 'shush.se', 'rating': None, 'views': None}
+                                hoster = {'multi-part': False, 'url': source, 'class': self, 'quality': sources[source], 'host': 'shush.se', 'rating': None, 'views': None, 'direct': True}
                                 hosters.append(hoster)
                 else:
                     proxy_link = proxy_link.split('*', 1)[-1]
                     stream_url = GKDecrypter.decrypter(198,128).decrypt(proxy_link, base64.urlsafe_b64decode('djRBdVhhalplRm83akFNZ1VOWkI='),'ECB').split('\0')[0]
-                    hoster = {'multi-part': False, 'url': stream_url, 'class': self, 'quality': QUALITIES.HIGH, 'host': urlparse.urlsplit(stream_url).hostname, 'rating': None, 'views': None}
+                    hoster = {'multi-part': False, 'url': stream_url, 'class': self, 'quality': QUALITIES.HIGH, 'host': urlparse.urlsplit(stream_url).hostname, 'rating': None, 'views': None, 'direct': True}
                     hosters.append(hoster)
          
         return hosters

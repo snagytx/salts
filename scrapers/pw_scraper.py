@@ -88,6 +88,7 @@ class PW_Scraper(scraper.Scraper):
                     else:
                         item['multi-part'] = False
                     item['class']=self
+                    item['direct']=False
                     hosters.append(item)
             
             if max_views>0:
