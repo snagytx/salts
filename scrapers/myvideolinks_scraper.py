@@ -77,9 +77,11 @@ class MyVidLinks_Scraper(scraper.Scraper):
     def __get_movie_links(self, video, views, html):
         pattern = 'rel="bookmark"\s+title="Permanent Link to ([^"]+)'
         match = re.search(pattern, html)
+        q_str = ''
         if match:
             q_str=match.group(1)
-            quality = self.get_quality(video, q_str)
+            
+        quality = self.get_quality(video, q_str)
         
         return self.__get_links(views, html, quality)
     
