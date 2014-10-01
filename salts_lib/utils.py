@@ -223,7 +223,7 @@ def filename_from_title(title, video_type, year=None):
     xbmc.makeLegalFilename(filename)
     return filename
 
-def filter_hosters(hosters):
+def filter_unknown_hosters(hosters):
     filtered_hosters=[]
     for host in hosters:
         for key, _ in SORT_FIELDS:

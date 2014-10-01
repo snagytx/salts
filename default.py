@@ -555,12 +555,14 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
         
         if _SALTS.get_setting('enable_sort')=='true':
             if _SALTS.get_setting('filter-unknown')=='true':
-                hosters = utils.filter_hosters(hosters)
+                hosters = utils.filter_unknown_hosters(hosters)
             SORT_KEYS['source'] = utils.make_source_sort_key()
             hosters.sort(key = utils.get_sort_key)
             
         global urlresolver
         import urlresolver
+
+        
         if mode!=MODES.SELECT_SOURCE and _SALTS.get_setting('auto-play')=='true':
             auto_play_sources(hosters, video_type, slug, season, episode)
         else:
@@ -669,18 +671,12 @@ def auto_play_sources(hosters, video_type, slug, season, episode):
         if play_source(hoster_url, video_type, slug, season, episode):
             return True
 
-def pick_source_dialog(hosters, filtered=False):
+def pick_source_dialog(hosters):
     for item in hosters:
         # TODO: Skip multiple sources for now
         if item['multi-part']:
             continue
 
-        if filtered:
-            hosted_media = urlresolver.HostedMediaFile(host=item['host'], media_id='dummy') # use dummy media_id to force host validation
-            if not hosted_media:
-                log_utils.log('Skipping unresolvable source: %s (%s)' % (item['url'], item['host']))
-                continue
-        
         label = item['class'].format_source_label(item)
         label = '[%s] %s' % (item['class'].get_name(),label)
         item['label']=label
@@ -696,18 +692,12 @@ def pick_source_dialog(hosters, filtered=False):
         except Exception as e:
             log_utils.log('Error (%s) while trying to resolve %s' % (str(e), hosters[index]['url']), xbmc.LOGERROR)
     
-def pick_source_dir(hosters, video_type, slug, season='', episode='', filtered=False):
+def pick_source_dir(hosters, video_type, slug, season='', episode=''):
     for item in hosters:
         # TODO: Skip multiple sources for now
         if item['multi-part']:
             continue
 
-        if filtered:
-            hosted_media = urlresolver.HostedMediaFile(host=item['host'], media_id='dummy') # use dummy media_id to force host validation
-            if not hosted_media:
-                log_utils.log('Skipping unresolvable source: %s (%s)' % (item['url'], item['host']))
-                continue
-        
         label = item['class'].format_source_label(item)
         label = '[%s] %s' % (item['class'].get_name(),label)
         item['label']=label
