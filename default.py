@@ -384,7 +384,12 @@ def show_progress():
                 show=item['show']
                 fanart=item['show']['images']['fanart']
                 date=utils.make_day(time.strftime('%Y-%m-%d', time.localtime(first_aired_utc)))
-                liz, liz_url = make_episode_item(show, item['next_episode'], fanart)
+                
+                menu_items=[]
+                queries = {'mode': MODES.SEASONS, 'slug': trakt_api.get_slug(show['url']), 'fanart': fanart}
+                menu_items.append(('Browse Show Seasons', 'Container.Update(%s)' % (_SALTS.build_plugin_url(queries))), )
+                
+                liz, liz_url = make_episode_item(show, item['next_episode'], fanart, menu_items=menu_items)
                 label=liz.getLabel()
                 label = '[[COLOR deeppink]%s[/COLOR]] %s - %s' % (date, show['title'], label.decode('utf-8', 'replace'))
                 liz.setLabel(label) 
@@ -793,6 +798,9 @@ def set_related_url(mode, video_type, title, year, slug, season='', episode='', 
     if timeout_msg:
         builtin = 'XBMC.Notification(%s,%s, 5000, %s)'
         xbmc.executebuiltin(builtin % (_SALTS.get_name(), timeout_msg, ICON_PATH))
+        for related in related_list:
+            if related['name'] in fails:
+                related['label']='[COLOR darkred]%s[/COLOR]' % (related['label'])
 
     workers=utils.reap_workers(workers)
     try:
@@ -1225,7 +1233,12 @@ def make_dir_from_cal(mode, start_date, days):
             show=episode_elem['show']
             episode=episode_elem['episode']
             fanart=show['images']['fanart']
-            liz, liz_url =make_episode_item(show, episode, fanart, show_subs=False)
+
+            menu_items=[]
+            queries = {'mode': MODES.SEASONS, 'slug': trakt_api.get_slug(show['url']), 'fanart': fanart}
+            menu_items.append(('Browse Show Seasons', 'Container.Update(%s)' % (_SALTS.build_plugin_url(queries))), )
+
+            liz, liz_url =make_episode_item(show, episode, fanart, show_subs=False, menu_items=menu_items)
             label=liz.getLabel()
             label = '[[COLOR deeppink]%s[/COLOR]] %s - %s' % (date, show['title'], label.decode('utf-8', 'replace'))
             if episode['season']==1 and episode['number']==1:
@@ -1239,9 +1252,10 @@ def make_dir_from_cal(mode, start_date, days):
     xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz, isFolder=True)    
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
-def make_episode_item(show, episode, fanart, show_subs=True):
+def make_episode_item(show, episode, fanart, show_subs=True, menu_items=None):
     #log_utils.log('Make Episode: Show: %s, Episode: %s, Fanart: %s, Show Subs: %s' % (show, episode, fanart, show_subs), xbmc.LOGDEBUG)
     log_utils.log('Make Episode: Episode: %s' % (episode), xbmc.LOGDEBUG)
+    if menu_items is None: menu_items = []
     folder = _SALTS.get_setting('source-win')=='Directory' and _SALTS.get_setting('auto-play')=='false'
     show['title']=re.sub(' \(\d{4}\)$','',show['title'])
     if 'episode' in episode: episode_num=episode['episode']
@@ -1279,7 +1293,6 @@ def make_episode_item(show, episode, fanart, show_subs=True):
                'ep_title': episode['title'], 'slug': trakt_api.get_slug(show['url'])}
     liz_url = _SALTS.build_plugin_url(queries)
     
-    menu_items=[]
     if _SALTS.get_setting('auto-play')=='true':
         queries = {'mode': MODES.SELECT_SOURCE, 'video_type': VIDEO_TYPES.EPISODE, 'title': show['title'], 'year': show['year'], 'season': episode['season'], 'episode': episode_num, 
                    'ep_title': episode['title'], 'slug': trakt_api.get_slug(show['url'])}
@@ -1287,10 +1300,12 @@ def make_episode_item(show, episode, fanart, show_subs=True):
             runstring = 'PlayMedia(%s)' % _SALTS.build_plugin_url(queries)
         else:
             runstring = 'Container.Update(%s)' % _SALTS.build_plugin_url(queries)
-        print 'RunString is: %s' % (runstring)
-        menu_items.append(('Select Source', runstring), )
+        menu_items.insert(0, ('Select Source', runstring), )
         
-    menu_items.append(('Show Information', 'XBMC.Action(Info)'), )
+    if menu_items and menu_items[0][0]=='Select Source':
+        menu_items.append(('Show Information', 'XBMC.Action(Info)'), )
+    else:
+        menu_items.insert(0, ('Show Information', 'XBMC.Action(Info)'), )
 
     show_id=utils.show_id(show)
     queries = {'mode': MODES.ADD_TO_COLL, 'section': SECTIONS.TV}
@@ -1318,6 +1333,8 @@ def make_episode_item(show, episode, fanart, show_subs=True):
         queries.update(show_id)
         menu_items.append((label, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
 
+    queries = {'mode': MODES.SET_URL_SEARCH, 'video_type': VIDEO_TYPES.TVSHOW, 'title': show['title'], 'year': show['year'], 'slug': trakt_api.get_slug(show['url'])}
+    menu_items.append(('Set Related Show Url (Search)', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
     queries = {'mode': MODES.SET_URL_MANUAL, 'video_type': VIDEO_TYPES.EPISODE, 'title': show['title'], 'year': show['year'], 'season': episode['season'], 
                'episode': episode_num, 'ep_title': episode['title'], 'slug': trakt_api.get_slug(show['url'])}
     menu_items.append(('Set Related Url (Manual)', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
