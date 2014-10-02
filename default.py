@@ -545,22 +545,32 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
         else:
             log_utils.log('All source results received')
         
+    total = len(workers)
+    timeouts = len(fails)
     workers=utils.reap_workers(workers)
     try:
+        timeout_msg = 'Scraper Timeouts: %s/%s' % (timeouts, total) if timeouts else ''
         if not hosters:
             log_utils.log('No Sources found for: |%s|' % (video))
-            builtin = 'XBMC.Notification(%s,No Sources Found, 5000, %s)'
-            xbmc.executebuiltin(builtin % (_SALTS.get_name(), ICON_PATH))
+            msg = ' (%s)' % timeout_msg if timeout_msg else ''
+            builtin = 'XBMC.Notification(%s,No Sources Found%s, 5000, %s)'
+            xbmc.executebuiltin(builtin % (_SALTS.get_name(), msg, ICON_PATH))
             return False
         
+        if timeout_msg:
+            builtin = 'XBMC.Notification(%s,%s, 5000, %s)'
+            xbmc.executebuiltin(builtin % (_SALTS.get_name(), timeout_msg, ICON_PATH))
+            
         if _SALTS.get_setting('enable_sort')=='true':
             if _SALTS.get_setting('filter-unknown')=='true':
                 hosters = utils.filter_unknown_hosters(hosters)
-            SORT_KEYS['source'] = utils.make_source_sort_key()
-            hosters.sort(key = utils.get_sort_key)
-            
+        SORT_KEYS['source'] = utils.make_source_sort_key()
+        hosters.sort(key = utils.get_sort_key)
+
         global urlresolver
         import urlresolver
+        
+        hosters = filter_unusable_hosters(hosters)
 
         
         if mode!=MODES.SELECT_SOURCE and _SALTS.get_setting('auto-play')=='true':
@@ -573,6 +583,18 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
                 pick_source_dir(hosters, video_type, slug, season, episode)
     finally:
         utils.reap_workers(workers, None)
+
+def filter_unusable_hosters(hosters):
+    filtered_hosters=[]
+    max = int(_SALTS.get_setting('filter_unusable'))
+    for i, hoster in enumerate(hosters):
+        if i<max and 'direct' in hoster and hoster['direct']==False:
+            hmf = urlresolver.HostedMediaFile(host=hoster['host'], media_id='dummy') # use dummy media_id to force host validation
+            if not hmf:
+                log_utils.log('Skip bad source %s (%s) from %s' % (hoster['url'], hoster['host'], hoster['class'].get_name()), xbmc.LOGDEBUG)
+                continue
+        filtered_hosters.append(hoster)
+    return filtered_hosters
     
 @url_dispatcher.register(MODES.RESOLVE_SOURCE, ['class_url', 'video_type', 'slug', 'class_name'], ['season', 'episode'])
 def resolve_source(class_url, video_type, slug, class_name, season='', episode=''):
@@ -762,6 +784,13 @@ def set_related_url(mode, video_type, title, year, slug, season='', episode='', 
                 break
         else:
             log_utils.log('All source results received')
+
+    total = len(workers)
+    timeouts = len(fails)
+    timeout_msg = 'Scraper Timeouts: %s/%s' % (timeouts, total) if timeouts else ''
+    if timeout_msg:
+        builtin = 'XBMC.Notification(%s,%s, 5000, %s)'
+        xbmc.executebuiltin(builtin % (_SALTS.get_name(), timeout_msg, ICON_PATH))
 
     workers=utils.reap_workers(workers)
     try:

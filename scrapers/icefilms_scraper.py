@@ -96,10 +96,11 @@ class IceFilms_Scraper(scraper.Scraper):
                     for match in re.finditer(pattern, fragment):
                         link_id, label, host_fragment = match.groups()
                         source = {'multi-part': False, 'quality': quality, 'class': self, 'label': label, 'rating': None, 'views': None, 'direct': False}
-                        source['host']=re.sub('(<[^>]+>|</span>)','',host_fragment)
-                        if source['host'].upper() in BROKEN_RESOLVERS:
+                        host=re.sub('(<[^>]+>|</span>)','',host_fragment)
+                        source['host']=host.lower()
+                        if host.upper() in BROKEN_RESOLVERS:
                             continue
-
+                        
                         url = '/membersonly/components/com_iceplayer/video.phpAjaxResp.php?id=%s&s=999&iqs=&url=&m=-999&cap=&sec=%s&t=%s' % (link_id, secret, t)
                         source['url']=url
                         sources.append(source)

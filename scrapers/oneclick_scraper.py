@@ -62,7 +62,7 @@ class OneClick_Scraper(scraper.Scraper):
                 pattern ='id="selector\d+"><span>([^<]+).*?href="([^"]+)'
                 for match in re.finditer(pattern, fragment, re.DOTALL):
                     host, url = match.groups()
-                    hoster = {'multi-part': False, 'host': host.strip(), 'class': self, 'quality': None, 'url': url, 'views': None, 'rating': None, 'direct': False}
+                    hoster = {'multi-part': False, 'host': host.strip().lower(), 'class': self, 'quality': None, 'url': url, 'views': None, 'rating': None, 'direct': False}
                     hosters.append(hoster)
          
         return hosters

@@ -68,7 +68,7 @@ class UFlix_Scraper(scraper.Scraper):
                 match = re.search('url=([^&]+)&domain=([^&]+)', url)
                 if match:
                     url=match.group(1).decode('base-64')
-                    host=match.group(2).decode('base-64')
+                    host=match.group(2).decode('base-64').lower()
                     
                 # skip ad match
                 if host.upper()=='HDSTREAM':

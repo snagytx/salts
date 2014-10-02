@@ -75,7 +75,7 @@ class IWatchOnline_Scraper(scraper.Scraper):
                     quality=quality.upper()
                     if age>max_age: max_age=age
                     if age<min_age: min_age=age
-                    hoster = {'multi-part': False, 'class': self, 'url': url.replace(self.base_url,''), 'host': host, 'age': age, 'views': None, 'rating': None, 'direct': False}
+                    hoster = {'multi-part': False, 'class': self, 'url': url.replace(self.base_url,''), 'host': host.lower(), 'age': age, 'views': None, 'rating': None, 'direct': False}
                     hoster['quality']=QUALITY_MAP[quality] if quality in QUALITY_MAP else None
                     hosters.append(hoster)
                 
