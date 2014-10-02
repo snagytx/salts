@@ -387,7 +387,7 @@ def show_progress():
                 
                 menu_items=[]
                 queries = {'mode': MODES.SEASONS, 'slug': trakt_api.get_slug(show['url']), 'fanart': fanart}
-                menu_items.append(('Browse Show Seasons', 'Container.Update(%s)' % (_SALTS.build_plugin_url(queries))), )
+                menu_items.append(('Browse Seasons', 'Container.Update(%s)' % (_SALTS.build_plugin_url(queries))), )
                 
                 liz, liz_url = make_episode_item(show, item['next_episode'], fanart, menu_items=menu_items)
                 label=liz.getLabel()
@@ -1236,7 +1236,7 @@ def make_dir_from_cal(mode, start_date, days):
 
             menu_items=[]
             queries = {'mode': MODES.SEASONS, 'slug': trakt_api.get_slug(show['url']), 'fanart': fanart}
-            menu_items.append(('Browse Show Seasons', 'Container.Update(%s)' % (_SALTS.build_plugin_url(queries))), )
+            menu_items.append(('Browse Seasons', 'Container.Update(%s)' % (_SALTS.build_plugin_url(queries))), )
 
             liz, liz_url =make_episode_item(show, episode, fanart, show_subs=False, menu_items=menu_items)
             label=liz.getLabel()
