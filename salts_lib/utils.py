@@ -584,8 +584,8 @@ def get_force_title_list():
     return filter_list
 
 def calculate_success(name):
-    tries=db_connection.get_setting('%s_try' % (name))
-    fail = db_connection.get_setting('%s_fail' % (name))
+    tries=ADDON.get_setting('%s_try' % (name))
+    fail = ADDON.get_setting('%s_fail' % (name))
     tries = int(tries) if tries else 0
     fail = int(fail) if fail else 0
     rate = int(round((fail*100.0)/tries)) if tries>0 else 0
@@ -596,7 +596,7 @@ def record_timeouts(fails):
     for key in fails:
         if fails[key]==True:
             log_utils.log('Recording Timeout of %s' % (key), xbmc.LOGWARNING)
-            db_connection.increment_db_setting('%s_fail' % key)
+            increment_setting('%s_fail' % key)
 
 def do_disable_check():
     scrapers=relevant_scrapers()
@@ -606,10 +606,10 @@ def do_disable_check():
     for cls in scrapers:
         last_check = db_connection.get_setting('%s_check' % (cls.get_name()))
         last_check = int(last_check) if last_check else 0
-        tries=db_connection.get_setting('%s_try' % (cls.get_name()))
+        tries=ADDON.get_setting('%s_try' % (cls.get_name()))
         tries = int(tries) if tries else 0
         if tries>0 and tries/check_freq>last_check/check_freq:
-            db_connection.set_setting('%s_check' % (cls.get_name()), str(tries))
+            ADDON.set_setting('%s_check' % (cls.get_name()), str(tries))
             success_rate=calculate_success(cls.get_name())
             if success_rate<disable_thresh:
                 if auto_disable == DISABLE_SETTINGS.ON:
@@ -627,3 +627,14 @@ def do_disable_check():
 
 def menu_on(menu):
     return ADDON.get_setting('show_%s' % (menu))=='true'
+
+def get_setting(setting):
+    return ADDON.get_setting(setting)
+
+def set_setting(setting, value):
+    ADDON.set_setting(setting, str(value))
+
+def increment_setting(setting):
+    cur_value = get_setting(setting)
+    cur_value = int(cur_value) if cur_value else 0
+    set_setting(setting, cur_value+1)

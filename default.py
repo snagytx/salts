@@ -51,7 +51,7 @@ global urlresolver
 
 @url_dispatcher.register(MODES.MAIN)
 def main_menu():
-    db_connection.init_database()    
+    db_connection.init_database()
     if not VALID_ACCOUNT:
         remind_count = int(_SALTS.get_setting('remind_count'))
         remind_max=5
@@ -520,7 +520,7 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
                 break
         else:
             worker=utils.start_worker(q, utils.parallel_get_sources, [cls, video])
-            db_connection.increment_db_setting('%s_try' % (cls.get_name()))
+            utils.increment_setting('%s_try' % (cls.get_name()))
             worker_count+=1
             workers.append(worker)
             fails[cls.get_name()]=True
@@ -762,7 +762,7 @@ def set_related_url(mode, video_type, title, year, slug, season='', episode='', 
             related_list.append(related)
         else:
             worker = utils.start_worker(q, utils.parallel_get_url, [cls, video])
-            db_connection.increment_db_setting('%s_try' % (cls.get_name()))
+            utils.increment_setting('%s_try' % (cls.get_name()))
             worker_count += 1
             workers.append(worker)
             related={'class': cls(max_timeout), 'name': cls.get_name(), 'label': '[%s]' % (cls.get_name()), 'url': ''}
