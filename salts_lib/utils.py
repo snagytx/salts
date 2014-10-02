@@ -595,7 +595,7 @@ def calculate_success(name):
 def record_timeouts(fails):
     for key in fails:
         if fails[key]==True:
-            log_utils.log('Recording Timeout of %s' % (key))
+            log_utils.log('Recording Timeout of %s' % (key), xbmc.LOGWARNING)
             db_connection.increment_db_setting('%s_fail' % key)
 
 def do_disable_check():
