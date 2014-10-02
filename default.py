@@ -561,6 +561,8 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
             builtin = 'XBMC.Notification(%s,%s, 5000, %s)'
             xbmc.executebuiltin(builtin % (_SALTS.get_name(), timeout_msg, ICON_PATH))
             
+        hosters = utils.filter_exclusions(hosters)
+        
         if _SALTS.get_setting('enable_sort')=='true':
             if _SALTS.get_setting('filter-unknown')=='true':
                 hosters = utils.filter_unknown_hosters(hosters)
@@ -591,7 +593,7 @@ def filter_unusable_hosters(hosters):
         if i<max and 'direct' in hoster and hoster['direct']==False:
             hmf = urlresolver.HostedMediaFile(host=hoster['host'], media_id='dummy') # use dummy media_id to force host validation
             if not hmf:
-                log_utils.log('Skip bad source %s (%s) from %s' % (hoster['url'], hoster['host'], hoster['class'].get_name()), xbmc.LOGDEBUG)
+                log_utils.log('Unusable source %s (%s) from %s' % (hoster['url'], hoster['host'], hoster['class'].get_name()), xbmc.LOGDEBUG)
                 continue
         filtered_hosters.append(hoster)
     return filtered_hosters

@@ -233,6 +233,19 @@ def filter_unknown_hosters(hosters):
             filtered_hosters.append(host)
     return filtered_hosters
 
+def filter_exclusions(hosters):
+    exclusions = ADDON.get_setting('excl_list')
+    exclusions = exclusions.replace(' ', '')
+    exclusions = exclusions.lower()
+    if not exclusions: return hosters
+    filtered_hosters=[]
+    for hoster in hosters:
+        if hoster['host'].lower() in exclusions:
+            log_utils.log('Excluding %s (%s) from %s' % (hoster['url'], hoster['host'], hoster['class'].get_name()), xbmc.LOGDEBUG)
+            continue
+        filtered_hosters.append(hoster)
+    return filtered_hosters
+
 def get_sort_key(item):
     item_sort_key = []
     for field, sign in SORT_FIELDS:
