@@ -41,7 +41,7 @@ HOST_Q={}
 HOST_Q[QUALITIES.LOW]=['youwatch.org', 'allmyvideos.net']
 HOST_Q[QUALITIES.MEDIUM]=['primeshare.tv', 'exashare.com', 'bestreams.net', 'flashx.tv', 'vidto.me', 'vodlocker.com']
 HOST_Q[QUALITIES.HIGH]=['vidzi.tv', 'vidspot.net']
-HOST_Q[QUALITIES.HD]=['thefile.me', 'sharesix', 'mightyupload', 'filenuke', 'hugefiles', '180upload']
+HOST_Q[QUALITIES.HD]=['thefile.me', 'sharesix', 'mightyupload', 'filenuke', 'hugefiles', '180upload', 'vidxden']
 
 
 class OneClickWatch_Scraper(scraper.Scraper):
@@ -140,11 +140,12 @@ class OneClickWatch_Scraper(scraper.Scraper):
                 post_quality=key
         
         host_quality=None
-        for key in HOST_Q:
-            if any(host in hostname for hostname in HOST_Q[key]):
-                host_quality=key
+        if host:
+            for key in HOST_Q:
+                if any(host in hostname for hostname in HOST_Q[key]):
+                    host_quality=key
         
-        log_utils.log('q_str: %s, host: %s, post q: %s, host q: %s' % (q_str, host, post_quality, host_quality), xbmc.LOGDEBUG)
+        #log_utils.log('q_str: %s, host: %s, post q: %s, host q: %s' % (q_str, host, post_quality, host_quality), xbmc.LOGDEBUG)
         if host_quality is not None and Q_ORDER[host_quality] < Q_ORDER[post_quality]:
             quality=host_quality
         else:
