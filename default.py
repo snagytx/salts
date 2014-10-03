@@ -190,6 +190,9 @@ def scraper_settings():
             queries = {'mode': MODES.MOVE_SCRAPER, 'name': cls.get_name(), 'direction': DIRS.DOWN, 'other': scrapers[i+1].get_name()}
             menu_items.append(('Move Down', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
 
+        queries = {'mode': MODES.MOVE_TO, 'name': cls.get_name()}
+        menu_items.append(('Move To...', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+
         queries = {'mode': MODES.TOGGLE_SCRAPER, 'name': cls.get_name()}
         menu_items.append((toggle_label, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
         liz.addContextMenuItems(menu_items, replaceItems=True)
@@ -197,19 +200,33 @@ def scraper_settings():
         xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz, isFolder=False)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
-@url_dispatcher.register(MODES.TOGGLE_ALL)
-def toggle_scrapers():
-    cur_toggle = _SALTS.get_setting('toggle_enable')
-    scrapers=utils.relevant_scrapers(None, True, True)
-    for scraper in scrapers:
-        _SALTS.set_setting('%s-enable' % (scraper.get_name()), cur_toggle)
+@url_dispatcher.register(MODES.MOVE_TO, ['name'])
+def move_to(name):
+    dialog = xbmcgui.Dialog()
+    sort_key = utils.make_source_sort_key()
+    new_pos = dialog.numeric(0, 'Enter New Position (1 - %s)' % (len(sort_key)))
+    if new_pos:
+        new_pos = int(new_pos)
+        old_key = sort_key[name]
+        new_key=-new_pos+1
+        if (new_pos<=0 or new_pos>len(sort_key)) or old_key==new_key:
+            return
         
-    if cur_toggle=='true':
-        new_toggle='false'
-    else:
-        new_toggle='true'
-    
-    _SALTS.set_setting('toggle_enable', new_toggle)
+        for key in sort_key:
+            this_key = sort_key[key]
+            # moving scraper up
+            if new_key>old_key:
+                # move everything between the old and new down
+                if this_key>old_key and this_key<=new_key:
+                    sort_key[key] -= 1
+            # moving scraper down
+            else:
+                # move everything between the old and new up
+                if this_key>new_key and this_key<=new_key:
+                    sort_key[key] += 1    
+            
+        sort_key[name]=new_key
+    _SALTS.set_setting('source_sort_order', utils.make_source_sort_string(sort_key))
     xbmc.executebuiltin("XBMC.Container.Refresh")
 
 @url_dispatcher.register(MODES.MOVE_SCRAPER, ['name', 'direction', 'other'])
@@ -222,6 +239,17 @@ def move_scraper(name, direction, other):
         sort_key[name] -= 1
         sort_key[other] += 1
     _SALTS.set_setting('source_sort_order', utils.make_source_sort_string(sort_key))
+    xbmc.executebuiltin("XBMC.Container.Refresh")
+
+@url_dispatcher.register(MODES.TOGGLE_ALL)
+def toggle_scrapers():
+    cur_toggle = _SALTS.get_setting('toggle_enable')
+    scrapers=utils.relevant_scrapers(None, True, True)
+    for scraper in scrapers:
+        _SALTS.set_setting('%s-enable' % (scraper.get_name()), cur_toggle)
+        
+    new_toggle = 'false' if cur_toggle=='true' else 'true'
+    _SALTS.set_setting('toggle_enable', new_toggle)
     xbmc.executebuiltin("XBMC.Container.Refresh")
 
 @url_dispatcher.register(MODES.TOGGLE_SCRAPER, ['name'])
