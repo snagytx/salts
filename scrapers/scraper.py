@@ -26,7 +26,6 @@ import xbmcgui
 import os
 import re
 import time
-import operator
 from salts_lib import log_utils
 from salts_lib.db_utils import DB_Connection
 from salts_lib.constants import VIDEO_TYPES
@@ -41,7 +40,7 @@ CAPTCHA_BASE_URL = 'http://www.google.com/recaptcha/api'
 COOKIEPATH=xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile'))
 COOKIEFILE=os.path.join(COOKIEPATH,'cookies.lwp')
 
-Q_LIST = [item[0] for item in sorted(Q_ORDER.items(), key=operator.itemgetter(1))]
+Q_LIST = [item[0] for item in sorted(Q_ORDER.items(), key=lambda x:x[1])]
 
 abstractstaticmethod = abc.abstractmethod
 class abstractclassmethod(classmethod):
