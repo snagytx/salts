@@ -12,10 +12,10 @@
 	<category label="User Interface">
 	    <setting id="show_trending" type="bool" label="Show Trending" default="true"/>
 	    <setting id="show_recommended" type="bool" label="Show Recommended" default="true"/>
-	    <setting id="show_collection" type="bool" label="Show Collection" default="true"/>
-	    <setting id="show_favorites" type="bool" label="Show Favorites" default="true"/>
-	    <setting id="show_subscriptions" type="bool" label="Show Subscriptions" default="true"/>
-	    <setting id="show_watchlist" type="bool" label="Show Watchlist" default="true"/>
+	    <setting id="show_collection" type="bool" label="Show My Collection" default="true"/>
+	    <setting id="show_favorites" type="bool" label="Show My Favorites" default="true"/>
+	    <setting id="show_subscriptions" type="bool" label="Show My Subscriptions" default="true"/>
+	    <setting id="show_watchlist" type="bool" label="Show My Watchlist" default="true"/>
 	    <setting id="show_my_lists" type="bool" label="Show My Lists" default="true"/>
 	    <setting id="show_other_lists" type="bool" label="Show Other Lists" default="true"/>
 	    <setting id="show_progress" type="bool" label="Show My Next Episodes" default="true"/>
