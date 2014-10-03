@@ -162,6 +162,12 @@ def force_refresh(refresh_mode, section=None, slug=None, username=None):
 @url_dispatcher.register(MODES.SCRAPERS)
 def scraper_settings():
     scrapers=utils.relevant_scrapers(None, True, True)
+    if _SALTS.get_setting('toggle_enable')=='true':
+        label='**Enable All Scrapers**'
+    else:
+        label='**Disable All Scrapers**'
+    _SALTS.add_directory({'mode': MODES.TOGGLE_ALL}, {'title': label}, img=utils.art('scraper.png'), fanart=utils.art('fanart.jpg'))
+    
     for i, cls in enumerate(scrapers):
         label = '%s (Provides: %s)' % (cls.get_name(), str(list(cls.provides())).replace("'", ""))
         label = '%s (Success: %s%%)' % (label, utils.calculate_success(cls.get_name()))
@@ -190,6 +196,21 @@ def scraper_settings():
         
         xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz, isFolder=False)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
+
+@url_dispatcher.register(MODES.TOGGLE_ALL)
+def toggle_scrapers():
+    cur_toggle = _SALTS.get_setting('toggle_enable')
+    scrapers=utils.relevant_scrapers(None, True, True)
+    for scraper in scrapers:
+        _SALTS.set_setting('%s-enable' % (scraper.get_name()), cur_toggle)
+        
+    if cur_toggle=='true':
+        new_toggle='false'
+    else:
+        new_toggle='true'
+    
+    _SALTS.set_setting('toggle_enable', new_toggle)
+    xbmc.executebuiltin("XBMC.Container.Refresh")
 
 @url_dispatcher.register(MODES.MOVE_SCRAPER, ['name', 'direction', 'other'])
 def move_scraper(name, direction, other):
