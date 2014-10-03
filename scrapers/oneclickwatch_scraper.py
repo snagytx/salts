@@ -29,14 +29,9 @@ from salts_lib.db_utils import DB_Connection
 from salts_lib.constants import QUALITIES
 from salts_lib.constants import HOST_Q
 from salts_lib.constants import Q_ORDER
+from salts_lib.constants import BLOG_Q_MAP
 
 BASE_URL = 'http://oneclickwatch.org'
-
-QUALITY_MAP={}
-QUALITY_MAP[QUALITIES.LOW]=[' CAM ', ' TS ']
-QUALITY_MAP[QUALITIES.MEDIUM]=[]
-QUALITY_MAP[QUALITIES.HIGH]=['HDRIP', 'DVDRIP']
-QUALITY_MAP[QUALITIES.HD]=['720', '1080']
 
 class OneClickWatch_Scraper(scraper.Scraper):
     base_url=BASE_URL
@@ -76,7 +71,7 @@ class OneClickWatch_Scraper(scraper.Scraper):
                 url=match.group(1)
                 hoster={'multi-part': False, 'class': self, 'views': None, 'url': url, 'rating': None, 'direct': False}
                 hoster['host']=urlparse.urlsplit(url).hostname
-                hoster['quality']=self.__get_quality(video, q_str, hoster['host'])
+                hoster['quality']=self._blog_get_quality(video, q_str, hoster['host'])
                 hosters.append(hoster)
 
         return hosters
@@ -104,7 +99,7 @@ class OneClickWatch_Scraper(scraper.Scraper):
                         match = re.search('\[(.*)\]$', result['title'])
                         if match:
                             q_str = match.group(1)
-                            quality=self.__get_quality(video, q_str, '')
+                            quality=self._blog_get_quality(video, q_str, '')
                             #print 'result: |%s|%s|%s|%s|' % (result, q_str, quality, Q_ORDER[quality])
                             if Q_ORDER[quality]>=best_qorder:
                                 if Q_ORDER[quality] > best_qorder or (quality == QUALITIES.HD and '1080' in q_str and '1080' not in best_qstr):
@@ -116,36 +111,6 @@ class OneClickWatch_Scraper(scraper.Scraper):
                 url = best_result['url']
                 self.db_connection.set_related_url(video.video_type, video.title, video.year, self.get_name(), url)
         return url
-
-    def __get_quality(self, video, q_str, host):
-        q_str.replace(video.title, '')
-        q_str.replace(str(video.year), '')
-        q_str = q_str.upper()
-        
-        # Assume movies are low quality, tv shows are high quality
-        if video.video_type == VIDEO_TYPES.MOVIE:
-            quality = QUALITIES.LOW
-        else:
-            quality = QUALITIES.HIGH
-
-        post_quality = quality
-        for key in QUALITY_MAP:
-            if any(q in q_str for q in QUALITY_MAP[key]):
-                post_quality=key
-        
-        host_quality=None
-        if host:
-            for key in HOST_Q:
-                if any(host in hostname for hostname in HOST_Q[key]):
-                    host_quality=key
-        
-        #log_utils.log('q_str: %s, host: %s, post q: %s, host q: %s' % (q_str, host, post_quality, host_quality), xbmc.LOGDEBUG)
-        if host_quality is not None and Q_ORDER[host_quality] < Q_ORDER[post_quality]:
-            quality=host_quality
-        else:
-            quality=post_quality
-
-        return quality
 
     @classmethod
     def get_settings(cls):
