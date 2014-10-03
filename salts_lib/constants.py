@@ -53,3 +53,10 @@ LONG_AGO='1970-01-01 23:59:00.000000'
 TEMP_ERRORS=[500, 502, 503, 504, 520, 521, 522, 524]
 SRT_SOURCE='addic7ed'
 DISABLE_SETTINGS= __enum(OFF='0', PROMPT='1', ON='2')
+
+HOST_Q={}
+HOST_Q[QUALITIES.LOW]=['youwatch.org', 'allmyvideos.net']
+HOST_Q[QUALITIES.MEDIUM]=['primeshare.tv', 'exashare.com', 'bestreams.net', 'flashx.tv', 'vidto.me', 'vodlocker.com']
+HOST_Q[QUALITIES.HIGH]=['vidzi.tv', 'vidspot.net']
+HOST_Q[QUALITIES.HD]=['thefile.me', 'sharesix', 'mightyupload', 'filenuke', 'hugefiles', '180upload', 'vidxden']
+Q_ORDER = {QUALITIES.LOW: 1, QUALITIES.MEDIUM: 2, QUALITIES.HIGH: 3, QUALITIES.HD: 4}

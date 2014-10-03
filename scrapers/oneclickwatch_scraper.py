@@ -27,6 +27,8 @@ from salts_lib import log_utils
 from salts_lib.constants import VIDEO_TYPES
 from salts_lib.db_utils import DB_Connection
 from salts_lib.constants import QUALITIES
+from salts_lib.constants import HOST_Q
+from salts_lib.constants import Q_ORDER
 
 BASE_URL = 'http://oneclickwatch.org'
 
@@ -35,14 +37,6 @@ QUALITY_MAP[QUALITIES.LOW]=[' CAM ', ' TS ']
 QUALITY_MAP[QUALITIES.MEDIUM]=[]
 QUALITY_MAP[QUALITIES.HIGH]=['HDRIP', 'DVDRIP']
 QUALITY_MAP[QUALITIES.HD]=['720', '1080']
-Q_ORDER = {QUALITIES.LOW: 1, QUALITIES.MEDIUM: 2, QUALITIES.HIGH: 3, QUALITIES.HD: 4}
-
-HOST_Q={}
-HOST_Q[QUALITIES.LOW]=['youwatch.org', 'allmyvideos.net']
-HOST_Q[QUALITIES.MEDIUM]=['primeshare.tv', 'exashare.com', 'bestreams.net', 'flashx.tv', 'vidto.me', 'vodlocker.com']
-HOST_Q[QUALITIES.HIGH]=['vidzi.tv', 'vidspot.net']
-HOST_Q[QUALITIES.HD]=['thefile.me', 'sharesix', 'mightyupload', 'filenuke', 'hugefiles', '180upload', 'vidxden']
-
 
 class OneClickWatch_Scraper(scraper.Scraper):
     base_url=BASE_URL
