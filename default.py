@@ -1205,7 +1205,7 @@ def make_dir_from_list(section, list_data, slug=None):
         if 'imdb_id' in show: show['watched'] = watched.get(show['imdb_id'], False)
         elif 'tvdb_id' in show: show['watched'] = watched.get(show['tvdb_id'], False)
         elif 'tmdb_id' in show: show['watched'] = watched.get(show['tmdb_id'], False)
-        if not show['watched']: log_utils.log('Setting watched status on %s (%s): %s' % (show['title'], show['year'], show['watched']), xbmc.LOGDEBUG)
+        #if not show['watched']: log_utils.log('Setting watched status on %s (%s): %s' % (show['title'], show['year'], show['watched']), xbmc.LOGDEBUG)
             
         liz, liz_url =make_item(section_params, show, menu_items)
         
