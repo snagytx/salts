@@ -257,7 +257,7 @@ def filter_quality(video_type, hosters):
     
     filtered_hosters = []
     for hoster in hosters:
-        if hosters['quality'] in keep_qual:
+        if hoster['quality'] in keep_qual:
             filtered_hosters.append(hoster)
     return filtered_hosters
 
