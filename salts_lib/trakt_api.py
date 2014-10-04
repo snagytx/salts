@@ -66,7 +66,9 @@ class Trakt_API():
         items=[]
         for item in list_data['items']:
             if item['type']==TRAKT_SECTIONS[section][:-1]:
-                items.append(item[item['type']])
+                show=item[item['type']]
+                show.update(self.__get_user_attributes(item))
+                items.append(show)
         return (list_header, items)
     
     def show_watchlist(self, section):
@@ -82,12 +84,10 @@ class Trakt_API():
         return self.__manage_list('add', slug, items)
         
     def add_to_collection(self, section, item):
-        url = '/%s/library/%s' % (TRAKT_SECTIONS[section][:-1], API_KEY)
-        if section == SECTIONS.TV:
-            data = item
-        else:
-            data = {'movies': [item]}
-        return self.__call_trakt(url, extra_data = data, cache_limit=0)
+        return self.__manage_collection('library', section, item)
+        
+    def remove_from_collection(self, section, item):
+        return self.__manage_collection('unlibrary', section, item)
         
     def set_watched(self, section, item, season='', episode='', watched=True):
         video_type = TRAKT_SECTIONS[section][:-1]
@@ -206,6 +206,15 @@ class Trakt_API():
         url=re.sub(pattern, '', url.lower())
         return url
     
+    def __get_user_attributes(self, item):
+        show={}
+        if 'watched' in item: show['watched']=item['watched']
+        if 'in_collection' in item: show['in_collection']=item['in_collection']
+        if 'in_watchlist' in item: show['in_watchlist']=item['in_watchlist']
+        if 'rating' in item: show['rating']=item['rating']
+        if 'rating_advanced' in item: show['rating_advanced']=item['rating_advanced']
+        return show
+    
     def __manage_list(self, action, slug, items):
         url='/lists/items/%s/%s' % (action, API_KEY)
         if not isinstance(items, (list,tuple)): items=[items]
@@ -218,6 +227,14 @@ class Trakt_API():
         extra_data={TRAKT_SECTIONS[section]: items}
         return self.__call_trakt(url, extra_data, cache_limit=0)
     
+    def __manage_collection(self, action, section, item):
+        url = '/%s/%s/%s' % (TRAKT_SECTIONS[section][:-1], action, API_KEY)
+        if section == SECTIONS.TV:
+            data = item
+        else:
+            data = {'movies': [item]}
+        return self.__call_trakt(url, extra_data = data, cache_limit=0)
+        
     def __call_trakt(self, url, extra_data=None, cache_limit=.25, cached=True):
         if not cached: cache_limit = 0
         data={'username': self.username, 'password': self.sha1password}
