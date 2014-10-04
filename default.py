@@ -519,11 +519,14 @@ def search_results(section, query):
 
 @url_dispatcher.register(MODES.SEASONS, ['slug', 'fanart'])
 def browse_seasons(slug, fanart):
+    utils.set_view('seasons', False)
     seasons=trakt_api.get_seasons(slug)
-    season_watched=utils.make_season_watched(trakt_api.get_progress(title=slug, full=False))
+    if VALID_ACCOUNT:
+        progress=trakt_api.get_progress(title=slug, full=False, cached=_SALTS.get_setting('cache_watched')=='true')
+        info = utils.make_seasons_info(progress)
     totalItems=len(seasons)
     for season in reversed(seasons):
-        liz=utils.make_season_item(season, season_watched.get(season['season'], False), fanart)
+        liz=utils.make_season_item(season, info.get(str(season['season']), {'season': season['season']}), fanart)
         queries = {'mode': MODES.EPISODES, 'slug': slug, 'season': season['season'], 'fanart': fanart}
         liz_url = _SALTS.build_plugin_url(queries)
         xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz,isFolder=True,totalItems=totalItems)
