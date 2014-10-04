@@ -1364,14 +1364,14 @@ def make_episode_item(show, episode, fanart, show_subs=True, menu_items=None):
         menu_items.insert(0, ('Show Information', 'XBMC.Action(Info)'), )
 
     if 'in_collection' in episode and episode['in_collection']:
-        COLL_MODE=MODES.REM_FROM_COLL
+        collection_mode=MODES.REM_FROM_COLL
         label = 'Remove Show from Collection'
     else:
-        COLL_MODE=MODES.ADD_TO_COLL
+        collection_mode=MODES.ADD_TO_COLL
         label = 'Add Show to Collection'
         
     show_id=utils.show_id(show)
-    queries = {'mode': COLL_MODE, 'section': SECTIONS.TV}
+    queries = {'mode': collection_mode, 'section': SECTIONS.TV}
     queries.update(show_id)
     menu_items.append((label, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
 
@@ -1440,14 +1440,14 @@ def make_item(section_params, show, menu_items=None):
         
     if VALID_ACCOUNT:
         if 'in_collection' in show and show['in_collection']:
-            COLL_MODE=MODES.REM_FROM_COLL
+            collection_mode=MODES.REM_FROM_COLL
             label = 'Remove from Collection'
         else:
-            COLL_MODE=MODES.ADD_TO_COLL
+            collection_mode=MODES.ADD_TO_COLL
             label = 'Add to Collection'
             
         show_id=utils.show_id(show)
-        queries = {'mode': COLL_MODE, 'section': section_params['section']}
+        queries = {'mode': collection_mode, 'section': section_params['section']}
         queries.update(show_id)
         menu_items.append((label, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
         
