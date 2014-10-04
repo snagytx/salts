@@ -37,6 +37,8 @@ QUALITIES = __enum(LOW='Low', MEDIUM='Medium', HIGH='High', HD='HD')
 DIRS = __enum(UP='up', DOWN='down')
 P_MODES = __enum(THREADS=0, PROCESSES=1, NONE=2)
 WATCHLIST_SLUG = 'watchlist_slug'
+COLLECTION_SLUG='collection_slug'
+REM_COLL_LABEL='Remove from Collection'
 USER_AGENT = ("Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:32.0) Gecko/20100101 Firefox/32.0")
 
 # sort keys need to be defined such that "best" have highest values

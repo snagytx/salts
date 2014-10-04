@@ -420,7 +420,7 @@ def show_watchlist(section):
 @url_dispatcher.register(MODES.SHOW_COLLECTION, ['section'])
 def show_collection(section):
     items = trakt_api.get_collection(section)
-    make_dir_from_list(section, items)
+    make_dir_from_list(section, items, COLLECTION_SLUG)
     
 @url_dispatcher.register(MODES.SHOW_PROGRESS)
 def show_progress():
@@ -1248,10 +1248,17 @@ def make_dir_from_list(section, list_data, slug=None):
     
     for show in list_data:
         menu_items=[]
+        show_id=utils.show_id(show)
         if slug:
-            queries = {'mode': MODES.REM_FROM_LIST, 'slug': slug, 'section': section}
-            queries.update(utils.show_id(show))
-            menu_items.append(('Remove from List', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+            if slug==COLLECTION_SLUG:
+                queries = {'mode': MODES.REM_FROM_COLL, 'section': section}
+                queries.update(show_id)
+                menu_items.append((REM_COLL_LABEL, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+            else:
+                queries = {'mode': MODES.REM_FROM_LIST, 'slug': slug, 'section': section}
+                queries.update(show_id)
+                menu_items.append(('Remove from List', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+                
         sub_slug=_SALTS.get_setting('%s_sub_slug' % (section))
         if VALID_ACCOUNT and sub_slug and sub_slug != slug:
             queries = {'mode': MODES.ADD_TO_LIST, 'section': section_params['section'], 'slug': sub_slug}
@@ -1439,17 +1446,16 @@ def make_item(section_params, show, menu_items=None):
         menu_items.insert(0, ('Select Source', runstring), )
         
     if VALID_ACCOUNT:
-        if 'in_collection' in show and show['in_collection']:
-            collection_mode=MODES.REM_FROM_COLL
-            label = 'Remove from Collection'
-        else:
-            collection_mode=MODES.ADD_TO_COLL
-            label = 'Add to Collection'
-            
         show_id=utils.show_id(show)
-        queries = {'mode': collection_mode, 'section': section_params['section']}
-        queries.update(show_id)
-        menu_items.append((label, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+        if REM_COLL_LABEL not in (item[0] for item in menu_items):
+            if 'in_collection' in show and show['in_collection']:
+                queries = {'mode': MODES.REM_FROM_COLL, 'section': section_params['section']}
+                queries.update(show_id)
+                menu_items.append((REM_COLL_LABEL, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+            else:
+                queries = {'mode': MODES.ADD_TO_COLL, 'section': section_params['section']}
+                queries.update(show_id)
+                menu_items.append(('Add to Collection', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
         
         queries = {'mode': MODES.ADD_TO_LIST, 'section': section_params['section']}
         queries.update(show_id)

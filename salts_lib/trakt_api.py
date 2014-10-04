@@ -174,7 +174,7 @@ class Trakt_API():
         return self.__call_trakt(url)
     
     def get_collection(self, section, cached=True):
-        url='/user/library/%s/collection.json/%s/%s' % (TRAKT_SECTIONS[section], API_KEY, self.username)
+        url='/user/library/%s/collection.json/%s/%s/true' % (TRAKT_SECTIONS[section], API_KEY, self.username)
         return self.__call_trakt(url, cached=cached)
     
     def get_watched(self, section, cached=True):
