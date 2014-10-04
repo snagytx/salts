@@ -94,15 +94,22 @@ def update_url(video_type, title, year, source, old_url, new_url, season, episod
     if video_type == VIDEO_TYPES.TVSHOW and new_url != old_url:
         db_connection.clear_related_url(VIDEO_TYPES.EPISODE, title, year, source)
     
-def make_season_item(season, fanart):
+def make_season_item(season, watched, fanart):
+    playcount=1 if watched else 0
     label = 'Season %s' % (season['season'])
     season['images']['fanart']=fanart
     liz=make_list_item(label, season)
-    liz.setInfo('video', {'season': season['season']})
-
+    liz.setInfo('video', {'season': season['season'], 'playcount': playcount})
     menu_items=[]
     liz.addContextMenuItems(menu_items, replaceItems=True)
     return liz
+
+def make_season_watched(progress):
+    print progress
+    watched={}
+    for season in progress[0]['seasons']:
+        watched[season['season']]=season['left']==0
+    return watched
 
 def make_list_item(label, meta):
     art=make_art(meta)

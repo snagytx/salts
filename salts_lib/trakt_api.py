@@ -181,8 +181,9 @@ class Trakt_API():
         url='/user/library/%s/watched.json/%s/%s/min' % (TRAKT_SECTIONS[section], API_KEY, self.username)
         return self.__call_trakt(url, cached=cached)
         
-    def get_progress(self, sort=TRAKT_SORT.ACTIVITY, full=True, cached=True):
-        url='/user/progress/watched.json/%s/%s/all/%s' % (API_KEY, self.username, sort)
+    def get_progress(self, title=None, sort=TRAKT_SORT.ACTIVITY, full=True, cached=True):
+        if title is None: title='all'
+        url='/user/progress/watched.json/%s/%s/%s/%s' % (API_KEY, self.username, title, sort)
         if full: url += '/full'
         return self.__call_trakt(url, cached=cached)
     

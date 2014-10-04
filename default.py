@@ -425,7 +425,7 @@ def show_collection(section):
 @url_dispatcher.register(MODES.SHOW_PROGRESS)
 def show_progress():
     sort_index =_SALTS.get_setting('sort_progress')
-    items = trakt_api.get_progress(SORT_MAP[int(sort_index)])
+    items = trakt_api.get_progress(sort=SORT_MAP[int(sort_index)])
     for item in items:
         if 'next_episode' in item and item['next_episode']:
             first_aired_utc = utils.fa_2_utc(item['next_episode']['first_aired'])
@@ -514,21 +514,16 @@ def search(section):
     
 @url_dispatcher.register(MODES.SEARCH_RESULTS, ['section', 'query'])
 def search_results(section, query):
-#     section_params=utils.get_section_params(section)
     results = trakt_api.search(section, query)
     make_dir_from_list(section, results)
-#     totalItems=len(results)
-#     for result in results:
-#         liz, liz_url = make_item(section_params, result)
-#         xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz, isFolder=section_params['folder'], totalItems=totalItems)
-#     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 @url_dispatcher.register(MODES.SEASONS, ['slug', 'fanart'])
 def browse_seasons(slug, fanart):
     seasons=trakt_api.get_seasons(slug)
+    season_watched=utils.make_season_watched(trakt_api.get_progress(title=slug, full=False))
     totalItems=len(seasons)
     for season in reversed(seasons):
-        liz=utils.make_season_item(season, fanart)
+        liz=utils.make_season_item(season, season_watched.get(season['season'], False), fanart)
         queries = {'mode': MODES.EPISODES, 'slug': slug, 'season': season['season'], 'fanart': fanart}
         liz_url = _SALTS.build_plugin_url(queries)
         xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz,isFolder=True,totalItems=totalItems)
