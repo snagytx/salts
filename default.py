@@ -617,6 +617,8 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
             
         hosters = utils.filter_exclusions(hosters)
         
+        hosters = utils.filter_quality(video_type, hosters)
+        
         if _SALTS.get_setting('enable_sort')=='true':
             if _SALTS.get_setting('filter-unknown')=='true':
                 hosters = utils.filter_unknown_hosters(hosters)
@@ -627,7 +629,6 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
         import urlresolver
         
         hosters = filter_unusable_hosters(hosters)
-
         
         if mode!=MODES.SELECT_SOURCE and _SALTS.get_setting('auto-play')=='true':
             auto_play_sources(hosters, video_type, slug, season, episode)

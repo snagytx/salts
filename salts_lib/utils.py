@@ -246,6 +246,21 @@ def filter_exclusions(hosters):
         filtered_hosters.append(hoster)
     return filtered_hosters
 
+def filter_quality(video_type, hosters):
+    qual_filter = int(ADDON.get_setting('%s_quality' % video_type))
+    if qual_filter==0:
+        return hosters
+    elif qual_filter==1:
+        keep_qual=[QUALITIES.HD]
+    else:
+        keep_qual=[QUALITIES.LOW, QUALITIES.MEDIUM, QUALITIES.HIGH]
+    
+    filtered_hosters = []
+    for hoster in hosters:
+        if hosters['quality'] in keep_qual:
+            filtered_hosters.append(hoster)
+    return filtered_hosters
+
 def get_sort_key(item):
     item_sort_key = []
     for field, sign in SORT_FIELDS:
