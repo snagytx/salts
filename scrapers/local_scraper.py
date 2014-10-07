@@ -17,12 +17,14 @@
 """
 import scraper
 import xbmcaddon
+import log_utils
+import xbmc
 from salts_lib.constants import VIDEO_TYPES
 
 from salts_lib.db_utils import DB_Connection
 BASE_URL = ''
 
-class Dummy_Scraper(scraper.Scraper):
+class Local_Scraper(scraper.Scraper):
     def __init__(self, timeout=scraper.DEFAULT_TIMEOUT):
         self.db_connection = DB_Connection()
         self.base_url = xbmcaddon.Addon().getSetting('%s-base_url' % (self.get_name()))
@@ -33,7 +35,7 @@ class Dummy_Scraper(scraper.Scraper):
     
     @classmethod
     def get_name(cls):
-        return 'Dummy'
+        return 'Local'
     
     def resolve_link(self, link):
         return link
@@ -42,12 +44,25 @@ class Dummy_Scraper(scraper.Scraper):
         pass
     
     def get_sources(self, video):
-        return []
+        pass
 
     def get_url(self, video):
-        result=self.db_connection.get_related_url(video.video_type, video.title, video.year, self.get_name(), video.season, video.episode)
-        if result:
-            return result[0][0]
+        temp_video_type=video.video_type
+        if video.video_type == VIDEO_TYPES.EPISODE: temp_video_type=VIDEO_TYPES.TVSHOW
+        url = None
+
+        results = self.search(temp_video_type, video.title, video.year)
+        if results:
+            url = results[0]['url']
+
+        if url and video.video_type==VIDEO_TYPES.EPISODE:
+            show_url = url
+            url = self._get_episode_url(show_url, video)
+        
+        return url
+
+    def _get_episode_url(self, show_url, video):
+        pass
 
     def search(self, video_type, title, year):
-        raise NotImplementedError
+        pass
