@@ -1022,6 +1022,23 @@ def toggle_watched(section, id_type, show_id, watched=True, season='', episode='
     xbmc.executebuiltin(builtin)
     xbmc.executebuiltin("XBMC.Container.Refresh")
 
+@url_dispatcher.register(MODES.URL_EXISTS, ['slug'])
+def toggle_url_exists(slug):
+    show_str = _SALTS.get_setting('exists_list')
+    if show_str:
+        show_list = show_str.split('|')
+    else:
+        show_list = []
+
+    if slug in show_list:
+        show_list.remove(slug)
+    else:
+        show_list.append(slug)
+
+    show_str = '|'.join(show_list)
+    _SALTS.set_setting('exists_list', show_str)
+    xbmc.executebuiltin("XBMC.Container.Refresh")
+
 @url_dispatcher.register(MODES.UPDATE_SUBS)
 def update_subscriptions():
     log_utils.log('Updating Subscriptions', xbmc.LOGDEBUG)
@@ -1148,7 +1165,6 @@ def import_db():
 @url_dispatcher.register(MODES.ADD_TO_LIBRARY, ['video_type', 'title', 'year', 'slug'])
 def add_to_library(video_type, title, year, slug):
     log_utils.log('Creating .strm for |%s|%s|%s|%s|' % (video_type, title, year, slug), xbmc.LOGDEBUG)
-    require_source = _SALTS.get_setting('require_source')=='true'
     if video_type == VIDEO_TYPES.TVSHOW:
         save_path = _SALTS.get_setting('tvshow-folder')
         save_path = xbmc.translatePath(save_path)
@@ -1161,16 +1177,25 @@ def add_to_library(video_type, title, year, slug):
 
         for season in reversed(seasons):
             season_num = season['season']
-            episodes = trakt_api.get_episodes(slug, season_num)
-            for episode in episodes:
-                ep_num = episode['episode']
-                filename = utils.filename_from_title(show['title'], video_type)
-                filename = filename % ('%02d' % int(season_num), '%02d' % int(ep_num))
-                show_folder = re.sub(r'([^\w\-_\. ]|\.$)', '_', show['title'])
-                final_path = os.path.join(save_path, show_folder, 'Season %s' % (season_num), filename)
-                strm_string = _SALTS.build_plugin_url({'mode': MODES.GET_SOURCES, 'video_type': VIDEO_TYPES.EPISODE, 'title': title, 'year': year, 'season': season_num, 
-                                                       'episode': ep_num, 'slug': slug, 'ep_title': episode['title'], 'dialog': True})
-                write_strm(strm_string, final_path, VIDEO_TYPES.EPISODE, show['title'], show['year'], slug, season_num, ep_num, require_source=require_source)
+            if _SALTS.get_setting('include_specials')=='true' or season_num != 0: 
+                episodes = trakt_api.get_episodes(slug, season_num)
+                for episode in episodes:
+                    if utils.show_requires_source(slug):
+                        require_source=True
+                    else:
+                        if utils.iso_2_utc(episode['first_aired_iso'])>time.time():
+                            continue
+                        else:
+                            require_source=False
+                    
+                    ep_num = episode['episode']
+                    filename = utils.filename_from_title(show['title'], video_type)
+                    filename = filename % ('%02d' % int(season_num), '%02d' % int(ep_num))
+                    show_folder = re.sub(r'([^\w\-_\. ]|\.$)', '_', show['title'])
+                    final_path = os.path.join(save_path, show_folder, 'Season %s' % (season_num), filename)
+                    strm_string = _SALTS.build_plugin_url({'mode': MODES.GET_SOURCES, 'video_type': VIDEO_TYPES.EPISODE, 'title': title, 'year': year, 'season': season_num, 
+                                                           'episode': ep_num, 'slug': slug, 'ep_title': episode['title'], 'dialog': True})
+                    write_strm(strm_string, final_path, VIDEO_TYPES.EPISODE, show['title'], show['year'], slug, season_num, ep_num, require_source=require_source)
                 
     elif video_type == VIDEO_TYPES.MOVIE:
         save_path = _SALTS.get_setting('movie-folder')
@@ -1179,7 +1204,7 @@ def add_to_library(video_type, title, year, slug):
         filename = utils.filename_from_title(title, VIDEO_TYPES.MOVIE, year)
         dir_name = title if not year else '%s (%s)' % (title, year)
         final_path = os.path.join(save_path, dir_name, filename)
-        write_strm(strm_string, final_path, VIDEO_TYPES.MOVIE, title, year, slug, require_source=require_source)
+        write_strm(strm_string, final_path, VIDEO_TYPES.MOVIE, title, year, slug, require_source=_SALTS.get_setting('require_source')=='true')
 
 def write_strm(stream, path, video_type, title, year, slug, season='', episode='', require_source=False):
     path = xbmc.makeLegalFilename(path)
@@ -1258,10 +1283,19 @@ def make_dir_from_list(section, list_data, slug=None):
                 menu_items.append(('Remove from List', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
                 
         sub_slug=_SALTS.get_setting('%s_sub_slug' % (section))
-        if VALID_ACCOUNT and sub_slug and sub_slug != slug:
-            queries = {'mode': MODES.ADD_TO_LIST, 'section': section_params['section'], 'slug': sub_slug}
-            queries.update(utils.show_id(show))
-            menu_items.append(('Subscribe', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+        if VALID_ACCOUNT and sub_slug:
+            if sub_slug != slug:
+                queries = {'mode': MODES.ADD_TO_LIST, 'section': section_params['section'], 'slug': sub_slug}
+                queries.update(utils.show_id(show))
+                menu_items.append(('Subscribe', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+            elif section == SECTIONS.TV:
+                show_slug = trakt_api.get_slug(show['url'])
+                if utils.show_requires_source(show_slug):
+                    label='Require Aired Only?'
+                else:
+                    label = 'Require Page Only?'
+                queries = {'mode': MODES.URL_EXISTS, 'slug': show_slug}                
+                menu_items.append((label, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
         
         if 'imdb_id' in show: show['watched'] = watched.get(show['imdb_id'], False)
         elif 'tvdb_id' in show: show['watched'] = watched.get(show['tvdb_id'], False)

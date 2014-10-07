@@ -671,3 +671,11 @@ def increment_setting(setting):
     cur_value = get_setting(setting)
     cur_value = int(cur_value) if cur_value else 0
     set_setting(setting, cur_value+1)
+
+def show_requires_source(slug):
+    show_str = ADDON.get_setting('exists_list')
+    show_list = show_str.split('|')
+    if slug in show_list:
+        return True
+    else:
+        return False
