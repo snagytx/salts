@@ -524,7 +524,8 @@ def browse_seasons(slug, fanart):
     info={}
     if VALID_ACCOUNT:
         progress=trakt_api.get_progress(title=slug, full=False, cached=_SALTS.get_setting('cache_watched')=='true')
-        info = utils.make_seasons_info(progress)
+        if progress:
+            info = utils.make_seasons_info(progress[0])
     totalItems=len(seasons)
     for season in reversed(seasons):
         liz=utils.make_season_item(season, info.get(str(season['season']), {'season': season['season']}), fanart)
