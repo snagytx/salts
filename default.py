@@ -113,6 +113,8 @@ def browse_menu(section):
     if VALID_ACCOUNT:
         if utils.menu_on('friends'): add_refresh_item({'mode': MODES.FRIENDS, 'section': section}, 'Friends Activity', utils.art('friends.png'), utils.art('fanart.jpg'))
     if utils.menu_on('search'): _SALTS.add_directory({'mode': MODES.SEARCH, 'section': section}, {'title': 'Search'}, img=utils.art(search_img), fanart=utils.art('fanart.jpg'))
+    if utils.menu_on('search'): _SALTS.add_directory({'mode': MODES.RECENT_SEARCH, 'section': section}, {'title': 'Recent Searches'}, img=utils.art(search_img), fanart=utils.art('fanart.jpg'))
+    if utils.menu_on('search'): _SALTS.add_directory({'mode': MODES.SAVED_SEARCHES, 'section': section}, {'title': 'Saved Searches'}, img=utils.art(search_img), fanart=utils.art('fanart.jpg'))
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def add_refresh_item(queries, label, thumb, fanart):
@@ -491,7 +493,7 @@ def set_list(mode, slug, section):
     _SALTS.set_setting(setting, slug)
 
 @url_dispatcher.register(MODES.SEARCH, ['section'])
-def search(section):
+def search(section, search_text=None):
     keyboard = xbmc.Keyboard()
     keyboard.setHeading('Search %s' % (section))
     while True:
@@ -505,13 +507,67 @@ def search(section):
                 break
         else:
             break
-    
+
     if keyboard.isConfirmed():
-        queries = {'mode': MODES.SEARCH_RESULTS, 'section': section, 'query': keyboard.getText()}
+        search_text = keyboard.getText()
+        utils.keep_search(section, search_text)
+        queries = {'mode': MODES.SEARCH_RESULTS, 'section': section, 'query': search_text}
         pluginurl = _SALTS.build_plugin_url(queries)
         builtin = 'Container.Update(%s)' %(pluginurl)
         xbmc.executebuiltin(builtin)
     
+@url_dispatcher.register(MODES.RECENT_SEARCH, ['section'])
+def recent_searches(section):
+    if section==SECTIONS.TV:
+        search_img='television_search.png'
+    else:
+        search_img='movies_search.png'
+    head = int(_SALTS.get_setting('%s_search_head' % (section)))
+    for i in reversed(range(0,SEARCH_HISTORY)):
+        index = (i + head + 1) % SEARCH_HISTORY
+        search_text =db_connection.get_setting('%s_search_%s' % (section, index))
+        if not search_text:
+            break
+        
+        label = '[%s Search] %s' % (section, search_text)
+        liz = xbmcgui.ListItem(label=label, iconImage=utils.art(search_img), thumbnailImage=utils.art(search_img))
+        liz.setProperty('fanart_image', utils.art('fanart.png'))
+        menu_items = []
+        refresh_queries = {'mode': MODES.SAVE_SEARCH, 'section': section, 'query': search_text}
+        menu_items.append(('Save Search', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(refresh_queries))), )
+        liz.addContextMenuItems(menu_items)
+        queries = {'mode': MODES.SEARCH_RESULTS, 'section': section, 'query': search_text}
+        xbmcplugin.addDirectoryItem(int(sys.argv[1]), _SALTS.build_plugin_url(queries), liz, isFolder=True) 
+    xbmcplugin.endOfDirectory(int(sys.argv[1]))
+        
+
+@url_dispatcher.register(MODES.SAVED_SEARCHES, ['section'])
+def saved_searches(section):
+    if section==SECTIONS.TV:
+        search_img='television_search.png'
+    else:
+        search_img='movies_search.png'
+    for search in db_connection.get_searches(section, order_matters=True):
+        label = '[%s Search] %s' % (section, search[1])
+        liz = xbmcgui.ListItem(label=label, iconImage=utils.art(search_img), thumbnailImage=utils.art(search_img))
+        liz.setProperty('fanart_image', utils.art('fanart.png'))
+        menu_items = []
+        refresh_queries = {'mode': MODES.DELETE_SEARCH, 'search_id': search[0]}
+        menu_items.append(('Delete Search', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(refresh_queries))), )
+        liz.addContextMenuItems(menu_items)
+        queries = {'mode': MODES.SEARCH_RESULTS, 'section': section, 'query': search[1]}
+        xbmcplugin.addDirectoryItem(int(sys.argv[1]), _SALTS.build_plugin_url(queries), liz, isFolder=True) 
+    xbmcplugin.endOfDirectory(int(sys.argv[1]))
+
+@url_dispatcher.register(MODES.SAVE_SEARCH, ['section', 'query'])
+def save_search(section, query):
+    db_connection.save_search(section, query)
+
+@url_dispatcher.register(MODES.DELETE_SEARCH, ['search_id'])
+def delete_search(search_id):
+    db_connection.delete_search(search_id)
+    xbmc.executebuiltin("XBMC.Container.Refresh")
+
 @url_dispatcher.register(MODES.SEARCH_RESULTS, ['section', 'query'])
 def search_results(section, query):
     results = trakt_api.search(section, query)

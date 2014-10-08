@@ -679,3 +679,10 @@ def show_requires_source(slug):
         return True
     else:
         return False
+
+def keep_search(section, search_text):
+    head = int(ADDON.get_setting('%s_search_head' % (section)))
+    new_head = (head + 1) % SEARCH_HISTORY
+    log_utils.log('Setting %s to %s' % (new_head, search_text), xbmc.LOGDEBUG)
+    db_connection.set_setting('%s_search_%s' % (section, new_head), search_text)
+    ADDON.set_setting('%s_search_head' % (section), str(new_head))

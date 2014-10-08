@@ -27,7 +27,8 @@ MODES=__enum(MAIN='main', BROWSE='browse', TRENDING='trending', RECOMMEND='recom
            MOVE_SCRAPER = 'scraper_move', FRIENDS_EPISODE='friends_episode', EDIT_TVSHOW_ID='edit_id', SELECT_SOURCE='select_source', SHOW_COLLECTION='show_collection',
            SHOW_PROGRESS='show_progress', PLAY_TRAILER='play_trailer', RENAME_LIST='rename_list', EXPORT_DB='export_db', IMPORT_DB='import_db', COPY_LIST='copy_list',
            REMOVE_LIST='remove_list', ADD_TO_COLL='add_to_collection', TOGGLE_WATCHED='toggle_watched', RATE='rate', FORCE_REFRESH='force_refresh', TOGGLE_TITLE='toggle_force',
-           RES_SETTINGS='resolver_settings', ADDON_SETTINGS='addon_settings', TOGGLE_ALL='toggle_all', MOVE_TO='move_to', REM_FROM_COLL='rem_from_collection', URL_EXISTS='url_exists')
+           RES_SETTINGS='resolver_settings', ADDON_SETTINGS='addon_settings', TOGGLE_ALL='toggle_all', MOVE_TO='move_to', REM_FROM_COLL='rem_from_collection', 
+           URL_EXISTS='url_exists', RECENT_SEARCH='recent_search', SAVED_SEARCHES='saved_searches', SAVE_SEARCH='save_search', DELETE_SEARCH='delete_search')
 SECTIONS=__enum(TV='TV', MOVIES='Movies')
 VIDEO_TYPES = __enum(TVSHOW='TV Show', MOVIE='Movie', EPISODE='Episode', SEASON='Season')
 TRAKT_SECTIONS = {SECTIONS.TV: 'shows', SECTIONS.MOVIES: 'movies'}
@@ -40,6 +41,7 @@ WATCHLIST_SLUG = 'watchlist_slug'
 COLLECTION_SLUG='collection_slug'
 REM_COLL_LABEL='Remove from Collection'
 USER_AGENT = ("Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:32.0) Gecko/20100101 Firefox/32.0")
+SEARCH_HISTORY = 10
 
 # sort keys need to be defined such that "best" have highest values
 # unknown (i.e. None) is always worst
