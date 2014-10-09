@@ -27,6 +27,11 @@
 	    <setting id="show_premiere_cal" type="bool" label="Show Premiere Calendar" default="true"/>
 	    <setting id="show_friends" type="bool" label="Show Friends" default="true"/>
 	    <setting id="show_search" type="bool" label="Show Search" default="true"/>
+		<setting label="Default Views" type="lsep"/>
+		<setting id="movies_view" label="Default Movies View (0 = None)" type="number" default="0" visible="true"/>
+		<setting id="tvshows_view" label="Default TV Shows View (0 = None)" type="number" default="0" visible="true"/>
+		<setting id="seasons_view" label="Default Seasons View (0 = None)" type="number" default="0" visible="true"/>
+		<setting id="episodes_view" label="Default Episodes View (0 = None)" type="number" default="0" visible="true"/>
 	</category>
 
 	<category label="Trakt.tv">

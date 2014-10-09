@@ -28,9 +28,10 @@ MODES=__enum(MAIN='main', BROWSE='browse', TRENDING='trending', RECOMMEND='recom
            SHOW_PROGRESS='show_progress', PLAY_TRAILER='play_trailer', RENAME_LIST='rename_list', EXPORT_DB='export_db', IMPORT_DB='import_db', COPY_LIST='copy_list',
            REMOVE_LIST='remove_list', ADD_TO_COLL='add_to_collection', TOGGLE_WATCHED='toggle_watched', RATE='rate', FORCE_REFRESH='force_refresh', TOGGLE_TITLE='toggle_force',
            RES_SETTINGS='resolver_settings', ADDON_SETTINGS='addon_settings', TOGGLE_ALL='toggle_all', MOVE_TO='move_to', REM_FROM_COLL='rem_from_collection', 
-           URL_EXISTS='url_exists', RECENT_SEARCH='recent_search', SAVED_SEARCHES='saved_searches', SAVE_SEARCH='save_search', DELETE_SEARCH='delete_search')
+           URL_EXISTS='url_exists', RECENT_SEARCH='recent_search', SAVED_SEARCHES='saved_searches', SAVE_SEARCH='save_search', DELETE_SEARCH='delete_search', SET_VIEW='set_view')
 SECTIONS=__enum(TV='TV', MOVIES='Movies')
 VIDEO_TYPES = __enum(TVSHOW='TV Show', MOVIE='Movie', EPISODE='Episode', SEASON='Season')
+CONTENT_TYPES = __enum(TVSHOWS='tvshows', MOVIES='movies', SEASONS='seasons', EPISODES='episodes')
 TRAKT_SECTIONS = {SECTIONS.TV: 'shows', SECTIONS.MOVIES: 'movies'}
 TRAKT_SORT=__enum(TITLE='title', ACTIVITY='activity', MOST_COMPLETED='most-completed', LEAST_COMPLETED='least-completed', RECENTLY_AIRED='recently-aired', PREVIOUSLY_AIRED='previously-aired')
 SORT_MAP = [TRAKT_SORT.ACTIVITY, TRAKT_SORT.TITLE, TRAKT_SORT.MOST_COMPLETED, TRAKT_SORT.LEAST_COMPLETED, TRAKT_SORT.RECENTLY_AIRED, TRAKT_SORT.PREVIOUSLY_AIRED]
