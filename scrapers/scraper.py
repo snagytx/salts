@@ -203,6 +203,13 @@ class Scraper(object):
                     '         <setting id="%s_fail" type="number" default="0" visible="false"/>' % (name),
                     '         <setting id="%s_check" type="number" default="0" visible="false"/>' % (name),]
     
+    @classmethod
+    def _disable_sub_check(cls, settings):
+        for i in reversed(xrange(len(settings))):
+            if 'sub_check' in settings[i]:
+                settings[i]=settings[i].replace('default="true"', 'default="false"')
+        return settings
+        
     def _cached_http_get(self, url, base_url, timeout, cookies=None, data=None, cache_limit=8):
         if cookies is None: cookies={}
         log_utils.log('Getting Url: %s cookie=|%s| data=|%s|' % (url, cookies, data))
