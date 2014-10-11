@@ -131,7 +131,7 @@ class NoobRoom_Scraper(scraper.Scraper):
                 url, match_title, match_year = match.groups('')
                 if not year or not match_year or year == match_year:
                     result = {'url': url, 'title': match_title, 'year': match_year}
-                results.append(result)
+                    results.append(result)
             
         return results
     
