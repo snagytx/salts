@@ -685,7 +685,8 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
         
         hosters = filter_unusable_hosters(hosters)
         
-        if mode!=MODES.SELECT_SOURCE and _SALTS.get_setting('auto-play')=='true':
+        pseudo_tv = xbmcgui.Window(10000).getProperty('PseudoTVRunning')
+        if pseudo_tv=='True' or (mode!=MODES.SELECT_SOURCE and _SALTS.get_setting('auto-play')=='true'):
             auto_play_sources(hosters, video_type, slug, season, episode)
         else:
             if dialog or (dialog is None and _SALTS.get_setting('source-win') == 'Dialog'):
