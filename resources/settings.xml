@@ -299,6 +299,12 @@
          <setting id="NoobRoom-username" type="text" label="     Username" default="" visible="eq(-6,true)"/>
          <setting id="NoobRoom-password" type="text" label="     Password" option="hidden" default="" visible="eq(-7,true)"/>
          <setting id="NoobRoom-include_premium" type="bool" label="     Include Premium" default="false" visible="eq(-8,true)"/>
+         <setting id="SolarMovie-enable" type="bool" label="SolarMovie Enabled" default="true" visible="true"/>
+         <setting id="SolarMovie-base_url" type="text" label="     Base Url" default="http://www.solarmovie.is" visible="eq(-1,true)"/>
+         <setting id="SolarMovie-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>
+         <setting id="SolarMovie_try" type="number" default="0" visible="false"/>
+         <setting id="SolarMovie_fail" type="number" default="0" visible="false"/>
+         <setting id="SolarMovie_check" type="number" default="0" visible="false"/>
     </category>
 	
 	<category label="Database">

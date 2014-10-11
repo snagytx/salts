@@ -672,7 +672,6 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
             xbmc.executebuiltin(builtin % (_SALTS.get_name(), timeout_msg, ICON_PATH))
             
         hosters = utils.filter_exclusions(hosters)
-        
         hosters = utils.filter_quality(video_type, hosters)
         
         if _SALTS.get_setting('enable_sort')=='true':

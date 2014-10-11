@@ -1,7 +1,7 @@
 __all__ = ['scraper', 'local_scraper', 'pw_scraper', 'uflix_scraper', 'watchseries_scraper', 'movie25_scraper', 'merdb_scraper', '2movies_scraper', 'icefilms_scraper', 'afdah_scraper', 
            'istreamhd_scraper', 'movieshd_scraper', 'simplymovies_scraper', 'yifytv_scraper', 'viooz_scraper', 'filmstreaming_scraper', 'allucto_scraper', 'onlinemovies_scraper',
            'oneclick_scraper', 'myvideolinks_scraper', 'filmikz_scraper', 'iwatch_scraper', 'popcornered_scraper', 'shush_scraper', 'ororotv_scraper', 'view47_scraper', 'vidics_scraper',
-           'oneclickwatch_scraper', 'watchmovies_scraper', 'losmovies_scraper', 'movie4k_scraper', 'noobroom_scraper']
+           'oneclickwatch_scraper', 'watchmovies_scraper', 'losmovies_scraper', 'movie4k_scraper', 'noobroom_scraper', 'solar_scraper']
 
 import re
 import os
@@ -33,8 +33,6 @@ def update_xml(xml, new_settings, cat_count):
     match = re.search('(<category label="Scrapers %s">.*?</category>)' % (cat_count), xml, re.DOTALL | re.I)
     if match:
         old_settings=match.group(1)
-    
-        print new_str
         if old_settings != new_settings:
             xml=xml.replace(old_settings, new_str)
     else:
@@ -61,7 +59,6 @@ def update_settings():
             xml = update_xml(xml, new_settings, cat_count)
             new_settings=[]
             cat_count += 1
-            
 
     if new_settings:
         xml = update_xml(xml, new_settings, cat_count)
