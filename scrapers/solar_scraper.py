@@ -91,12 +91,13 @@ class Solar_Scraper(scraper.Scraper):
             
         results=[]
         html = self. _http_get(search_url, cache_limit=.25)
-        for match in re.finditer('class="name">\s*<a\s+title="([^"]+)\s+\((\d{4})\)"\s+href="([^"]+)', html):
-            title, year, url = match.groups('')
-            if re.search('/season-\d+/episode-\d+', url): continue # exclude episodes
-            
-            result={'url': url, 'title': title, 'year': year}
-            results.append(result)
+        if not re.search('Nothing was found', html):
+            for match in re.finditer('class="name">\s*<a\s+title="([^"]+)\s+\((\d{4})\)"\s+href="([^"]+)', html):
+                title, year, url = match.groups('')
+                if re.search('/season-\d+/episode-\d+', url): continue # exclude episodes
+                
+                result={'url': url, 'title': title, 'year': year}
+                results.append(result)
         return results
     
     def _get_episode_url(self, show_url, video):
