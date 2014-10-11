@@ -393,6 +393,7 @@ class DB_Connection():
             else:
                 self.db = db_lib.connect(self.db_path)
                 self.db.text_factory = str
+                self.__execute('PRAGMA journal_mode=WAL')
 
     # apply formatting changes to make sql work with a particular db driver
     def __format(self, sql):
