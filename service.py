@@ -64,7 +64,7 @@ class Service(xbmc.Player):
                 log_utils.log('Service: Enabling subtitles: %s' % (srt_path))
                 self.setSubtitles(srt_path)
             else:
-                self.disableSubtitles()
+                self.showSubtitles(False)
 
         self._totalTime=0
         while self._totalTime == 0:
