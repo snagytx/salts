@@ -307,7 +307,19 @@
          <setting id="SolarMovie_check" type="number" default="0" visible="false"/>
     </category>
 	
-	<category label="Database">
+    <category label="Subtitles">
+    	<setting type="lsep" label="Subtitles work only for TV Shows currently"/>
+    	<setting id="enable-subtitles" type="bool" label="Enable Subtitles" default="false"/>
+		<setting id="subtitle-indicator" type="bool" label="Show subtitle indicators" default="true" enable="eq(-1,true)"/>
+    	<setting id="subtitle-lang" type="text" label="Subtitle Language" default="English" enable="eq(-2,true)"/>
+    	<setting id="subtitle-hi" type="bool" label="Require Hearing Impaired" default="false" enable="eq(-3,true)"/>
+    	<setting id="subtitle-hd" type="bool" label="Require HD" default="false" enable="eq(-4,true)"/>
+    	<setting id="subtitle-download" type="bool" label="Download Subtitles on playback" default="true" enable="eq(-5,true)"/>
+        <setting id="subtitle-folder" type="folder" label="Subtitle Download Folder" default="special://userdata/addon_data/plugin.video.salts/Subtitles" enable="eq(-1,true)+eq(-6,true)"/>
+        <setting id="subtitle-show" type="bool" label="Show Subtitles on Playback" default="false" enable="eq(-2,true)+eq(-7,true)"/>
+    </category>
+    
+    <category label="Database">
 		<setting id="use_remote_db" type="bool" label="Use a MySQL DB" default="false"/>
         <setting id="db_address" type="text" label="    Address" enable="eq(-1,true)" visible="eq(-1,true)" default=""/>
         <setting id="db_port" type="integer" label="    Port" enable="eq(-2,true)" visible="eq(-2,true)" default=""/>

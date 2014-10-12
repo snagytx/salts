@@ -68,35 +68,32 @@ class DB_Connection():
         sql = 'DELETE FROM url_cache'
         self.__execute(sql)
 
-    # return the bookmark for the requested url or None if not found
-    def get_bookmark(self,url):
-        if not url: return None
-        sql='SELECT resumepoint FROM new_bkmark where url=?'
-        bookmark = self.__execute(sql, (url,))
+    def get_bookmark(self, slug, season='', episode=''):
+        if not slug: return None
+        sql='SELECT resumepoint FROM bookmark where slug=? and season=? and episode=?'
+        bookmark = self.__execute(sql, (slug, season, episode))
         if bookmark:
             return bookmark[0][0]
         else:
             return None
 
-    # get all bookmarks
     def get_bookmarks(self):
-        sql='SELECT * FROM new_bkmark'
+        sql='SELECT * FROM bookmark'
         bookmarks = self.__execute(sql)
         return bookmarks
     
-    # return true if bookmark exists
-    def bookmark_exists(self, url):
-        return self.get_bookmark(url) != None
+    def bookmark_exists(self, slug, season='', episode=''):
+        return self.get_bookmark(slug, season, episode) != None
     
-    def set_bookmark(self, url,offset):
-        if not url: return
-        sql = 'REPLACE INTO new_bkmark (url, resumepoint) VALUES(?,?)'
-        self.__execute(sql, (url,offset))
+    def set_bookmark(self, slug, offset, season='', episode=''):
+        if not slug: return
+        sql = 'REPLACE INTO bookmark (slug, season, episode, resumepoint) VALUES(?, ?, ?,?)'
+        self.__execute(sql, (slug, season, episode, offset))
         
-    def clear_bookmark(self, url):
-        if not url: return
-        sql = 'DELETE FROM new_bkmark WHERE url=?'
-        self.__execute(sql, (url,))
+    def clear_bookmark(self, slug, season='', episode=''):
+        if not slug: return
+        sql = 'DELETE FROM bookmark WHERE slug=? and season=? and episode=?'
+        self.__execute(sql, (slug, season, episode))
     
     def cache_url(self,url,body):
         now = time.time()
@@ -300,6 +297,8 @@ class DB_Connection():
             PRIMARY KEY(video_type, title, year, season, episode, source))')
             self.__execute('CREATE TABLE IF NOT EXISTS other_lists (section TEXT NOT NULL, username TEXT NOT NULL, slug TEXT NOT NULL, name TEXT, PRIMARY KEY(section, username, slug))')
             self.__execute('CREATE TABLE IF NOT EXISTS saved_searches (id INTEGER PRIMARY KEY, section TEXT NOT NULL, added DOUBLE NOT NULL,query TEXT NOT NULL)')
+            self.__execute('CREATE TABLE IF NOT EXISTS bookmark (slug TEXT NOT NULL, season TEXT NOT NULL, episode TEXT NOT NULL, resumepoint DOUBLE NOT NULL, \
+            PRIMARY KEY(slug, season, episode))')
                 
         # reload the previously saved backup export
         if db_version is not None and cur_version !=  db_version:

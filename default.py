@@ -764,7 +764,18 @@ def play_source(hoster_url, video_type, slug, season='', episode=''):
             xbmc.executebuiltin(builtin % (_SALTS.get_name(), hoster_url, ICON_PATH))
             return False
 
+    resume = False
+    resume_point = 0
+    if db_connection.bookmark_exists(slug, season, episode):
+        resume = utils.get_resume_choice(slug, season, episode)
+        if resume: resume_point = db_connection.get_bookmark(slug, season, episode)
+        
     try:
+        win = xbmcgui.Window(10000)
+        win.setProperty('salts.playing', 'True')
+        win.setProperty('salts.playing.slug', slug)
+        win.setProperty('salts.playing.season', str(season))
+        win.setProperty('salts.playing.episode', str(episode))
         art={'thumb': '', 'fanart': ''}
         info={}
         if video_type == VIDEO_TYPES.EPISODE:
@@ -782,10 +793,11 @@ def play_source(hoster_url, video_type, slug, season='', episode=''):
         srt_path = download_subtitles(_SALTS.get_setting('subtitle-lang'), details['show']['title'], details['show']['year'], season, episode)
         if utils.srt_show_enabled() and srt_path:
             log_utils.log('Setting srt path: %s' % (srt_path), xbmc.LOGDEBUG)
-            win = xbmcgui.Window(10000)
             win.setProperty('salts.playing.srt', srt_path)
 
     listitem = xbmcgui.ListItem(path=stream_url, iconImage=art['thumb'], thumbnailImage=art['thumb'])
+    listitem.setProperty('ResumeTime', str(resume_point))
+    listitem.setProperty('Totaltime', str(99999)) # dummy value to force resume to work
     listitem.setProperty('fanart_image', art['fanart'])
     try: listitem.setArt(art)
     except:pass
