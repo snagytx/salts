@@ -28,7 +28,7 @@ def enum(**enums):
     return type('Enum', (), enums)
 
 DB_TYPES= enum(MYSQL='mysql', SQLITE='sqlite')
-CSV_MARKERS = enum(REL_URL='***REL_URL***', OTHER_LISTS='***OTHER_LISTS***', SAVED_SEARCHES='***SAVED_SEARCHES***')
+CSV_MARKERS = enum(REL_URL='***REL_URL***', OTHER_LISTS='***OTHER_LISTS***', SAVED_SEARCHES='***SAVED_SEARCHES***', BOOKMARKS='***BOOKMARKS***')
 TRIG_DB_UPG = False
 
 _SALTS = Addon('plugin.video.salts')
@@ -211,6 +211,10 @@ class DB_Connection():
                 f.write(CSV_MARKERS.SAVED_SEARCHES+'\n')
                 for sub in self.get_all_searches():
                     writer.writerow(sub)
+            if self.__table_exists('bookmark'):
+                f.write(CSV_MARKERS.BOOKMARKS+'\n')
+                for sub in self.get_bookmarks():
+                    writer.writerow(sub)
         
         log_utils.log('Copying export file from: |%s| to |%s|' %(temp_path, full_path), xbmc.LOGDEBUG)
         if not xbmcvfs.copy(temp_path, full_path):
@@ -242,7 +246,7 @@ class DB_Connection():
                         progress.update(i*100/num_lines, line3='Importing %s of %s' % (i, num_lines))
                         if progress.iscanceled():
                             return
-                        if line[0] in [CSV_MARKERS.REL_URL, CSV_MARKERS.OTHER_LISTS, CSV_MARKERS.SAVED_SEARCHES]:
+                        if line[0] in [CSV_MARKERS.REL_URL, CSV_MARKERS.OTHER_LISTS, CSV_MARKERS.SAVED_SEARCHES, CSV_MARKERS.BOOKMARKS]:
                             mode=line[0]
                             continue
                         elif mode==CSV_MARKERS.REL_URL:
@@ -252,6 +256,8 @@ class DB_Connection():
                             self.add_other_list(line[0], line[1], line[2], name)
                         elif mode==CSV_MARKERS.SAVED_SEARCHES:
                             self.save_search(line[1], line[3], line[2]) # column order is different than method order
+                        elif mode==CSV_MARKERS.BOOKMARKS:
+                            self.set_bookmark(line[0], line[3], line[1], line[2])
                         else:
                             raise Exception('CSV line found while in no mode')
                         i += 1
