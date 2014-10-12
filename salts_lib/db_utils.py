@@ -100,6 +100,10 @@ class DB_Connection():
         sql = 'REPLACE INTO url_cache (url,response,timestamp) VALUES(?, ?, ?)'
         self.__execute(sql, (url, body, now))
     
+    def delete_cached_url(self, url):
+        sql = 'DELETE FROM url_cache WHERE url = ?'
+        self.__execute(sql, (url,))
+    
     def get_cached_url(self, url, cache_limit=8):
         html=''
         created=0
@@ -114,6 +118,14 @@ class DB_Connection():
             if age < limit:
                 html=rows[0][1]
         return created, html
+    
+    def get_all_urls(self, include_response=False, order_matters=False):
+        sql = 'SELECT url'
+        if include_response: sql += ',response'
+        sql += ' FROM url_cache'
+        if order_matters: sql += ' ORDER BY url'
+        rows = self.__execute(sql)
+        return rows
     
     def add_other_list(self, section, username, slug, name=None):
         sql = 'REPLACE INTO other_lists (section, username, slug, name) VALUES (?, ?, ?, ?)'

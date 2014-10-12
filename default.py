@@ -69,10 +69,51 @@ def main_menu():
 
     _SALTS.add_directory({'mode': MODES.BROWSE, 'section': SECTIONS.MOVIES}, {'title': 'Movies'}, img=utils.art('movies.png'), fanart=utils.art('fanart.jpg'))
     _SALTS.add_directory({'mode': MODES.BROWSE, 'section': SECTIONS.TV}, {'title': 'TV Shows'}, img=utils.art('television.png'), fanart=utils.art('fanart.jpg'))
+    _SALTS.add_directory({'mode': MODES.SETTINGS}, {'title': 'Settings'}, img=utils.art('settings.png'), fanart=utils.art('fanart.jpg'))
+    xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=False)
+
+@url_dispatcher.register(MODES.SETTINGS)
+def settings_menu():
     _SALTS.add_directory({'mode': MODES.SCRAPERS}, {'title': 'Scraper Sort Order'}, img=utils.art('settings.png'), fanart=utils.art('fanart.jpg'))
     _SALTS.add_directory({'mode': MODES.RES_SETTINGS}, {'title': 'Url Resolver Settings'}, img=utils.art('settings.png'), fanart=utils.art('fanart.jpg'))
     _SALTS.add_directory({'mode': MODES.ADDON_SETTINGS}, {'title': 'Add-on Settings'}, img=utils.art('settings.png'), fanart=utils.art('fanart.jpg'))
-    xbmcplugin.endOfDirectory(int(sys.argv[1]), cacheToDisc=False)
+    _SALTS.add_directory({'mode': MODES.SHOW_VIEWS}, {'title': 'Set Default Views'}, img=utils.art('settings.png'), fanart=utils.art('fanart.jpg'))
+    _SALTS.add_directory({'mode': MODES.BROWSE_URLS}, {'title': 'Remove Cached Url(s)'}, img=utils.art('settings.png'), fanart=utils.art('fanart.jpg'))
+    xbmcplugin.endOfDirectory(int(sys.argv[1]))
+
+@url_dispatcher.register(MODES.SHOW_VIEWS)
+def show_views():
+    for content_type in ['movies', 'tvshows', 'seasons', 'episodes']:
+        _SALTS.add_directory({'mode': MODES.BROWSE_VIEW, 'content_type': content_type}, {'title': 'Set Default %s View' % (content_type.capitalize())}, img=utils.art('settings.png'), fanart=utils.art('fanart.jpg'))
+    xbmcplugin.endOfDirectory(int(sys.argv[1]))
+
+@url_dispatcher.register(MODES.BROWSE_VIEW, ['content_type'])
+def browse_view(content_type):
+    _SALTS.add_directory({'mode': MODES.SET_VIEW, 'content_type': content_type}, {'title': 'Set a view then select this item to set the default %s view' % (content_type.capitalize())}, img=utils.art('settings.png'), fanart=utils.art('fanart.jpg'))
+    utils.set_view(content_type, False)
+    xbmcplugin.endOfDirectory(int(sys.argv[1]))
+
+@url_dispatcher.register(MODES.SET_VIEW, ['content_type'])
+def set_default_view(content_type):
+    current_view = utils.get_current_view()
+    if current_view:
+        _SALTS.set_setting('%s_view' % (content_type), current_view)
+        view_name = xbmc.getInfoLabel('Container.Viewmode')
+        builtin = "XBMC.Notification(Import,%s View Set to: %s,2000, %s)" % (content_type.capitalize(), view_name, ICON_PATH)
+        xbmc.executebuiltin(builtin)
+
+@url_dispatcher.register(MODES.BROWSE_URLS)
+def browse_urls():
+    urls = db_connection.get_all_urls(order_matters=True)
+    _SALTS.add_directory({'mode': MODES.FLUSH_CACHE}, {'title': '***Delete [B][COLOR red]ENTIRE[/COLOR][/B] Url Cache***'}, img=utils.art('settings.png'), fanart=utils.art('fanart.jpg'))
+    for url in urls:
+        _SALTS.add_directory({'mode': MODES.DELETE_URL, 'url': url[0]}, {'title': url[0]}, img=utils.art('settings.png'), fanart=utils.art('fanart.jpg'))
+    xbmcplugin.endOfDirectory(int(sys.argv[1]))
+        
+@url_dispatcher.register(MODES.DELETE_URL, ['url'])
+def delete_url(url):
+    db_connection.delete_cached_url(url)
+    xbmc.executebuiltin("XBMC.Container.Refresh")
 
 @url_dispatcher.register(MODES.RES_SETTINGS)
 def resolver_settings():
@@ -1179,7 +1220,7 @@ def clean_subs():
 def flush_cache():
     dlg = xbmcgui.Dialog()
     ln1 = 'Are you sure you want to delete the url cache?'
-    ln2 = 'This will slow things down until rebuilt'
+    ln2 = 'This will slow things down until all urls are re-cached'
     ln3 = ''
     yes = 'Keep'
     no = 'Delete'
@@ -1231,15 +1272,6 @@ def import_db():
         builtin = "XBMC.Notification(Import,Import Failed,2000, %s)" % (ICON_PATH)
         xbmc.executebuiltin(builtin)
         raise
-
-@url_dispatcher.register(MODES.SET_VIEW, ['content_type'])
-def set_default_view(content_type):
-    current_view = utils.get_current_view()
-    if current_view:
-        _SALTS.set_setting('%s_view' % (content_type), current_view)
-        view_name = xbmc.getInfoLabel('Container.Viewmode')
-        builtin = "XBMC.Notification(Import,%s View Set to: %s,2000, %s)" % (content_type.capitalize(), view_name, ICON_PATH)
-        xbmc.executebuiltin(builtin)
 
 @url_dispatcher.register(MODES.ADD_TO_LIBRARY, ['video_type', 'title', 'year', 'slug'])
 def add_to_library(video_type, title, year, slug):
@@ -1528,8 +1560,6 @@ def make_episode_item(show, episode, fanart, show_subs=True, menu_items=None):
         queries.update(show_id)
         menu_items.append((label, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
 
-    queries = {'mode': MODES.SET_VIEW, 'content_type': CONTENT_TYPES.EPISODES}
-    menu_items.append(('Set as Episode View', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
     queries = {'mode': MODES.SET_URL_SEARCH, 'video_type': VIDEO_TYPES.TVSHOW, 'title': show['title'], 'year': show['year'], 'slug': trakt_api.get_slug(show['url'])}
     menu_items.append(('Set Related Show Url (Search)', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
     queries = {'mode': MODES.SET_URL_MANUAL, 'video_type': VIDEO_TYPES.EPISODE, 'title': show['title'], 'year': show['year'], 'season': episode['season'], 
@@ -1623,8 +1653,6 @@ def make_item(section_params, show, menu_items=None):
         runstring = 'RunPlugin(%s)' % _SALTS.build_plugin_url(queries)
         menu_items.append((label, runstring,))
 
-    queries = {'mode': MODES.SET_VIEW, 'content_type': section_params['content_type']}
-    menu_items.append(('Set as %s View' % (section_params['content_type'].capitalize()), 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
     queries = {'mode': MODES.SET_URL_SEARCH, 'video_type': section_params['video_type'], 'title': show['title'], 'year': show['year'], 'slug': slug}
     menu_items.append(('Set Related Url (Search)', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
     queries = {'mode': MODES.SET_URL_MANUAL, 'video_type': section_params['video_type'], 'title': show['title'], 'year': show['year'], 'slug': slug}
@@ -1636,7 +1664,6 @@ def make_item(section_params, show, menu_items=None):
 
     if len(menu_items)<10:
         menu_items.insert(0, ('Show Information', 'XBMC.Action(Info)'), )
-        
 
     liz.addContextMenuItems(menu_items, replaceItems=True)
  
