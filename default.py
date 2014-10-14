@@ -1282,6 +1282,7 @@ def add_to_library(video_type, title, year, slug):
         show = trakt_api.get_show_details(slug)
         show['title'] = re.sub(' \(\d{4}\)$','',show['title']) # strip off year if it's part of show title
         seasons = trakt_api.get_seasons(slug)
+        include_unknown = _SALTS.get_setting('include_unknown')=='true'
 
         if not seasons:
             log_utils.log('No Seasons found for %s (%s)' % (show['title'], show['year']), xbmc.LOGERROR)
@@ -1294,10 +1295,10 @@ def add_to_library(video_type, title, year, slug):
                     if utils.show_requires_source(slug):
                         require_source=True
                     else:
-                        if utils.iso_2_utc(episode['first_aired_iso'])>time.time():
-                            continue
+                        if include_unknown or (episode['first_aired_iso']!=None and utils.iso_2_utc(episode['first_aired_iso'])<=time.time()):
+                            require_source = False
                         else:
-                            require_source=False
+                            continue
                     
                     ep_num = episode['episode']
                     filename = utils.filename_from_title(show['title'], video_type)
