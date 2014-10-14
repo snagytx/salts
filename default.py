@@ -805,6 +805,7 @@ def play_source(hoster_url, video_type, slug, season='', episode=''):
             xbmc.executebuiltin(builtin % (_SALTS.get_name(), hoster_url, ICON_PATH))
             return False
 
+    return False
     resume = False
     resume_point = 0
     if db_connection.bookmark_exists(slug, season, episode):
@@ -858,6 +859,8 @@ def auto_play_sources(hosters, video_type, slug, season, episode):
         log_utils.log('Auto Playing: %s' % (hoster_url), xbmc.LOGDEBUG)
         if play_source(hoster_url, video_type, slug, season, episode):
             return True
+    else:
+        log_utils.log('All sources failed to play', xbmc.LOGERROR)
 
 def pick_source_dialog(hosters):
     for item in hosters:
