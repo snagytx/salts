@@ -849,30 +849,15 @@ def play_source(hoster_url, video_type, slug, season='', episode=''):
     return True
 
 def auto_play_sources(hosters, video_type, slug, season, episode):
-    dlg = xbmcgui.DialogProgress()
-    line1 = 'Trying Source: '
-    dlg.create('Stream All The Sources')
-    total = len(hosters)
-    while not dlg.iscanceled() and not xbmc.abortRequested:
-        for i, item in enumerate(hosters):
-            if dlg.iscanceled(): return
-            # TODO: Skip multiple sources for now
-            if item['multi-part']:
-                continue
-    
-            percent = int((i * 100) / total)
-            label = item['class'].format_source_label(item)
-            dlg.update(percent, '', line1 + label)
-            hoster_url=item['class'].resolve_link(item['url'])
-            log_utils.log('Auto Playing: %s' % (hoster_url), xbmc.LOGDEBUG)
-            if play_source(hoster_url, video_type, slug, season, episode):
-                return True
-            
-            dlg.update(percent, 'Playback Failed: %s' % (label), line1 + label)
-        else:
-            log_utils.log('All sources failed to play', xbmc.LOGERROR)
-            dlg.close()
-            _SALTS.show_ok_dialog(['All Sources Failed to Play'], title='Stream All The Sources')
+    for item in hosters:
+        # TODO: Skip multiple sources for now
+        if item['multi-part']:
+            continue
+
+        hoster_url=item['class'].resolve_link(item['url'])
+        log_utils.log('Auto Playing: %s' % (hoster_url), xbmc.LOGDEBUG)
+        if play_source(hoster_url, video_type, slug, season, episode):
+            return True
 
 def pick_source_dialog(hosters):
     for item in hosters:
@@ -1583,8 +1568,6 @@ def make_episode_item(show, episode, fanart, show_subs=True, menu_items=None):
     menu_items.append(('Set Related Url (Manual)', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
  
     liz.addContextMenuItems(menu_items, replaceItems=True)
-    liz.setProperty('resumetime',str(0))
-    liz.setProperty('totaltime',str(1))
     return liz, liz_url
 
 def make_item(section_params, show, menu_items=None):
