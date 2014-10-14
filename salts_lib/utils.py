@@ -200,6 +200,7 @@ def make_info(item, show=''):
     if 'tvdb_id' in show: info['tvdb_id']=show['tvdb_id']
     if 'runtime' in show: info['duration']=show['runtime']
     if 'title' in show: info['tvshowtitle']=show['title']
+    if 'network' in show: info['studio']=show['network']
     if 'people' in show: info['cast']=[actor['name'] for actor in show['people']['actors'] if actor['name']]
     if 'people' in show: info['castandrole']=['%s as %s' % (actor['name'],actor['character']) for actor in show['people']['actors'] if actor['name'] and actor['character']]
     return info

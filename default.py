@@ -801,16 +801,15 @@ def play_source(hoster_url, video_type, slug, season='', episode=''):
     else:
         stream_url = hmf.resolve()
         if not stream_url or not isinstance(stream_url, basestring):
-            builtin = 'XBMC.Notification(%s,Could not Resolve Url: %s, 5000, %s)'
-            xbmc.executebuiltin(builtin % (_SALTS.get_name(), hoster_url, ICON_PATH))
+            # commenting out as it hides urlresolver notifications
+            #builtin = 'XBMC.Notification(%s,Could not Resolve Url: %s, 5000, %s)'
+            #xbmc.executebuiltin(builtin % (_SALTS.get_name(), hoster_url, ICON_PATH))
             return False
 
-    return False
-    resume = False
     resume_point = 0
     if db_connection.bookmark_exists(slug, season, episode):
-        resume = utils.get_resume_choice(slug, season, episode)
-        if resume: resume_point = db_connection.get_bookmark(slug, season, episode)
+        if utils.get_resume_choice(slug, season, episode):
+            resume_point = db_connection.get_bookmark(slug, season, episode)
         
     try:
         win = xbmcgui.Window(10000)
@@ -860,7 +859,10 @@ def auto_play_sources(hosters, video_type, slug, season, episode):
         if play_source(hoster_url, video_type, slug, season, episode):
             return True
     else:
-        log_utils.log('All sources failed to play', xbmc.LOGERROR)
+        msg = 'All sources failed to play'
+        log_utils.log(msg, xbmc.LOGERROR)
+        builtin = 'XBMC.Notification(%s,%s, 5000, %s)'
+        xbmc.executebuiltin(builtin % (_SALTS.get_name(), msg, ICON_PATH))
 
 def pick_source_dialog(hosters):
     for item in hosters:
