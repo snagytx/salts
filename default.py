@@ -914,7 +914,7 @@ def set_related_url(mode, video_type, title, year, slug, season='', episode='', 
     if utils.P_MODE != P_MODES.NONE: q = utils.Queue()
     begin = time.time()
     video=ScraperVideo(video_type, title, year, slug, season, episode, ep_title)
-    for cls in utils.relevant_scrapers(video_type):
+    for cls in utils.relevant_scrapers(video_type, order_matters=True):
         if utils.P_MODE == P_MODES.NONE:
             related={}
             related['class']=cls(max_timeout)
