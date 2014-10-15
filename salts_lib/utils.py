@@ -134,8 +134,8 @@ def make_art(show, fanart=''):
     return art_dict
 
 def make_info(item, show=''):
-    log_utils.log('Making Info: Show: %s' % (show), xbmc.LOGDEBUG)
-    log_utils.log('Making Info: Item: %s' % (item), xbmc.LOGDEBUG)
+    #log_utils.log('Making Info: Show: %s' % (show), xbmc.LOGDEBUG)
+    #log_utils.log('Making Info: Item: %s' % (item), xbmc.LOGDEBUG)
     info={}
     info['title']=item['title']
     if 'overview' in item: info['plot']=info['plotoutline']=item['overview']
