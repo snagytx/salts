@@ -822,7 +822,10 @@ def play_source(hoster_url, video_type, slug, season='', episode=''):
         if video_type == VIDEO_TYPES.EPISODE:
             details = trakt_api.get_episode_details(slug, season, episode)
             info = utils.make_info(details['episode'], details['show'])
-            art=utils.make_art(details['episode'], details['show']['images']['fanart'])
+            show={}
+            show['images']=details['show']['images']
+            show['images'].update(details['episode']['images'])
+            art=utils.make_art(show)
         else:
             item = trakt_api.get_movie_details(slug)
             info = utils.make_info(item)
