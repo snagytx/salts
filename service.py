@@ -69,13 +69,13 @@ class Service(xbmc.Player):
 
         self._totalTime=0
         while self._totalTime == 0:
-            xbmc.sleep(1000)
             try: 
                 self._totalTime = self.getTotalTime()
             except RuntimeError:
                 self._totalTime = 0
                 break
             log_utils.log("Total Time: %s" % (self._totalTime), xbmc.LOGDEBUG)
+            xbmc.sleep(1000)
 
     def onPlayBackStopped(self):
         log_utils.log('Service: Playback Stopped')
