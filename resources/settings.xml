@@ -306,6 +306,12 @@
          <setting id="SolarMovie_try" type="number" default="0" visible="false"/>
          <setting id="SolarMovie_fail" type="number" default="0" visible="false"/>
          <setting id="SolarMovie_check" type="number" default="0" visible="false"/>
+         <setting id="VKBox-enable" type="bool" label="VKBox Enabled" default="true" visible="true"/>
+         <setting id="VKBox-base_url" type="text" label="     Base Url" default="http://mobapps.cc" visible="eq(-1,true)"/>
+         <setting id="VKBox-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>
+         <setting id="VKBox_try" type="number" default="0" visible="false"/>
+         <setting id="VKBox_fail" type="number" default="0" visible="false"/>
+         <setting id="VKBox_check" type="number" default="0" visible="false"/>
     </category>
 	
     <category label="Subtitles">
