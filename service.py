@@ -23,6 +23,8 @@ from salts_lib import utils
 from salts_lib.constants import MODES
 from salts_lib.db_utils import DB_Connection
 
+MAX_ERRORS = 10
+
 ADDON = xbmcaddon.Addon(id='plugin.video.salts')
 log_utils.log('Service: Installed Version: %s' % (ADDON.getAddonInfo('version')))
 
@@ -104,11 +106,22 @@ class Service(xbmc.Player):
 monitor = Service()
 utils.do_startup_task(MODES.UPDATE_SUBS)
 
+errors=0
 while not xbmc.abortRequested:
-    isPlaying = monitor.isPlaying()
-    utils.do_scheduled_task(MODES.UPDATE_SUBS, isPlaying)
-    if monitor.tracked and monitor.isPlayingVideo():
-        monitor._lastPos = monitor.getTime()
+    try:
+        isPlaying = monitor.isPlaying()
+        utils.do_scheduled_task(MODES.UPDATE_SUBS, isPlaying)
+        if monitor.tracked and monitor.isPlayingVideo():
+            monitor._lastPos = monitor.getTime()
+    except Exception as e:
+        errors += 1
+        if errors >= MAX_ERRORS:
+            log_utils.log('Service: Error (%s) received..(%s/%s)...Ending Service...' % (e, errors, MAX_ERRORS), xbmc.LOGERROR)
+            break
+        else:
+            log_utils.log('Service: Error (%s) received..(%s/%s)...Continuing Service...' % (e, errors, MAX_ERRORS), xbmc.LOGERROR)
+    else:
+        errors=0
 
     xbmc.sleep(1000)
 log_utils.log('Service: shutting down...')
