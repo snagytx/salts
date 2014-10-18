@@ -484,15 +484,26 @@ def make_day(date):
     today=datetime.date.today()
     day_diff = (date - today).days
     if day_diff == -1:
-        date='Yesterday'
+        date='YDA'
     elif day_diff == 0:
-        date='Today'
+        date='TDA'
     elif day_diff == 1:
-        date='Tomorrow'
+        date='TOM'
     elif day_diff > 1 and day_diff < 7:
-        date = date.strftime('%A')
+        date = date.strftime('%a')
 
     return date
+
+def make_time(utc_ts):
+    local_time = time.localtime(utc_ts)
+    if ADDON.get_setting('calendar_time')=='1':
+        time_format = '%H:%M'
+        time_str = time.strftime(time_format, local_time)
+    else:
+        time_format = '%I%p' if local_time.tm_min == 0 else '%I:%M%p'
+        time_str = time.strftime(time_format, local_time)
+        if time_str[0] == '0': time_str = time_str[1:]
+    return time_str
 
 def iso_2_utc(iso_ts):
     if not iso_ts or iso_ts is None: return 0

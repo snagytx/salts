@@ -67,10 +67,10 @@ class Shush_Scraper(scraper.Scraper):
                 if proxy_link.startswith('http'):
                     xml_link = swf_link + 'pluginslist.xml'
                     html = self._http_get(xml_link, cache_limit=0)
-                    match = re.search('url="(.*?)n.swf', html)
+                    match = re.search('url="(.*?)l.swf', html)
                     if match:
                         player_url = match.group(1)
-                        url = swf_link + player_url + 'plugins_player.php'
+                        url = urlparse.urljoin(swf_link, player_url) + 'plugins_player.php'
                         data = {'url': proxy_link, 'isslverify': 'true', 'ihttpheader': 'true', 'iheader': 'true', 'iagent': USER_AGENT}
                         html = self._http_get(url, data=data, cache_limit=0)
                         if 'fmt_stream_map' in html:

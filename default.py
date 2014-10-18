@@ -1179,8 +1179,9 @@ def update_subscriptions():
     if _SALTS.get_setting(MODES.UPDATE_SUBS+'-notify')=='true':
         builtin = "XBMC.Notification(%s,Subscriptions Updated, 2000, %s)" % (_SALTS.get_name(), ICON_PATH)
         xbmc.executebuiltin(builtin)
-        builtin = "XBMC.Notification(%s,Next Update in %0.1f hours,5000, %s)" % (_SALTS.get_name(), float(_SALTS.get_setting(MODES.UPDATE_SUBS+'-interval')), ICON_PATH)
-        xbmc.executebuiltin(builtin)
+        if _SALTS.get_setting('auto-'+MODES.UPDATE_SUBS)=='true':
+            builtin = "XBMC.Notification(%s,Next Update in %0.1f hours,5000, %s)" % (_SALTS.get_name(), float(_SALTS.get_setting(MODES.UPDATE_SUBS+'-interval')), ICON_PATH)
+            xbmc.executebuiltin(builtin)
     xbmc.executebuiltin("XBMC.Container.Refresh")
     
 def update_strms(section):
@@ -1449,6 +1450,11 @@ def make_dir_from_cal(mode, start_date, days):
             show=episode_elem['show']
             episode=episode_elem['episode']
             fanart=show['images']['fanart']
+            if _SALTS.get_setting('calendar_time')!='0':
+                local_time = utils.make_time(utils.iso_2_utc(episode['first_aired_iso']))
+                date_time = '%s@%s' % (date,local_time)
+            else:
+                date_time = date
 
             menu_items=[]
             queries = {'mode': MODES.SEASONS, 'slug': trakt_api.get_slug(show['url']), 'fanart': fanart}
@@ -1456,7 +1462,7 @@ def make_dir_from_cal(mode, start_date, days):
 
             liz, liz_url =make_episode_item(show, episode, fanart, show_subs=False, menu_items=menu_items)
             label=liz.getLabel()
-            label = '[[COLOR deeppink]%s[/COLOR]] %s - %s' % (date, show['title'], label.decode('utf-8', 'replace'))
+            label = '[[COLOR deeppink]%s[/COLOR]] %s - %s' % (date_time, show['title'], label.decode('utf-8', 'replace'))
             if episode['season']==1 and episode['number']==1:
                 label = '[COLOR green]%s[/COLOR]' % (label)
             liz.setLabel(label)
