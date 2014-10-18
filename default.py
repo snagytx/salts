@@ -826,10 +826,13 @@ def play_source(hoster_url, video_type, slug, season='', episode=''):
             show['images']=details['show']['images']
             show['images'].update(details['episode']['images'])
             art=utils.make_art(show)
+            filename = utils.filename_from_title(details['show']['title'], VIDEO_TYPES.TVSHOW)
+            filename = filename % ('%02d' % int(season), '%02d' % int(episode))
         else:
             item = trakt_api.get_movie_details(slug)
             info = utils.make_info(item)
             art=utils.make_art(item)
+            filename = utils.filename_from_title(item['title'], video_type, item['year'])
     except TransientTraktError as e:
         log_utils.log('During Playback: %s' % (str(e)), xbmc.LOGWARNING) # just log warning if trakt calls fail and leave meta and art blank
     

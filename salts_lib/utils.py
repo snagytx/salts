@@ -11,6 +11,9 @@ import xbmcvfs
 import log_utils
 import sys
 import hashlib
+import urlparse
+import shutil
+import urllib
 from constants import *
 from scrapers import * # import all scrapers into this namespace
 from addon.common.addon import Addon
@@ -733,3 +736,39 @@ def format_time(seconds):
         return "%02d:%02d:%02d" % (hours, minutes, seconds)
     else:
         return "%02d:%02d" % (minutes, seconds)
+
+def download_media(url, file_name):
+    try:
+        import urllib2
+        request = urllib2.Request(url)
+        request.add_header('User-Agent', USER_AGENT)
+        request.add_unredirected_header('Host', request.get_host())
+        request.add_unredirected_header('Referer', url)
+        response = urllib2.urlopen(request)
+        file_name = file_name.replace('.strm', get_extension(url, response))
+        log_utils.log('Downloading: %s -> %s' % (url, file_name), xbmc.LOGDEBUG)
+        file_desc = xbmcvfs.File(file_name, 'w')
+        shutil.copyfileobj(response, file_desc)
+        file_desc.close()
+    except Exception as e:
+        msg = 'Error (%s) during download: %s' % (str(e), file_name)
+        log_utils.log(msg, xbmc.LOGERROR)
+        builtin = 'XBMC.Notification(%s,%s, 5000, %s)'
+        xbmc.executebuiltin(builtin % (ADDON.get_name(), msg, ICON_PATH))
+
+def get_extension(url, response):
+    filename = url2name(url)
+    if 'Content-Disposition' in response.info():
+        cd_list = response.info()['Content-Disposition'].split('filename=')
+        if len(cd_list)>1:
+            filename = cd_list[-1]
+            if filename[0] == '"' or filename[0] == "'":
+                filename = filename[1:-1]
+    elif response.url != url: 
+        filename = url2name(response.url)
+    ext=os.path.splitext(filename)[1]
+    if not ext: ext = DEFAULT_EXT
+    return ext
+    
+def url2name(url):
+    return os.path.basename(urllib.unquote(urlparse.urlsplit(url)[2]))

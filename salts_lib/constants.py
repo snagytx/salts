@@ -44,6 +44,7 @@ COLLECTION_SLUG='collection_slug'
 REM_COLL_LABEL='Remove from Collection'
 USER_AGENT = ("Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:32.0) Gecko/20100101 Firefox/32.0")
 SEARCH_HISTORY = 10
+DEFAULT_EXT = '.mpg'
 
 # sort keys need to be defined such that "best" have highest values
 # unknown (i.e. None) is always worst
