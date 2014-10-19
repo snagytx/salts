@@ -1,3 +1,12 @@
+[B]Version 0.0.33[/B]
+- Added vkbox scraper
+- More shush.se annoyance
+- Add option to show time to calendar views
+- Add option to download streams
+- Fix bookmarks when timeplayed >0 but <1
+- New Iconic fanart
+- Add option to remove Season 0 from Seasons View
+
 [B]Version 0.0.32[/B]
 - Sort Set Related Url by scraper sort order
 - Add retry on mysql error
