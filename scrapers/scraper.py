@@ -212,8 +212,9 @@ class Scraper(object):
                 settings[i]=settings[i].replace('default="true"', 'default="false"')
         return settings
         
-    def _cached_http_get(self, url, base_url, timeout, cookies=None, data=None, cache_limit=8):
+    def _cached_http_get(self, url, base_url, timeout, cookies=None, data=None, user_agent=None, cache_limit=8):
         if cookies is None: cookies={}
+        if user_agent is None: user_agent = USER_AGENT
         log_utils.log('Getting Url: %s cookie=|%s| data=|%s|' % (url, cookies, data))
         db_connection = DB_Connection()
         _, html = db_connection.get_cached_url(url, cache_limit)
@@ -225,7 +226,7 @@ class Scraper(object):
             cj = self._set_cookies(base_url, cookies)
             if data is not None: data=urllib.urlencode(data, True)    
             request = urllib2.Request(url, data=data)
-            request.add_header('User-Agent', USER_AGENT)
+            request.add_header('User-Agent', user_agent)
             request.add_unredirected_header('Host', request.get_host())
             request.add_unredirected_header('Referer', url)
             response = urllib2.urlopen(request, timeout=timeout)
