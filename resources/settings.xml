@@ -6,6 +6,7 @@
 		<setting id="calendar_time" type="enum" label="Show air time on calendars" default="0" values="Off|24 Hour|12 Hour"/>
 	    <setting id="sort_progress" type="enum" label="My Next Episodes Sort Order" values="Activity|Title|Most Completed|Least Completed|Recently Aired|Previously Aired" default="0"/>
 	    <setting id="show_unaired_next" type="bool" label="Show unaired episodes in My Next Episodes" default="false"/>
+		<setting id="show_season0" type="bool" label="Show Season 0 in Seasons View" default="true"/>
 	    <setting id="show_unaired" type="bool" label="Show unaired episodes in Seasons" default="true"/>
 	    <setting id="unaired_indicator" type="bool" label="     Show an Indicator on Unaired Episodes" default="true" enable="eq(-1,true)"/>
 	    <setting id="show_unknown" type="bool" label="     Show episodes with unknown air date" default="true" enable="eq(-2,false)"/>
@@ -71,6 +72,9 @@
 	<category label="Source Management">
         <setting id="auto-play" type="bool" label="Auto-Play Sources" default="false"/>
 		<setting id="source-win" type="labelenum" label="     Source Selection Method" values="Directory|Dialog" default="Dialog"/>		
+		<setting id="show_download" type="bool" label="Show Download Option" default="false"/>
+	    <setting id="download-folder" type="folder" label="     Download Folder"
+	             default="special://userdata/addon_data/plugin.video.salts/Download" enable="eq(-1,true)"/>
 		<setting id="source_timeout" type="slider" label="Scraper Timeout (seconds) (0=No Limit)" default="10" range="0,120" option="int"/>
 		<setting id="source_results" type="number" label="Maximum Source Results (0=No Limit)" default="0"/>
 		<setting id="filter_unusable" type="number" label="Filter Top Unusable Sources (0=None)" default="50"/>

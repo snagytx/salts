@@ -624,10 +624,11 @@ def browse_seasons(slug, fanart):
             info = utils.make_seasons_info(progress[0])
     totalItems=len(seasons)
     for season in reversed(seasons):
-        liz=make_season_item(season, info.get(str(season['season']), {'season': season['season']}), fanart)
-        queries = {'mode': MODES.EPISODES, 'slug': slug, 'season': season['season'], 'fanart': fanart}
-        liz_url = _SALTS.build_plugin_url(queries)
-        xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz,isFolder=True,totalItems=totalItems)
+        if _SALTS.get_setting('show_season0') == 'true' or season['season'] != 0:
+            liz=make_season_item(season, info.get(str(season['season']), {'season': season['season']}), fanart)
+            queries = {'mode': MODES.EPISODES, 'slug': slug, 'season': season['season'], 'fanart': fanart}
+            liz_url = _SALTS.build_plugin_url(queries)
+            xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz,isFolder=True,totalItems=totalItems)
     utils.set_view(CONTENT_TYPES.SEASONS, False)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
@@ -648,6 +649,7 @@ def browse_episodes(slug, season, fanart):
 
 @url_dispatcher.register(MODES.GET_SOURCES, ['mode', 'video_type', 'title', 'year', 'slug'], ['season', 'episode', 'ep_title', 'dialog'])
 @url_dispatcher.register(MODES.SELECT_SOURCE, ['mode', 'video_type', 'title', 'year', 'slug'], ['season', 'episode', 'ep_title'])
+@url_dispatcher.register(MODES.DOWNLOAD_SOURCE, ['mode', 'video_type', 'title', 'year', 'slug'], ['season', 'episode', 'ep_title'])
 def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_title='', dialog=None):
     timeout = max_timeout = int(_SALTS.get_setting('source_timeout'))
     if max_timeout == 0: timeout=None
@@ -727,14 +729,14 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
         hosters = filter_unusable_hosters(hosters)
         
         pseudo_tv = xbmcgui.Window(10000).getProperty('PseudoTVRunning')
-        if pseudo_tv=='True' or (mode!=MODES.SELECT_SOURCE and _SALTS.get_setting('auto-play')=='true'):
+        if pseudo_tv=='True' or (mode == MODES.GET_SOURCES and _SALTS.get_setting('auto-play')=='true'):
             auto_play_sources(hosters, video_type, slug, season, episode)
         else:
             if dialog or (dialog is None and _SALTS.get_setting('source-win') == 'Dialog'):
                 stream_url = pick_source_dialog(hosters)
-                return play_source(stream_url, video_type, slug, season, episode)
+                return play_source(mode, stream_url, video_type, slug, season, episode)
             else:
-                pick_source_dir(hosters, video_type, slug, season, episode)
+                pick_source_dir(mode, hosters, video_type, slug, season, episode)
     finally:
         utils.reap_workers(workers, None)
 
@@ -750,8 +752,9 @@ def filter_unusable_hosters(hosters):
         filtered_hosters.append(hoster)
     return filtered_hosters
     
-@url_dispatcher.register(MODES.RESOLVE_SOURCE, ['class_url', 'video_type', 'slug', 'class_name'], ['season', 'episode'])
-def resolve_source(class_url, video_type, slug, class_name, season='', episode=''):
+@url_dispatcher.register(MODES.RESOLVE_SOURCE, ['mode', 'class_url', 'video_type', 'slug', 'class_name'], ['season', 'episode'])
+@url_dispatcher.register(MODES.DIRECT_DOWNLOAD, ['mode', 'class_url', 'video_type', 'slug', 'class_name'], ['season', 'episode'])
+def resolve_source(mode, class_url, video_type, slug, class_name, season='', episode=''):
     for cls in utils.relevant_scrapers(video_type):
         if cls.get_name() == class_name:
             scraper_instance=cls()
@@ -761,7 +764,9 @@ def resolve_source(class_url, video_type, slug, class_name, season='', episode='
         return False
         
     hoster_url = scraper_instance.resolve_link(class_url)
-    return play_source(hoster_url, video_type, slug, season, episode)
+    if mode == MODES.DIRECT_DOWNLOAD:
+        _SALTS.end_of_directory()
+    return play_source(mode, hoster_url, video_type, slug, season, episode)
 
 @url_dispatcher.register(MODES.PLAY_TRAILER,['stream_url'])
 def play_trailer(stream_url):
@@ -787,7 +792,7 @@ def download_subtitles(language, title, year, season, episode):
     if subs and index > -1:
         return srt_scraper.download_subtitle(subs[index]['url'])
     
-def play_source(hoster_url, video_type, slug, season='', episode=''):
+def play_source(mode, hoster_url, video_type, slug, season='', episode=''):
     global urlresolver
     import urlresolver
 
@@ -806,10 +811,11 @@ def play_source(hoster_url, video_type, slug, season='', episode=''):
             #xbmc.executebuiltin(builtin % (_SALTS.get_name(), hoster_url, ICON_PATH))
             return False
 
-    resume_point = 0
-    if db_connection.bookmark_exists(slug, season, episode):
-        if utils.get_resume_choice(slug, season, episode):
-            resume_point = db_connection.get_bookmark(slug, season, episode)
+    if mode not in [MODES.DOWNLOAD_SOURCE, MODES.DIRECT_DOWNLOAD]:
+        resume_point = 0
+        if db_connection.bookmark_exists(slug, season, episode):
+            if utils.get_resume_choice(slug, season, episode):
+                resume_point = db_connection.get_bookmark(slug, season, episode)
         
     try:
         win = xbmcgui.Window(10000)
@@ -826,15 +832,20 @@ def play_source(hoster_url, video_type, slug, season='', episode=''):
             show['images']=details['show']['images']
             show['images'].update(details['episode']['images'])
             art=utils.make_art(show)
-            filename = utils.filename_from_title(details['show']['title'], VIDEO_TYPES.TVSHOW)
-            filename = filename % ('%02d' % int(season), '%02d' % int(episode))
+            file_name = utils.filename_from_title(details['show']['title'], VIDEO_TYPES.TVSHOW)
+            file_name = file_name % ('%02d' % int(season), '%02d' % int(episode))
         else:
             item = trakt_api.get_movie_details(slug)
             info = utils.make_info(item)
             art=utils.make_art(item)
-            filename = utils.filename_from_title(item['title'], video_type, item['year'])
+            file_name = utils.filename_from_title(item['title'], video_type, item['year'])
     except TransientTraktError as e:
         log_utils.log('During Playback: %s' % (str(e)), xbmc.LOGWARNING) # just log warning if trakt calls fail and leave meta and art blank
+    
+    if mode in [MODES.DOWNLOAD_SOURCE, MODES.DIRECT_DOWNLOAD]:
+        path = _SALTS.get_setting('download-folder')
+        utils.download_media(stream_url, path, file_name)
+        return True
     
     if video_type == VIDEO_TYPES.EPISODE and utils.srt_download_enabled():
         srt_path = download_subtitles(_SALTS.get_setting('subtitle-lang'), details['show']['title'], details['show']['year'], season, episode)
@@ -891,7 +902,14 @@ def pick_source_dialog(hosters):
         except Exception as e:
             log_utils.log('Error (%s) while trying to resolve %s' % (str(e), hosters[index]['url']), xbmc.LOGERROR)
     
-def pick_source_dir(hosters, video_type, slug, season='', episode=''):
+def pick_source_dir(mode, hosters, video_type, slug, season='', episode=''):
+    if mode == MODES.DOWNLOAD_SOURCE:
+        next_mode = MODES.DIRECT_DOWNLOAD
+        folder = True
+    else:
+        next_mode = MODES.RESOLVE_SOURCE
+        folder = False
+
     for item in hosters:
         # TODO: Skip multiple sources for now
         if item['multi-part']:
@@ -904,8 +922,8 @@ def pick_source_dir(hosters, video_type, slug, season='', episode=''):
     hosters_len=len(hosters)
     for item in hosters:
         #log_utils.log(item, xbmc.LOGDEBUG)
-        queries={'mode': MODES.RESOLVE_SOURCE, 'class_url': item['url'], 'video_type': video_type, 'slug': slug, 'season': season, 'episode': episode, 'class_name': item['class'].get_name()}
-        _SALTS.add_directory(queries, infolabels={'title': item['label']}, is_folder=False, img='', fanart='', total_items=hosters_len)
+        queries={'mode': next_mode, 'class_url': item['url'], 'video_type': video_type, 'slug': slug, 'season': season, 'episode': episode, 'class_name': item['class'].get_name()}
+        _SALTS.add_directory(queries, infolabels={'title': item['label']}, is_folder=folder, img='', fanart='', total_items=hosters_len)
     
     _SALTS.end_of_directory()
 
@@ -1540,6 +1558,15 @@ def make_episode_item(show, episode, fanart, show_subs=True, menu_items=None):
             runstring = 'Container.Update(%s)' % _SALTS.build_plugin_url(queries)
         menu_items.insert(0, ('Select Source', runstring), )
         
+    if _SALTS.get_setting('show_download')=='true':
+        queries = {'mode': MODES.DOWNLOAD_SOURCE, 'video_type': VIDEO_TYPES.EPISODE, 'title': show['title'], 'year': show['year'], 'season': episode['season'], 'episode': episode_num, 
+                   'ep_title': episode['title'], 'slug': trakt_api.get_slug(show['url'])}
+        if _SALTS.get_setting('source-win')=='Dialog':
+            runstring = 'RunPlugin(%s)' % _SALTS.build_plugin_url(queries)
+        else:
+            runstring = 'Container.Update(%s)' % _SALTS.build_plugin_url(queries)
+        menu_items.append(('Download Source', runstring), )
+    
     if menu_items and menu_items[0][0]=='Select Source':
         menu_items.append(('Show Information', 'XBMC.Action(Info)'), )
     else:
@@ -1619,6 +1646,14 @@ def make_item(section_params, show, menu_items=None):
         else:
             runstring = 'Container.Update(%s)' % _SALTS.build_plugin_url(queries)
         menu_items.insert(0, ('Select Source', runstring), )
+
+    if section_params['next_mode']==MODES.GET_SOURCES and _SALTS.get_setting('show_download')=='true':
+        queries = {'mode': MODES.DOWNLOAD_SOURCE, 'video_type': section_params['video_type'], 'title': show['title'], 'year': show['year'], 'slug': slug}
+        if _SALTS.get_setting('source-win')=='Dialog':
+            runstring = 'RunPlugin(%s)' % _SALTS.build_plugin_url(queries)
+        else:
+            runstring = 'Container.Update(%s)' % _SALTS.build_plugin_url(queries)
+        menu_items.append(('Download Source', runstring), )
         
     if VALID_ACCOUNT:
         show_id=utils.show_id(show)
