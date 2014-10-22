@@ -60,17 +60,17 @@ class Shush_Scraper(scraper.Scraper):
         if source_url:
             url = urlparse.urljoin(self.base_url, source_url)
             html = self._http_get(url, cache_limit=.5)
-            match = re.search(',(http.*?proxy\.swf)&proxy\.link=([^&]+)', html)            
+            match = re.search('proxy\.link=([^&]+)', html)            
             if match:
-                swf_link, proxy_link = match.groups()
-                swf_link = swf_link.replace('proxy.swf', '')
+                proxy_link = match.group(1)
+                swf_link = 'http://player.shush.tv/core5245/'
                 if proxy_link.startswith('http'):
-                    xml_link = swf_link + 'pluginslist.xml'
+                    xml_link = swf_link + 'PEYaQUstabr.xml'
                     html = self._http_get(xml_link, cache_limit=0)
-                    match = re.search('url="(.*?)l.swf', html)
+                    match = re.search('url="(.*?)f.swf', html)
                     if match:
                         player_url = match.group(1)
-                        url = urlparse.urljoin(swf_link, player_url) + 'plugins_player.php'
+                        url = urlparse.urljoin(swf_link, player_url) + 'dERAmAnuTugasw.php'
                         data = {'url': proxy_link, 'isslverify': 'true', 'ihttpheader': 'true', 'iheader': 'true', 'iagent': USER_AGENT}
                         html = self._http_get(url, data=data, cache_limit=0)
                         if 'fmt_stream_map' in html:
