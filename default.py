@@ -1187,13 +1187,15 @@ def toggle_url_exists(slug):
 @url_dispatcher.register(MODES.UPDATE_SUBS)
 def update_subscriptions():
     log_utils.log('Updating Subscriptions', xbmc.LOGDEBUG)
+    dialog = None
     if _SALTS.get_setting(MODES.UPDATE_SUBS+'-notify')=='true':
-        builtin = "XBMC.Notification(%s,Subscription Update Started, 2000, %s)" % (_SALTS.get_name(), ICON_PATH)
-        xbmc.executebuiltin(builtin)
+        dialog = xbmcgui.DialogProgressBG()
+        dialog.create('Stream All The Sources', 'Updating Subscriptions...')
+        dialog.update(0)
 
-    update_strms(SECTIONS.TV)
+    update_strms(SECTIONS.TV, dialog)
     if _SALTS.get_setting('include_movies') == 'true':
-        update_strms(SECTIONS.MOVIES)
+        update_strms(SECTIONS.MOVIES, dialog)
     if _SALTS.get_setting('library-update') == 'true':
         xbmc.executebuiltin('UpdateLibrary(video)')
     if _SALTS.get_setting('cleanup-subscriptions') == 'true':
@@ -1203,14 +1205,13 @@ def update_subscriptions():
     db_connection.set_setting('%s-last_run' % MODES.UPDATE_SUBS, now.strftime("%Y-%m-%d %H:%M:%S.%f"))
 
     if _SALTS.get_setting(MODES.UPDATE_SUBS+'-notify')=='true':
-        builtin = "XBMC.Notification(%s,Subscriptions Updated, 2000, %s)" % (_SALTS.get_name(), ICON_PATH)
-        xbmc.executebuiltin(builtin)
+        dialog.close()
         if _SALTS.get_setting('auto-'+MODES.UPDATE_SUBS)=='true':
             builtin = "XBMC.Notification(%s,Next Update in %0.1f hours,5000, %s)" % (_SALTS.get_name(), float(_SALTS.get_setting(MODES.UPDATE_SUBS+'-interval')), ICON_PATH)
             xbmc.executebuiltin(builtin)
     xbmc.executebuiltin("XBMC.Container.Refresh")
     
-def update_strms(section):
+def update_strms(section, dialog=None):
     section_params = utils.get_section_params(section)
     slug=_SALTS.get_setting('%s_sub_slug' % (section))
     if not slug:
@@ -1220,7 +1221,11 @@ def update_strms(section):
     else:
         _, items = trakt_api.show_list(slug, section)
     
-    for item in items:
+    length=len(items)
+    for i, item in enumerate(items):
+        if dialog:
+            percent_progress = i*100 / length
+            dialog.update(percent_progress, 'Stream All The Sources', 'Updating %s: %s (%s)' % (section, re.sub(' \(\d{4}\)$','',item['title']), item['year']))
         add_to_library(section_params['video_type'], item['title'], item['year'], trakt_api.get_slug(item['url']))
 
 @url_dispatcher.register(MODES.CLEAN_SUBS)
