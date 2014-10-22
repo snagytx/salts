@@ -376,6 +376,8 @@ def browse_lists(section):
         menu_items.append(('Set as Favorites List', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
         queries={'mode': MODES.SET_SUB_LIST, 'slug': user_list['slug'], 'section': section}
         menu_items.append(('Set as Subscription List', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+        queries={'mode': MODES.COPY_LIST, 'slug': COLLECTION_SLUG, 'section': section, 'target_slug': user_list['slug']}
+        menu_items.append(('Import from Collection', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
         liz.addContextMenuItems(menu_items, replaceItems=True)
         
         xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz,isFolder=True,totalItems=totalItems)
@@ -1129,15 +1131,18 @@ def add_many_to_list(section, item, slug=None):
         response=trakt_api.add_to_list(slug, item)
     return response
     
-@url_dispatcher.register(MODES.COPY_LIST, ['section', 'slug', 'username'])
-def copy_list(section, slug, username):
-    _, items = trakt_api.show_list(slug, section, username)
+@url_dispatcher.register(MODES.COPY_LIST, ['section', 'slug'], ['username', 'target_slug'])
+def copy_list(section, slug, username=None, target_slug=None):
+    if slug == COLLECTION_SLUG:
+        items = trakt_api.get_collection(section)
+    else:
+        _, items = trakt_api.show_list(slug, section, username)
     copy_items=[]
     for item in items:
         query=utils.show_id(item)
         copy_item={'type': TRAKT_SECTIONS[section][:-1], query['id_type']: query['show_id']}
         copy_items.append(copy_item)
-    response=add_many_to_list(section, copy_items)
+    response=add_many_to_list(section, copy_items, target_slug)
     builtin = "XBMC.Notification(%s,List Copied: (A:%s/ E:%s/ S:%s), 5000, %s)" % (_SALTS.get_name(), response['inserted'], response['already_exist'], response['skipped'], ICON_PATH)
     xbmc.executebuiltin(builtin)
 
