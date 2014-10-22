@@ -670,6 +670,7 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
     if utils.P_MODE != P_MODES.NONE: q = utils.Queue()
     begin = time.time()
     fails={}
+    got_timeouts = False
     for cls in utils.relevant_scrapers(video_type):
         if utils.P_MODE == P_MODES.NONE:
             hosters += cls(max_timeout).get_sources(video)
@@ -698,6 +699,7 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
             except utils.Empty:
                 log_utils.log('Get Sources Process Timeout', xbmc.LOGWARNING)
                 utils.record_timeouts(fails)
+                got_timeouts=True
                 break
             
             if max_results> 0 and len(hosters) >= max_results:
@@ -705,13 +707,14 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
                 break
 
         else:
+            got_timeouts = False
             log_utils.log('All source results received')
         
     total = len(workers)
     timeouts = len(fails)
     workers=utils.reap_workers(workers)
     try:
-        timeout_msg = 'Scraper Timeouts: %s/%s' % (timeouts, total) if timeouts else ''
+        timeout_msg = 'Scraper Timeouts: %s/%s' % (timeouts, total) if got_timeouts and timeouts else ''
         if not hosters:
             log_utils.log('No Sources found for: |%s|' % (video))
             msg = ' (%s)' % timeout_msg if timeout_msg else ''
