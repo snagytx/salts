@@ -1538,8 +1538,11 @@ def make_episode_item(show, episode, fanart, show_subs=True, menu_items=None):
     if 'first_aired_iso' in episode: utc_air_time = utils.iso_2_utc(episode['first_aired_iso'])
     else: utc_air_time = utils.fa_2_utc(episode['first_aired'])
     
+    try: time_str = time.asctime(time.localtime(utc_air_time))
+    except: time_str = 'Unavailable'
+    
     log_utils.log('First Aired: Title: %s S/E: %s/%s fa: %s, utc: %s, local: %s' %
-                  (show['title'], episode['season'], episode_num, episode['first_aired'], utc_air_time, time.asctime(time.localtime(utc_air_time))), xbmc.LOGDEBUG)
+                  (show['title'], episode['season'], episode_num, episode['first_aired'], utc_air_time, time_str), xbmc.LOGDEBUG)
     if _SALTS.get_setting('unaired_indicator')=='true' and (not episode['first_aired'] or utc_air_time>time.time()):
         label = '[I][COLOR chocolate]%s[/COLOR][/I]' % (label)
     if show_subs and utils.srt_indicators_enabled():
