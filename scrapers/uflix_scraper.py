@@ -62,13 +62,11 @@ class UFlix_Scraper(scraper.Scraper):
             if match:
                 quality = QUALITY_MAP.get(match.group(1).upper())
                 
-            pattern='class="btn btn-primary".*?href="([^"]+).*?[^>]+> ([^<]+).*?fa-thumbs-o-up">\s+\((\d+)\).*?\((\d+)\)\s+<i class="fa fa-thumbs-o-down'
+            pattern='btn-primary".*?href="[^"]+url=([^&]+)&domain=([^&"]+).*?fa-thumbs-o-up">\s*\((\d+)\).*?\((\d+)\)\s*<i\s+class="fa fa-thumbs-o-down'
             for match in re.finditer(pattern, html, re.DOTALL | re.I):
                 url, host, up,down = match.groups()
-                match = re.search('url=([^&]+)&domain=([^&]+)', url)
-                if match:
-                    url=match.group(1).decode('base-64')
-                    host=match.group(2).decode('base-64').lower()
+                url=url.decode('base-64')
+                host=host.decode('base-64').lower()
                     
                 # skip ad match
                 if host.upper()=='HDSTREAM':
