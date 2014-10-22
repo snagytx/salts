@@ -739,6 +739,7 @@ def format_time(seconds):
 
 def download_media(url, path, file_name):
     try:
+        progress = int(ADDON.get_setting('down_progress'))
         import urllib2
         request = urllib2.Request(url)
         request.add_header('User-Agent', USER_AGENT)
@@ -755,25 +756,39 @@ def download_media(url, path, file_name):
         
         file_desc = xbmcvfs.File(full_path, 'w')
         total_len = 0
-        dialog = xbmcgui.DialogProgress()
-        dialog.create('Stream All The Sources', 'Downloading: %s...' % (file_name))
-        dialog.update(0)
+        if progress:
+            if progress == PROGRESS.WINDOW:
+                dialog = xbmcgui.DialogProgress()
+            else:
+                dialog = xbmcgui.DialogProgressBG()
+                
+            dialog.create('Stream All The Sources', 'Downloading: %s...' % (file_name))
+            dialog.update(0)
         while True:
             data = response.read(CHUNK_SIZE)
-            if not data or dialog.iscanceled(): break
+            if not data:
+                break
+            
+            if progress == PROGRESS.WINDOW and dialog.iscanceled():
+                break 
             
             total_len += len(data)
             file_desc.write(data)
             percent_progress = (total_len)*100/content_length if content_length>0 else 0
             log_utils.log('Position : %s / %s = %s%%' % (total_len, content_length, percent_progress), xbmc.LOGDEBUG)
-            dialog.update(percent_progress)
+            if progress == PROGRESS.WINDOW:
+                dialog.update(percent_progress)
+            elif progress == PROGRESS.BACKGROUND:
+                dialog.update(percent_progress, 'Stream All The Sources')
         else:
             builtin = 'XBMC.Notification(%s,Download Complete: %s, 5000, %s)'
             xbmc.executebuiltin(builtin % (ADDON.get_name(), file_name, ICON_PATH))
             log_utils.log('Download Complete: %s -> %s' % (url, full_path), xbmc.LOGDEBUG)
 
         file_desc.close()
-        dialog.close()
+        if progress:
+            dialog.close()
+            
     except Exception as e:
         msg = 'Error (%s) during download: %s' % (str(e), file_name)
         log_utils.log('Error (%s) during download: %s -> %s' % (str(e), url, file_name), xbmc.LOGERROR)

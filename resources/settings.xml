@@ -73,6 +73,7 @@
         <setting id="auto-play" type="bool" label="Auto-Play Sources" default="false"/>
 		<setting id="source-win" type="labelenum" label="     Source Selection Method" values="Directory|Dialog" default="Dialog"/>		
 		<setting id="show_download" type="bool" label="Show Download Option" default="false"/>
+		<setting id="down_progress" type="enum" label="     Show Download Progress" values="Off|Window|Background" default="1"/>
 	    <setting id="download-folder" type="folder" label="     Download Folder"
 	             default="special://userdata/addon_data/plugin.video.salts/Download" enable="eq(-1,true)"/>
 		<setting id="source_timeout" type="slider" label="Scraper Timeout (seconds) (0=No Limit)" default="10" range="0,120" option="int"/>

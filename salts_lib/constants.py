@@ -47,6 +47,7 @@ USER_AGENT = ("Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:32.0) Gecko/20100101 Fir
 SEARCH_HISTORY = 10
 DEFAULT_EXT = '.mpg'
 CHUNK_SIZE=512 * 1024
+PROGRESS = __enum(OFF=0, WINDOW=1, BACKGROUND=2)
 
 # sort keys need to be defined such that "best" have highest values
 # unknown (i.e. None) is always worst
