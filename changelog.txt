@@ -1,3 +1,13 @@
+[B]Version 0.0.35[/B]
+- Improve next run TS in Manage Subs
+- Fix download folder not being changeable
+- Fix negative time values on episodes for windows
+- Fix uflix scraper hang
+- Fix operational error catch for sqlite...I hope
+- Fix scraper timeouts when set to 0
+- Fix misleading timeout when max results reached
+- Removed old unused pysqlite2 library 
+
 [B]Version 0.0.34[/B]
 - Fix vkbox scraper
 - Add different progress options for download
