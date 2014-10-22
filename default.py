@@ -496,8 +496,15 @@ def manage_subscriptions(section):
     slug=_SALTS.get_setting('%s_sub_slug' % (section))
     if slug:
         next_run = utils.get_next_run(MODES.UPDATE_SUBS)
-        liz = xbmcgui.ListItem(label='Update Subscriptions: (Next Run: [COLOR green]%s[/COLOR])' % (next_run.strftime("%Y-%m-%d %H:%M:%S.%f")),
-                               iconImage=utils.art('update_subscriptions.png'), thumbnailImage=utils.art('update_subscriptions.png'))
+        label = 'Update Subscriptions: (Next Run: [COLOR %s]%s[/COLOR])'
+        if _SALTS.get_setting('auto-'+MODES.UPDATE_SUBS) == 'true':
+            color = 'green'
+            run_str = next_run.strftime("%Y-%m-%d %I:%M:%S %p")
+        else:
+            color = 'red'
+            run_str = 'DISABLED'
+        label = label % (color, run_str)
+        liz = xbmcgui.ListItem(label=label, iconImage=utils.art('update_subscriptions.png'), thumbnailImage=utils.art('update_subscriptions.png'))
         liz.setProperty('fanart_image', utils.art('fanart.jpg'))
         liz_url = _SALTS.build_plugin_url({'mode': MODES.UPDATE_SUBS, 'section': section})
         xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz, isFolder=False)    
