@@ -56,14 +56,9 @@ class DB_Connection():
                 log_utils.log('MySQL is enabled but not setup correctly', xbmc.LOGERROR)
                 raise ValueError('MySQL enabled but not setup correctly')
         else:
-            try:
-                from sqlite3 import dbapi2 as db_lib
-                from sqlite3 import OperationalError as OperationalError
-                log_utils.log('Loading sqlite3 as DB engine')
-            except:
-                from pysqlite2 import dbapi2 as db_lib
-                from pysqlite2 import OperationalError as OperationalError
-                log_utils.log('pysqlite2 as DB engine')
+            from sqlite3 import dbapi2 as db_lib
+            from sqlite3 import OperationalError as OperationalError
+            log_utils.log('Loading sqlite3 as DB engine')
             self.db_type = DB_TYPES.SQLITE
             db_dir = xbmc.translatePath("special://database")
             self.db_path = os.path.join(db_dir, 'saltscache.db')
@@ -381,8 +376,6 @@ class DB_Connection():
                     self.__connect_to_db()
                 else:
                     raise
-            except:
-                raise
 
     def __get_db_version(self):
         version=None
