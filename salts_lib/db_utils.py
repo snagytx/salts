@@ -37,6 +37,7 @@ _SALTS = Addon('plugin.video.salts')
 class DB_Connection():
     def __init__(self):
         global db_lib
+        global OperationalError
         self.dbname = _SALTS.get_setting('db_name')
         self.username = _SALTS.get_setting('db_user')
         self.password = _SALTS.get_setting('db_pass')
@@ -48,6 +49,7 @@ class DB_Connection():
             if self.address is not None and self.username is not None \
             and self.password is not None and self.dbname is not None:
                 import mysql.connector as db_lib
+                from mysql.connector import OperationalError as OperationalError
                 log_utils.log('Loading MySQL as DB engine')
                 self.db_type = DB_TYPES.MYSQL
             else:
@@ -56,9 +58,11 @@ class DB_Connection():
         else:
             try:
                 from sqlite3 import dbapi2 as db_lib
+                from sqlite3 import OperationalError as OperationalError
                 log_utils.log('Loading sqlite3 as DB engine')
             except:
                 from pysqlite2 import dbapi2 as db_lib
+                from pysqlite2 import OperationalError as OperationalError
                 log_utils.log('pysqlite2 as DB engine')
             self.db_type = DB_TYPES.SQLITE
             db_dir = xbmc.translatePath("special://database")
@@ -369,7 +373,7 @@ class DB_Connection():
                 cur.close()
                 self.db.commit()
                 return rows
-            except db_lib.errors.OperationalError:
+            except OperationalError:
                 if tries<MAX_TRIES:
                     tries += 1
                     log_utils.log('Retrying (%s/%s) SQL: %s' % (tries, MAX_TRIES, sql), xbmc.LOGWARNING)
@@ -377,6 +381,8 @@ class DB_Connection():
                     self.__connect_to_db()
                 else:
                     raise
+            except:
+                raise
 
     def __get_db_version(self):
         version=None

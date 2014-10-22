@@ -214,6 +214,7 @@ class Scraper(object):
         
     def _cached_http_get(self, url, base_url, timeout, cookies=None, data=None, user_agent=None, cache_limit=8):
         if cookies is None: cookies={}
+        if timeout == 0: timeout = None
         if user_agent is None: user_agent = USER_AGENT
         log_utils.log('Getting Url: %s cookie=|%s| data=|%s|' % (url, cookies, data))
         db_connection = DB_Connection()
