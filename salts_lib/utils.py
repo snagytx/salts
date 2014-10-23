@@ -30,6 +30,7 @@ SORT_FIELDS =  [(SORT_LIST[int(ADDON.get_setting('sort1_field'))], SORT_SIGNS[AD
 
 username=ADDON.get_setting('username')
 password=ADDON.get_setting('password')
+token = ADDON.get_setting('trakt_token')
 use_https=ADDON.get_setting('use_https')=='true'
 trakt_timeout=int(ADDON.get_setting('trakt_timeout'))
 
@@ -49,7 +50,7 @@ elif P_MODE == P_MODES.PROCESSES:
         builtin = 'XBMC.Notification(%s,Process Mode not supported on this platform falling back to Thread Mode, 7500, %s)'
         xbmc.executebuiltin(builtin % (ADDON.get_name(), ICON_PATH))
 
-trakt_api=Trakt_API(username,password, use_https, trakt_timeout)
+trakt_api=Trakt_API(username,password, token, use_https, trakt_timeout)
 db_connection=DB_Connection()
 
 THEME_LIST = ['Shine', 'Luna_Blue', 'Iconic']
@@ -77,15 +78,25 @@ def choose_list(username=None):
 
 def show_id(show):
     queries={}
-    if 'imdb_id' in show and show['imdb_id']:
-        queries['id_type']='imdb_id'
-        queries['show_id']=show['imdb_id']
-    elif 'tvdb_id' in show and show['tvdb_id']:
-        queries['id_type']='tvdb_id'
-        queries['show_id']=show['tvdb_id']
-    elif 'tmdb_id' in show and show['tmdb_id']:
-        queries['id_type']='tmdb_id'
-        queries['show_id']=show['tmdb_id']
+    ids = show['ids']
+    if 'slug' in ids and ids['slug']:
+        queries['id_type']='slug'
+        queries['show_id']=ids['slug']
+    if 'trakt' in ids and ids['trakt']:
+        queries['id_type']='trakt'
+        queries['show_id']=ids['trakt']
+    if 'imdb' in ids and ids['imdb']:
+        queries['id_type']='imdb'
+        queries['show_id']=ids['imdb']
+    elif 'tvdb' in ids and ids['tvdb']:
+        queries['id_type']='tvdb'
+        queries['show_id']=ids['tvdb']
+    elif 'tmdb' in ids and ids['tmdb']:
+        queries['id_type']='tmdb'
+        queries['show_id']=ids['tmdb']
+    elif 'tvrage' in ids and ids['tvrage']:
+        queries['id_type']='tvrage'
+        queries['show_id']=ids['tvrage']
     return queries
     
 def update_url(video_type, title, year, source, old_url, new_url, season, episode):
@@ -131,10 +142,12 @@ def make_art(show, fanart=''):
     if not fanart: fanart = art('fanart.jpg')
     art_dict={'banner': '', 'fanart': fanart, 'thumb': '', 'poster': ''}
     if 'images' in show:
-        if 'banner' in show['images']: art_dict['banner']=show['images']['banner']
-        if 'fanart' in show['images']: art_dict['fanart']=show['images']['fanart']
-        if 'poster' in show['images']: art_dict['thumb']=art_dict['poster']=show['images']['poster']
-        if 'screen' in show['images']: art_dict['thumb']=show['images']['screen']
+        images = show['images']
+        if 'banner' in images: art_dict['banner']=images['banner']['full']
+        if 'fanart' in images: art_dict['fanart']=images['fanart']['full']
+        if 'poster' in images: art_dict['thumb']=art_dict['poster']=images['poster']['full']
+        if 'thumb' in images: art_dict['thumb']=images['thumb']['full']
+        if 'screen' in images: art_dict['thumb']=images['screen']['full']
     return art_dict
 
 def make_info(item, show=''):
@@ -144,15 +157,22 @@ def make_info(item, show=''):
     info['title']=item['title']
     if 'overview' in item: info['plot']=info['plotoutline']=item['overview']
     if 'runtime' in item: info['duration']=item['runtime']
-    if 'imdb_id' in item: info['code']=info['imdbnumber']=info['imdb_id']=item['imdb_id']
-    if 'tmdb_id' in item: info['tmdb_id']=item['tmdb_id']
-    if 'tvdb_id' in item: info['tvdb_id']=item['tvdb_id']
+    if 'ids' in item:
+        ids=item['ids']
+        if 'imdb' in ids: info['code']=info['imdbnumber']=info['imdb_id']=ids['imdb']
+        if 'tmdb' in ids: info['tmdb_id']=ids['tmdb']
+        if 'tvdb' in ids: info['tvdb_id']=ids['tvdb']
+        if 'trakt' in ids: info['trakt_id']=ids['trakt']
     if 'certification' in item: info['mpaa']=item['certification']
     if 'year' in item: info['year']=item['year']
-    if 'season' in item: info['season']=item['season']
-    if 'episode' in item: info['episode']=item['episode']
-    if 'number' in item: info['episode']=item['number']
-    if 'genres' in item: info['genre']=', '.join(item['genres'])
+    if 'season' in item: info['season']=item['season'] # needs check
+    if 'episode' in item: info['episode']=item['episode'] # needs check
+    if 'number' in item: info['episode']=item['number'] # needs check
+    if 'genres' in item:
+        #TODO: hard code to TV for now since lists match anyway
+        genres = dict((genre['slug'],genre['name']) for genre in trakt_api.get_genres(SECTIONS.TV))         
+        item_genres = [genres[genre] for genre in item['genres'] if genre in genres]
+        info['genre']=', '.join(item_genres)
     if 'network' in item: info['studio']=item['network']
     if 'status' in item: info['status']=item['status']
     if 'tagline' in item: info['tagline']=item['tagline']
@@ -548,25 +568,26 @@ def fa_2_utc(first_aired):
     utc_dif = time.mktime(time.gmtime()) - time.mktime(time.localtime())
     return first_aired - (8*60*60 - utc_dif)
 
-def valid_account():
+def get_trakt_token():
     username=ADDON.get_setting('username')
     password=ADDON.get_setting('password')
     last_hash=ADDON.get_setting('last_hash')
     cur_hash = hashlib.md5(username+password).hexdigest()
     if cur_hash != last_hash:
         try:
-            valid_account=trakt_api.valid_account()
+            token=trakt_api.login()
         except:
-            valid_account=False
-        log_utils.log('Checked valid account (%s): %s != %s' % (valid_account, last_hash, cur_hash), xbmc.LOGDEBUG)
+            token=''
+        log_utils.log('Checked valid account (%s): %s != %s' % (token, last_hash, cur_hash), xbmc.LOGDEBUG)
 
-        if valid_account:
+        if token:
+            ADDON.set_setting('trakt_token', token)
             ADDON.set_setting('last_hash', cur_hash)
     else:
         log_utils.log('Assuming valid account: %s == %s' % (last_hash, cur_hash), xbmc.LOGDEBUG)
-        valid_account=True
+        token=ADDON.get_setting('trakt_token')
         
-    return valid_account
+    return token
 
 def format_sub_label(sub):
     label = '%s - [%s] - (' % (sub['language'], sub['version'])

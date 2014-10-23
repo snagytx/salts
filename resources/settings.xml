@@ -16,6 +16,7 @@
 
 	<category label="User Interface">
 	    <setting id="show_trending" type="bool" label="Show Trending" default="true"/>
+	    <setting id="show_popular" type="bool" label="Show Popular" default="true"/>
 	    <setting id="show_recommended" type="bool" label="Show Recommended" default="true"/>
 	    <setting id="show_collection" type="bool" label="Show My Collection" default="true"/>
 	    <setting id="show_favorites" type="bool" label="Show My Favorites" default="true"/>
@@ -48,6 +49,7 @@
 	    <setting id="TV_fav_slug" type="text" visible="false"/>
 	    <setting id="Movies_fav_slug" type="text" visible="false"/>
 	    <setting id="remind_count" type="number" default="0" visible="false"/>
+	    <setting id="trakt_token" type="text" default="" visible="true"/>
     </category>
 
     <category label="Library Integration">

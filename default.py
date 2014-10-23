@@ -37,13 +37,13 @@ from scrapers import ScraperVideo
 
 _SALTS = Addon('plugin.video.salts', sys.argv)
 ICON_PATH = os.path.join(_SALTS.get_path(), 'icon.png')
-VALID_ACCOUNT=utils.valid_account()
 username=_SALTS.get_setting('username')
 password=_SALTS.get_setting('password')
+TOKEN=utils.get_trakt_token()
 use_https=_SALTS.get_setting('use_https')=='true'
 trakt_timeout=int(_SALTS.get_setting('trakt_timeout'))
 
-trakt_api=Trakt_API(username,password, use_https, trakt_timeout)
+trakt_api=Trakt_API(username,password, TOKEN, use_https, trakt_timeout)
 url_dispatcher=URL_Dispatcher()
 db_connection=DB_Connection()
 
@@ -52,7 +52,7 @@ global urlresolver
 @url_dispatcher.register(MODES.MAIN)
 def main_menu():
     db_connection.init_database()
-    if not VALID_ACCOUNT:
+    if not TOKEN:
         remind_count = int(_SALTS.get_setting('remind_count'))
         remind_max=5
         if remind_count<remind_max:
@@ -135,7 +135,8 @@ def browse_menu(section):
         search_img='movies_search.png'
 
     if utils.menu_on('trending'): _SALTS.add_directory({'mode': MODES.TRENDING, 'section': section}, {'title': 'Trending %s' % (section_label)}, img=utils.art('trending.png'), fanart=utils.art('fanart.jpg'))
-    if VALID_ACCOUNT:
+    if utils.menu_on('popular'): _SALTS.add_directory({'mode': MODES.POPULAR, 'section': section}, {'title': 'Popular %s' % (section_label)}, img=utils.art('popular.png'), fanart=utils.art('fanart.jpg'))
+    if TOKEN:
         if utils.menu_on('recommended'): _SALTS.add_directory({'mode': MODES.RECOMMEND, 'section': section}, {'title': 'Recommended %s' % (section_label)}, img=utils.art('recommended.png'), fanart=utils.art('fanart.jpg'))
         if utils.menu_on('collection'): add_refresh_item({'mode': MODES.SHOW_COLLECTION, 'section': section}, 'My %s Collection' % (section_label[:-1]), utils.art('collection.png'), utils.art('fanart.jpg'))
         if utils.menu_on('favorites'): _SALTS.add_directory({'mode': MODES.SHOW_FAVORITES, 'section': section}, {'title': 'My Favorites'}, img=utils.art('my_favorites.png'), fanart=utils.art('fanart.jpg'))
@@ -144,14 +145,14 @@ def browse_menu(section):
         if utils.menu_on('my_lists'): _SALTS.add_directory({'mode': MODES.MY_LISTS, 'section': section}, {'title': 'My Lists'}, img=utils.art('my_lists.png'), fanart=utils.art('fanart.jpg'))
     if utils.menu_on('other_lists'): _SALTS.add_directory({'mode': MODES.OTHER_LISTS, 'section': section}, {'title': 'Other Lists'}, img=utils.art('other_lists.png'), fanart=utils.art('fanart.jpg'))
     if section==SECTIONS.TV:
-        if VALID_ACCOUNT: 
+        if TOKEN: 
             if utils.menu_on('progress'): add_refresh_item({'mode': MODES.SHOW_PROGRESS}, 'My Next Episodes', utils.art('my_progress.png'), utils.art('fanart.jpg'))
             if utils.menu_on('my_cal'): add_refresh_item({'mode': MODES.MY_CAL}, 'My Calendar', utils.art('my_calendar.png'), utils.art('fanart.jpg'))
         if utils.menu_on('general_cal'): add_refresh_item({'mode': MODES.CAL}, 'General Calendar', utils.art('calendar.png'), utils.art('fanart.jpg'))
         if utils.menu_on('premiere_cal'): add_refresh_item({'mode': MODES.PREMIERES}, 'Premiere Calendar', utils.art('premiere_calendar.png'), utils.art('fanart.jpg'))
-        if VALID_ACCOUNT:
+        if TOKEN:
             if utils.menu_on('friends'): add_refresh_item({'mode': MODES.FRIENDS_EPISODE, 'section': section}, 'Friends Episode Activity', utils.art('friends_episode.png'), utils.art('fanart.jpg'))
-    if VALID_ACCOUNT:
+    if TOKEN:
         if utils.menu_on('friends'): add_refresh_item({'mode': MODES.FRIENDS, 'section': section}, 'Friends Activity', utils.art('friends.png'), utils.art('fanart.jpg'))
     if utils.menu_on('search'): _SALTS.add_directory({'mode': MODES.SEARCH, 'section': section}, {'title': 'Search'}, img=utils.art(search_img), fanart=utils.art('fanart.jpg'))
     if utils.menu_on('search'): _SALTS.add_directory({'mode': MODES.RECENT_SEARCH, 'section': section}, {'title': 'Recent Searches'}, img=utils.art(search_img), fanart=utils.art('fanart.jpg'))
@@ -307,6 +308,11 @@ def toggle_scraper(name):
 @url_dispatcher.register(MODES.TRENDING, ['section'])
 def browse_trending(section):
     list_data = trakt_api.get_trending(section)
+    make_dir_from_list(section, list_data)
+
+@url_dispatcher.register(MODES.POPULAR, ['section'])
+def browse_popular(section):
+    list_data = trakt_api.get_popular(section)
     make_dir_from_list(section, list_data)
 
 @url_dispatcher.register(MODES.RECOMMEND, ['section'])
@@ -1438,27 +1444,28 @@ def make_dir_from_list(section, list_data, slug=None):
     section_params=utils.get_section_params(section)
     totalItems=len(list_data)
     
-    watched={}
-    if VALID_ACCOUNT:
-        cache_watched = _SALTS.get_setting('cache_watched')=='true'
-        if section == SECTIONS.TV:
-            progress = trakt_api.get_progress(full=False, cached=cache_watched)
-            now = time.time()
-            for item in progress:
-                for id_type in ['imdb_id', 'tvdb_id']:
-                    if id_type in item['show'] and item['show'][id_type]:
-                        if item['next_episode'] and item['next_episode']['first_aired']<now:
-                            watched[item['show'][id_type]]=False
-                        else:
-                            watched[item['show'][id_type]]=True
-        else:
-            movie_watched = trakt_api.get_watched(section, cached=cache_watched)
-            for item in movie_watched:
-                for id_type in ['imdb_id', 'tmdb_id']:
-                    if id_type in item and item[id_type]:
-                        watched[item[id_type]] = item['plays']>0
+#     watched={}
+#     if TOKEN:
+#         cache_watched = _SALTS.get_setting('cache_watched')=='true'
+#         if section == SECTIONS.TV:
+#             progress = trakt_api.get_progress(full=False, cached=cache_watched)
+#             now = time.time()
+#             for item in progress:
+#                 for id_type in ['imdb_id', 'tvdb_id']:
+#                     if id_type in item['show'] and item['show'][id_type]:
+#                         if item['next_episode'] and item['next_episode']['first_aired']<now:
+#                             watched[item['show'][id_type]]=False
+#                         else:
+#                             watched[item['show'][id_type]]=True
+#         else:
+#             movie_watched = trakt_api.get_watched(section, cached=cache_watched)
+#             for item in movie_watched:
+#                 for id_type in ['imdb_id', 'tmdb_id']:
+#                     if id_type in item and item[id_type]:
+#                         watched[item[id_type]] = item['plays']>0
     
     for show in list_data:
+        print show
         menu_items=[]
         show_id=utils.show_id(show)
         if slug:
@@ -1472,13 +1479,13 @@ def make_dir_from_list(section, list_data, slug=None):
                 menu_items.append(('Remove from List', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
                 
         sub_slug=_SALTS.get_setting('%s_sub_slug' % (section))
-        if VALID_ACCOUNT and sub_slug:
+        if TOKEN and sub_slug:
             if sub_slug != slug:
                 queries = {'mode': MODES.ADD_TO_LIST, 'section': section_params['section'], 'slug': sub_slug}
-                queries.update(utils.show_id(show))
+                queries.update(show_id)
                 menu_items.append(('Subscribe', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
             elif section == SECTIONS.TV:
-                show_slug = trakt_api.get_slug(show['url'])
+                show_slug = show['ids']['slug']
                 if utils.show_requires_source(show_slug):
                     label='Require Aired Only?'
                 else:
@@ -1486,10 +1493,10 @@ def make_dir_from_list(section, list_data, slug=None):
                 queries = {'mode': MODES.URL_EXISTS, 'slug': show_slug}                
                 menu_items.append((label, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
         
-        if 'imdb_id' in show: show['watched'] = watched.get(show['imdb_id'], False)
-        elif 'tvdb_id' in show: show['watched'] = watched.get(show['tvdb_id'], False)
-        elif 'tmdb_id' in show: show['watched'] = watched.get(show['tmdb_id'], False)
-        #if not show['watched']: log_utils.log('Setting watched status on %s (%s): %s' % (show['title'], show['year'], show['watched']), xbmc.LOGDEBUG)
+#         if 'imdb_id' in show: show['watched'] = watched.get(show['imdb_id'], False)
+#         elif 'tvdb_id' in show: show['watched'] = watched.get(show['tvdb_id'], False)
+#         elif 'tmdb_id' in show: show['watched'] = watched.get(show['tmdb_id'], False)
+#         #if not show['watched']: log_utils.log('Setting watched status on %s (%s): %s' % (show['title'], show['year'], show['watched']), xbmc.LOGDEBUG)
             
         liz, liz_url =make_item(section_params, show, menu_items)
         
@@ -1669,7 +1676,7 @@ def make_item(section_params, show, menu_items=None):
     show['title']=re.sub(' \(\d{4}\)$','',show['title'])
     label = '%s (%s)' % (show['title'], show['year'])
     liz=utils.make_list_item(label, show)
-    slug=trakt_api.get_slug(show['url'])
+    slug=show['ids']['slug']
     liz.setProperty('slug', slug)
     info = utils.make_info(show)
     if not section_params['folder']:
@@ -1705,7 +1712,7 @@ def make_item(section_params, show, menu_items=None):
             runstring = 'Container.Update(%s)' % _SALTS.build_plugin_url(queries)
         menu_items.append(('Download Source', runstring), )
         
-    if VALID_ACCOUNT:
+    if TOKEN:
         show_id=utils.show_id(show)
         if REM_COLL_LABEL not in (item[0] for item in menu_items):
             if 'in_collection' in show and show['in_collection']:
