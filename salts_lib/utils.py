@@ -82,10 +82,10 @@ def show_id(show):
     if 'slug' in ids and ids['slug']:
         queries['id_type']='slug'
         queries['show_id']=ids['slug']
-    if 'trakt' in ids and ids['trakt']:
+    elif 'trakt' in ids and ids['trakt']:
         queries['id_type']='trakt'
         queries['show_id']=ids['trakt']
-    if 'imdb' in ids and ids['imdb']:
+    elif 'imdb' in ids and ids['imdb']:
         queries['id_type']='imdb'
         queries['show_id']=ids['imdb']
     elif 'tvdb' in ids and ids['tvdb']:
@@ -113,20 +113,35 @@ def update_url(video_type, title, year, source, old_url, new_url, season, episod
 def make_seasons_info(progress):
     season_info={}
     if progress:
-        show = progress['show']
         for season in progress['seasons']:
+            print season
             info={}
-            if 'title' in show: info['TVShowTitle']=show['title']
-            if 'year' in show: info['year']=show['year']
-            if 'imdb_id' in show: info['code']=info['imdbnumber']=info['imdb_id']=show['imdb_id']
-            if 'tvdb_id' in show: info['tvdb_id']=show['tvdb_id']
             if 'aired' in season: info['episode']=info['TotalEpisodes']=season['aired']
             if 'completed' in season: info['WatchedEpisodes']=season['completed']
-            if 'left' in season: info['UnWatchedEpisodes']=season['left']
-            if 'completed' in season and 'left' in season: info['playcount']=season['completed'] if season['left']==0 else 0
-            if 'season' in season: info['season']=season['season']
-            season_info[str(season['season'])]=info
+            if 'aired' in season and 'completed' in season:
+                info['UnWatchedEpisodes']=season['aired'] - season['completed']
+                info['playcount']=season['aired'] if season['completed']==season['aired'] else 0
+                
+            if 'number' in season: info['season']=season['number']
+            season_info[str(season['number'])]=info
     return season_info
+
+def make_episodes_watched(episodes, progress):
+    watched={}
+    for season in progress['seasons']:
+        watched[str(season['number'])]={}
+        for ep_status in season['episodes']:
+            watched[str(season['number'])][str(ep_status['number'])]=ep_status['completed']
+    
+    for episode in episodes:
+        season_str = str(episode['season'])
+        episode_str = str(episode['number'])
+        if season_str in watched and episode_str in watched[season_str]:
+            episode['watched']=watched[season_str][episode_str]
+        else:
+            episode['watched']=False
+
+    return episodes
 
 def make_list_item(label, meta):
     art=make_art(meta)
@@ -134,10 +149,11 @@ def make_list_item(label, meta):
     listitem.setProperty('fanart_image', art['fanart'])
     try: listitem.setArt(art)
     except: pass
-    if 'imdb_id' in meta: listitem.setProperty('imdb_id', meta['imdb_id'])
-    if 'tvdb_id' in meta: listitem.setProperty('tvdb_id', str(meta['tvdb_id']))
+    if 'ids' in meta and 'imdb' in meta['ids']: listitem.setProperty('imdb_id', str(meta['ids']['imdb']))
+    if 'ids' in meta and 'tvdb' in meta['ids']: listitem.setProperty('tvdb_id', str(meta['ids']['tvdb']))
     return listitem
 
+#TODO: Take advantage of smaller images
 def make_art(show, fanart=''):
     if not fanart: fanart = art('fanart.jpg')
     art_dict={'banner': '', 'fanart': fanart, 'thumb': '', 'poster': ''}
@@ -157,12 +173,6 @@ def make_info(item, show=''):
     info['title']=item['title']
     if 'overview' in item: info['plot']=info['plotoutline']=item['overview']
     if 'runtime' in item: info['duration']=item['runtime']
-    if 'ids' in item:
-        ids=item['ids']
-        if 'imdb' in ids: info['code']=info['imdbnumber']=info['imdb_id']=ids['imdb']
-        if 'tmdb' in ids: info['tmdb_id']=ids['tmdb']
-        if 'tvdb' in ids: info['tvdb_id']=ids['tvdb']
-        if 'trakt' in ids: info['trakt_id']=ids['trakt']
     if 'certification' in item: info['mpaa']=item['certification']
     if 'year' in item: info['year']=item['year']
     if 'season' in item: info['season']=item['season'] # needs check
@@ -178,26 +188,18 @@ def make_info(item, show=''):
     if 'tagline' in item: info['tagline']=item['tagline']
     if 'watched' in item and item['watched']: info['playcount']=1
     if 'plays' in item and item['plays']: info['playcount']=item['plays']
+    if 'rating' in item: info['rating']=item['rating']
+    if 'released' in item: info['premiered']=item['released']
+    info.update(make_ids(item))
     info.update(make_people(item))
     
-    if 'ratings' in item: 
-        info['rating']=int(item['ratings']['percentage'])/10.0
-        info['votes']=item['ratings']['votes']
-
-    if 'first_aired_iso' in item or 'first_aired' in item:
-        utc_air_time = iso_2_utc(item['first_aired_iso']) if 'first_aired_iso' in item else fa_2_utc(item['first_aired'])
+    if 'first_aired' in item:
+        utc_air_time = iso_2_utc(item['first_aired'])
         try: info['aired']=info['premiered']=time.strftime('%Y-%m-%d', time.localtime(utc_air_time))
         except ValueError: # windows throws a ValueError on negative values to localtime  
             d=datetime.datetime.fromtimestamp(0) + datetime.timedelta(seconds=utc_air_time)
             info['aired']=info['premiered']=d.strftime('%Y-%m-%d')
      
-    if 'released' in item:
-        try: info['premiered']=time.strftime('%Y-%m-%d', time.localtime(item['released']))
-        except ValueError: # windows throws a ValueError on negative values to localtime
-            d=datetime.datetime.fromtimestamp(0) + datetime.timedelta(seconds=item['released'])
-            info['premiered']=d.strftime('%Y-%m-%d')
-         
-
     if 'seasons' in item:
         total_episodes=0
         watched_episodes=0
@@ -212,7 +214,7 @@ def make_info(item, show=''):
         info['WatchedEpisodes']=watched_episodes
         info['UnWatchedEpisodes']=total_episodes - watched_episodes
 
-    if 'trailer' in item:
+    if 'trailer' in item and item['trailer']:
         match=re.search('\?v=(.*)', item['trailer'])
         if match:
             info['trailer']='plugin://plugin.video.youtube/?action=play_video&videoid=%s' % (match.group(1)) 
@@ -220,13 +222,22 @@ def make_info(item, show=''):
     # override item params with show info if it exists
     if 'certification' in show: info['mpaa']=show['certification']
     if 'year' in show: info['year']=show['year']
-    if 'imdb_id' in show: info['code']=info['imdbnumber']=info['imdb_id']=show['imdb_id']
-    if 'tmdb_id' in show: info['tmdb_id']=show['tmdb_id']
-    if 'tvdb_id' in show: info['tvdb_id']=show['tvdb_id']
     if 'runtime' in show: info['duration']=show['runtime']
     if 'title' in show: info['tvshowtitle']=show['title']
     if 'network' in show: info['studio']=show['network']
+    info.update(make_ids(show))
     info.update(make_people(show))
+    return info
+    
+def make_ids(item):
+    info={}
+    if 'ids' in item:
+        ids=item['ids']
+        if 'imdb' in ids: info['code']=info['imdbnumber']=info['imdb_id']=ids['imdb']
+        if 'tmdb' in ids: info['tmdb_id']=ids['tmdb']
+        if 'tvdb' in ids: info['tvdb_id']=ids['tvdb']
+        if 'trakt' in ids: info['trakt_id']=ids['trakt']
+        if 'slug' in ids: info['slug']=ids['slug']
     return info
     
 def make_people(item):
@@ -531,8 +542,10 @@ def make_time(utc_ts):
 
 def iso_2_utc(iso_ts):
     if not iso_ts or iso_ts is None: return 0
-    delim = iso_ts.rfind('+')
-    if delim == -1:  delim = iso_ts.rfind('-')
+    delim = -1
+    if not iso_ts.endswith('Z'):
+        delim = iso_ts.rfind('+')
+        if delim == -1:  delim = iso_ts.rfind('-')
     
     if delim>-1:
         ts = iso_ts[:delim]
@@ -542,16 +555,21 @@ def iso_2_utc(iso_ts):
         ts = iso_ts
         tz = None
     
+    if ts.find('.')>-1:
+        ts  = ts[:ts.find('.')]
+        
     try: d=datetime.datetime.strptime(ts,'%Y-%m-%dT%H:%M:%S')
     except TypeError: d = datetime.datetime(*(time.strptime(ts, '%Y-%m-%dT%H:%M:%S')[0:6]))
     
-    hours, minutes = tz.split(':')
-    hours = int(hours)
-    minutes= int(minutes)
-    if sign == '-':
-        hours = -hours
-        minutes = -minutes
-    dif = datetime.timedelta(minutes=minutes, hours=hours)
+    dif=datetime.timedelta()
+    if tz:
+        hours, minutes = tz.split(':')
+        hours = int(hours)
+        minutes= int(minutes)
+        if sign == '-':
+            hours = -hours
+            minutes = -minutes
+        dif = datetime.timedelta(minutes=minutes, hours=hours)
     utc_dt = d - dif
     epoch = datetime.datetime.utcfromtimestamp(0)
     delta = utc_dt - epoch
@@ -559,14 +577,14 @@ def iso_2_utc(iso_ts):
     except: seconds = delta.seconds + delta.days * 24 * 3600 # close enough
     return seconds
 
-def fa_2_utc(first_aired):
-    """
-    This should only require subtracting off the difference between PST and UTC, but it doesn't
-    and I don't know why. Regardless, this works.
-    """
-    # dif in seconds between local timezone and gmt timezone
-    utc_dif = time.mktime(time.gmtime()) - time.mktime(time.localtime())
-    return first_aired - (8*60*60 - utc_dif)
+# def fa_2_utc(first_aired):
+#     """
+#     This should only require subtracting off the difference between PST and UTC, but it doesn't
+#     and I don't know why. Regardless, this works.
+#     """
+#     # dif in seconds between local timezone and gmt timezone
+#     utc_dif = time.mktime(time.gmtime()) - time.mktime(time.localtime())
+#     return first_aired - (8*60*60 - utc_dif)
 
 def get_trakt_token():
     username=ADDON.get_setting('username')

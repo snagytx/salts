@@ -634,16 +634,13 @@ def search_results(section, query):
 @url_dispatcher.register(MODES.SEASONS, ['slug', 'fanart'])
 def browse_seasons(slug, fanart):
     seasons=trakt_api.get_seasons(slug)
-    info={}
-    if VALID_ACCOUNT:
-        progress=trakt_api.get_progress(title=slug, full=False, cached=_SALTS.get_setting('cache_watched')=='true')
-        if progress:
-            info = utils.make_seasons_info(progress[0])
+    progress = trakt_api.get_show_progress(slug, cached=_SALTS.get_setting('cache_watched')=='true')
+    info = utils.make_seasons_info(progress)
     totalItems=len(seasons)
-    for season in reversed(seasons):
-        if _SALTS.get_setting('show_season0') == 'true' or season['season'] != 0:
-            liz=make_season_item(season, info.get(str(season['season']), {'season': season['season']}), fanart)
-            queries = {'mode': MODES.EPISODES, 'slug': slug, 'season': season['season'], 'fanart': fanart}
+    for season in seasons:
+        if _SALTS.get_setting('show_season0') == 'true' or season['number'] != 0:
+            liz=make_season_item(season, info.get(str(season['number']), {'season': season['number']}), fanart)
+            queries = {'mode': MODES.EPISODES, 'slug': slug, 'season': season['number'], 'fanart': fanart}
             liz_url = _SALTS.build_plugin_url(queries)
             xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz,isFolder=True,totalItems=totalItems)
     utils.set_view(CONTENT_TYPES.SEASONS, False)
@@ -653,10 +650,12 @@ def browse_seasons(slug, fanart):
 def browse_episodes(slug, season, fanart):
     show=trakt_api.get_show_details(slug)
     episodes=trakt_api.get_episodes(slug, season)
+    progress = trakt_api.get_show_progress(slug, cached=_SALTS.get_setting('cache_watched')=='true')
+    episodes = utils.make_episodes_watched(episodes, progress)
     totalItems=len(episodes)
     now=time.time()
     for episode in episodes:
-        utc_air_time = utils.iso_2_utc(episode['first_aired_iso'])
+        utc_air_time = utils.iso_2_utc(episode['first_aired'])
         if _SALTS.get_setting('show_unaired')=='true' or utc_air_time <= now:
             if _SALTS.get_setting('show_unknown')=='true' or utc_air_time:
                 liz, liz_url =make_episode_item(show, episode, fanart)
@@ -1098,17 +1097,18 @@ def rate_media(section, id_type, show_id, season='', episode=''):
     else:
         item = {id_type: show_id}
         keyboard = xbmc.Keyboard()
-        keyboard.setHeading('Enter Rating (love, hate, unrate, or 1-10)')
+        keyboard.setHeading('Enter Rating (unrate, or 1-10)')
         while True:
             keyboard.doModal()
             if keyboard.isConfirmed():
                 rating = keyboard.getText()
                 rating = rating.lower()
-                if rating in ['love', 'hate', 'unrate'] + [str(i) for i in range(1, 11)]:
+                if rating in ['unrate'] + [str(i) for i in range(1, 11)]:
                     break
             else:
                 return
              
+        if rating == 'unrate': rating = None
         trakt_api.rate(section, item, rating, season, episode)
 
 @url_dispatcher.register(MODES.EDIT_TVSHOW_ID, ['title'], ['year'])
@@ -1152,18 +1152,17 @@ def manage_collection(mode, section, id_type, show_id):
 
 @url_dispatcher.register(MODES.ADD_TO_LIST, ['section', 'id_type', 'show_id'], ['slug'])
 def add_to_list(section, id_type, show_id, slug=None):
-    item={'type': TRAKT_SECTIONS[section][:-1], id_type: show_id}
-    add_many_to_list(section, item, slug)
+    add_many_to_list(section, {id_type: show_id}, slug)
     builtin = "XBMC.Notification(%s,Item Added to List, 2000, %s)" % (_SALTS.get_name(), ICON_PATH)
     xbmc.executebuiltin(builtin)
     xbmc.executebuiltin("XBMC.Container.Refresh")
 
-def add_many_to_list(section, item, slug=None):
+def add_many_to_list(section, items, slug=None):
     if not slug: slug=utils.choose_list()
     if slug==utils.WATCHLIST_SLUG:
-        response=trakt_api.add_to_watchlist(section, item)
+        response=trakt_api.add_to_watchlist(section, items)
     elif slug:
-        response=trakt_api.add_to_list(slug, item)
+        response=trakt_api.add_to_list(slug, items)
     return response
     
 @url_dispatcher.register(MODES.COPY_LIST, ['section', 'slug'], ['username', 'target_slug'])
@@ -1196,7 +1195,7 @@ def toggle_title(slug):
 def toggle_watched(section, id_type, show_id, watched=True, season='', episode=''):
     log_utils.log('In Watched: |%s|%s|%s|%s|%s|%s|' % (section, id_type, show_id, season, episode, watched), xbmc.LOGDEBUG)
     item = {id_type: show_id}
-    trakt_api.set_watched(section, item, season, episode, watched)
+    print trakt_api.set_watched(section, item, season, episode, watched)
     w_str='Watched' if watched else 'Unwatched'
     builtin = "XBMC.Notification(%s,Marked as %s,5000,%s)" % (_SALTS.get_name(), w_str, ICON_PATH)
     xbmc.executebuiltin(builtin)
@@ -1550,8 +1549,9 @@ def make_dir_from_cal(mode, start_date, days):
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def make_season_item(season, info, fanart):
-    label = 'Season %s' % (season['season'])
-    season['images']['fanart']=fanart
+    label = 'Season %s' % (season['number'])
+    season['images']['fanart']={}
+    season['images']['fanart']['full']=fanart
     liz=utils.make_list_item(label, season)
     log_utils.log('Season Info: %s' % (info), xbmc.LOGDEBUG)
     liz.setInfo('video', info)
@@ -1563,52 +1563,50 @@ def make_season_item(season, info, fanart):
     return liz
 
 def make_episode_item(show, episode, fanart, show_subs=True, menu_items=None):
-    #log_utils.log('Make Episode: Show: %s, Episode: %s, Fanart: %s, Show Subs: %s' % (show, episode, fanart, show_subs), xbmc.LOGDEBUG)
+    log_utils.log('Make Episode: Show: %s, Episode: %s, Fanart: %s, Show Subs: %s' % (show, episode, fanart, show_subs), xbmc.LOGDEBUG)
     log_utils.log('Make Episode: Episode: %s' % (episode), xbmc.LOGDEBUG)
     if menu_items is None: menu_items = []
     folder = _SALTS.get_setting('source-win')=='Directory' and _SALTS.get_setting('auto-play')=='false'
     show['title']=re.sub(' \(\d{4}\)$','',show['title'])
-    if 'episode' in episode: episode_num=episode['episode']
-    else:  episode_num=episode['number']
-    label = '%sx%s %s' % (episode['season'], episode_num, episode['title'])
+    label = '%sx%s %s' % (episode['season'], episode['number'], episode['title'])
     
-    if 'first_aired_iso' in episode: utc_air_time = utils.iso_2_utc(episode['first_aired_iso'])
-    else: utc_air_time = utils.fa_2_utc(episode['first_aired'])
-    
+    if 'first_aired' in episode: utc_air_time = utils.iso_2_utc(episode['first_aired'])
     try: time_str = time.asctime(time.localtime(utc_air_time))
     except: time_str = 'Unavailable'
     
     log_utils.log('First Aired: Title: %s S/E: %s/%s fa: %s, utc: %s, local: %s' %
-                  (show['title'], episode['season'], episode_num, episode['first_aired'], utc_air_time, time_str), xbmc.LOGDEBUG)
+                  (show['title'], episode['season'], episode['number'], episode['first_aired'], utc_air_time, time_str), xbmc.LOGDEBUG)
+    
     if _SALTS.get_setting('unaired_indicator')=='true' and (not episode['first_aired'] or utc_air_time>time.time()):
         label = '[I][COLOR chocolate]%s[/COLOR][/I]' % (label)
+
     if show_subs and utils.srt_indicators_enabled():
         srt_scraper=SRT_Scraper()
         language=_SALTS.get_setting('subtitle-lang')
         tvshow_id=srt_scraper.get_tvshow_id(show['title'], show['year'])
         if tvshow_id is not None:
-            srts=srt_scraper.get_episode_subtitles(language, tvshow_id, episode['season'], episode_num)
+            srts=srt_scraper.get_episode_subtitles(language, tvshow_id, episode['season'], episode['number'])
         else:
             srts=[]
-        label = utils.format_episode_label(label, episode['season'], episode_num, srts)
+        label = utils.format_episode_label(label, episode['season'], episode['number'], srts)
             
     meta=utils.make_info(episode, show)
-    meta['images']={}
-    meta['images']['poster']=episode['images']['screen']
-    meta['images']['fanart']=fanart
+    meta['images']=show['images']
+    if episode['images']['screenshot']['full']: meta['images']['thumb']=episode['images']['screenshot']
+    
     liz=utils.make_list_item(label, meta)
     if not folder:
         liz.setProperty('isPlayable', 'true')
 
     del meta['images']
     liz.setInfo('video', meta)
-    queries = {'mode': MODES.GET_SOURCES, 'video_type': VIDEO_TYPES.EPISODE, 'title': show['title'], 'year': show['year'], 'season': episode['season'], 'episode': episode_num, 
-               'ep_title': episode['title'], 'slug': trakt_api.get_slug(show['url'])}
+    queries = {'mode': MODES.GET_SOURCES, 'video_type': VIDEO_TYPES.EPISODE, 'title': show['title'], 'year': show['year'], 'season': episode['season'], 'episode': episode['number'], 
+               'ep_title': episode['title'], 'slug': show['ids']['slug']}
     liz_url = _SALTS.build_plugin_url(queries)
     
     if _SALTS.get_setting('auto-play')=='true':
-        queries = {'mode': MODES.SELECT_SOURCE, 'video_type': VIDEO_TYPES.EPISODE, 'title': show['title'], 'year': show['year'], 'season': episode['season'], 'episode': episode_num, 
-                   'ep_title': episode['title'], 'slug': trakt_api.get_slug(show['url'])}
+        queries = {'mode': MODES.SELECT_SOURCE, 'video_type': VIDEO_TYPES.EPISODE, 'title': show['title'], 'year': show['year'], 'season': episode['season'], 'episode': episode['number'], 
+                   'ep_title': episode['title'], 'slug': show['ids']['slug']}
         if _SALTS.get_setting('source-win')=='Dialog':
             runstring = 'PlayMedia(%s)' % _SALTS.build_plugin_url(queries)
         else:
@@ -1616,8 +1614,8 @@ def make_episode_item(show, episode, fanart, show_subs=True, menu_items=None):
         menu_items.insert(0, ('Select Source', runstring), )
         
     if _SALTS.get_setting('show_download')=='true':
-        queries = {'mode': MODES.DOWNLOAD_SOURCE, 'video_type': VIDEO_TYPES.EPISODE, 'title': show['title'], 'year': show['year'], 'season': episode['season'], 'episode': episode_num, 
-                   'ep_title': episode['title'], 'slug': trakt_api.get_slug(show['url'])}
+        queries = {'mode': MODES.DOWNLOAD_SOURCE, 'video_type': VIDEO_TYPES.EPISODE, 'title': show['title'], 'year': show['year'], 'season': episode['season'], 'episode': episode['number'], 
+                   'ep_title': episode['title'], 'slug': show['ids']['slug']}
         if _SALTS.get_setting('source-win')=='Dialog':
             runstring = 'RunPlugin(%s)' % _SALTS.build_plugin_url(queries)
         else:
@@ -1629,6 +1627,7 @@ def make_episode_item(show, episode, fanart, show_subs=True, menu_items=None):
     else:
         menu_items.insert(0, ('Show Information', 'XBMC.Action(Info)'), )
 
+    #TODO: Broken, V2 doesn't return in_collection
     if 'in_collection' in episode and episode['in_collection']:
         collection_mode=MODES.REM_FROM_COLL
         label = 'Remove Show from Collection'
@@ -1652,20 +1651,20 @@ def make_episode_item(show, episode, fanart, show_subs=True, menu_items=None):
         watched=True
         label='Mark as Watched'
         
-    if VALID_ACCOUNT:
+    if TOKEN:
         show_id=utils.show_id(show)
-        queries = {'mode': MODES.RATE, 'section': SECTIONS.TV, 'season': episode['season'], 'episode': episode_num}
+        queries = {'mode': MODES.RATE, 'section': SECTIONS.TV, 'season': episode['season'], 'episode': episode['number']}
         queries.update(show_id)
         menu_items.append(('Rate on trakt.tv', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
 
-        queries = {'mode': MODES.TOGGLE_WATCHED, 'section': SECTIONS.TV, 'season': episode['season'], 'episode': episode_num, 'watched': watched}
+        queries = {'mode': MODES.TOGGLE_WATCHED, 'section': SECTIONS.TV, 'season': episode['season'], 'episode': episode['number'], 'watched': watched}
         queries.update(show_id)
         menu_items.append((label, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
 
-    queries = {'mode': MODES.SET_URL_SEARCH, 'video_type': VIDEO_TYPES.TVSHOW, 'title': show['title'], 'year': show['year'], 'slug': trakt_api.get_slug(show['url'])}
+    queries = {'mode': MODES.SET_URL_SEARCH, 'video_type': VIDEO_TYPES.TVSHOW, 'title': show['title'], 'year': show['year'], 'slug': show['ids']['slug']}
     menu_items.append(('Set Related Show Url (Search)', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
     queries = {'mode': MODES.SET_URL_MANUAL, 'video_type': VIDEO_TYPES.EPISODE, 'title': show['title'], 'year': show['year'], 'season': episode['season'], 
-               'episode': episode_num, 'ep_title': episode['title'], 'slug': trakt_api.get_slug(show['url'])}
+               'episode': episode['number'], 'ep_title': episode['title'], 'slug': show['ids']['slug']}
     menu_items.append(('Set Related Url (Manual)', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
  
     liz.addContextMenuItems(menu_items, replaceItems=True)
@@ -1736,7 +1735,7 @@ def make_item(section_params, show, menu_items=None):
     queries = {'mode': MODES.ADD_TO_LIBRARY, 'video_type': section_params['video_type'], 'title': show['title'], 'year': show['year'], 'slug': slug}
     menu_items.append(('Add to Library', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
 
-    if VALID_ACCOUNT:
+    if TOKEN:
         if 'watched' in show and show['watched']:
             watched=False
             label='Mark as Unwatched'
