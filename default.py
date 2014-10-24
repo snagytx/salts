@@ -401,29 +401,39 @@ def browse_other_lists(section):
     lists = db_connection.get_other_lists(section)
     totalItems=len(lists)
     for other_list in lists:
-        header, _ = trakt_api.show_list(other_list[1], section, other_list[0])
-        if other_list[2]:
-            name=other_list[2]
+        header = trakt_api.get_list_header(other_list[1], other_list[0])
+        if header:
+            found=True
+            if other_list[2]:
+                name=other_list[2]
+            else:
+                name=header['name']
         else:
-            name=header['name']
+            name = other_list[1]
+            found=False
+            
         label = '[[COLOR blue]%s[/COLOR]] %s' % (other_list[0], name)
 
         liz = xbmcgui.ListItem(label=label, iconImage=utils.art('list.png'), thumbnailImage=utils.art('list.png'))
         liz.setProperty('fanart_image', utils.art('fanart.jpg'))
-        queries = {'mode': MODES.SHOW_LIST, 'section': section, 'slug': other_list[1], 'username': other_list[0]}
+        if found:
+            queries = {'mode': MODES.SHOW_LIST, 'section': section, 'slug': other_list[1], 'username': other_list[0]}
+        else:
+            queries = {'mode': MODES.OTHER_LISTS, 'section': section}
         liz_url = _SALTS.build_plugin_url(queries)
         
         menu_items=[]
-        queries = {'mode': MODES.FORCE_REFRESH, 'refresh_mode': MODES.SHOW_LIST, 'section': section, 'slug': other_list[1], 'username': other_list[0]}
-        menu_items.append(('Force Refresh', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+        if found:
+            queries = {'mode': MODES.FORCE_REFRESH, 'refresh_mode': MODES.SHOW_LIST, 'section': section, 'slug': other_list[1], 'username': other_list[0]}
+            menu_items.append(('Force Refresh', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+            queries={'mode': MODES.COPY_LIST, 'section': section, 'slug': other_list[1], 'username': other_list[0]}
+            menu_items.append(('Copy to My List', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
         queries={'mode': MODES.ADD_OTHER_LIST, 'section': section, 'username': other_list[0]}
         menu_items.append(('Add more from %s' % (other_list[0]), 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
         queries={'mode': MODES.REMOVE_LIST, 'section': section, 'slug': other_list[1], 'username': other_list[0]}
         menu_items.append(('Remove List', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
         queries={'mode': MODES.RENAME_LIST, 'section': section, 'slug': other_list[1], 'username': other_list[0], 'name': name}
         menu_items.append(('Rename List', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
-        queries={'mode': MODES.COPY_LIST, 'section': section, 'slug': other_list[1], 'username': other_list[0]}
-        menu_items.append(('Copy to My List', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
         liz.addContextMenuItems(menu_items, replaceItems=True)
 
         xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz,isFolder=True,totalItems=totalItems)

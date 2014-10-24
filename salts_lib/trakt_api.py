@@ -80,6 +80,11 @@ class Trakt_API():
         response = self.__call_trakt(url, params=params, cache_limit=0)
         return [item[TRAKT_SECTIONS[section][:-1]] for item in response]
      
+    def get_list_header(self, slug, username=None):
+        if not username: username = self.username
+        url='/users/%s/lists/%s' % (username, slug)
+        return self.__call_trakt(url)
+        
     def get_lists(self, username=None):
         if not username: username = self.username
         url='/users/%s/lists' % (username)
@@ -306,7 +311,9 @@ class Trakt_API():
                 else:
                     raise TraktError('Trakt Error: '+str(e))
 
+        print result
         response=json.loads(result)
+        print response
 
         if 'status' in response and response['status']=='failure':
             if 'message' in response: raise TraktError(response['message'])
