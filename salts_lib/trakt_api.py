@@ -56,23 +56,23 @@ class Trakt_API():
         response = self.__call_trakt(url, data, cached=False)
         return response['token']
     
-#     def show_list(self, slug, section, username=None, cached=True):
-#         if not username: 
-#             username = self.username
-#             cache_limit=0 # don't cache user's own lists at all
-#             cached=False
-#         else:
-#             cache_limit=1 # cache other user's list for one hour
-# 
-#         url='/users/%s/lists/%s/items' % (username, slug)
-#         params = {'extended': 'full,images'}
-#         list_data = self.__call_trakt(url, params=params, cache_limit=cache_limit, cached=cached)
-#         items=[]
-#         for item in list_data:
-#             if item['type']==TRAKT_SECTIONS[section][:-1]:
-#                 show=item[item['type']]
-#                 items.append(show)
-#         return items
+    def show_list(self, slug, section, username=None, cached=True):
+        if not username: 
+            username = self.username
+            cache_limit=0 # don't cache user's own lists at all
+            cached=False
+        else:
+            cache_limit=1 # cache other user's list for one hour
+ 
+        url='/users/%s/lists/%s/items' % (username, slug)
+        params = {'extended': 'full,images'}
+        list_data = self.__call_trakt(url, params=params, cache_limit=cache_limit, cached=cached)
+        items=[]
+        for item in list_data:
+            if item['type']==TRAKT_SECTIONS[section][:-1]:
+                show=item[item['type']]
+                items.append(show)
+        return items
      
     def show_watchlist(self, section):
         url='/users/%s/watchlist/%s' % (self.username, TRAKT_SECTIONS[section])
@@ -85,9 +85,9 @@ class Trakt_API():
         url='/users/%s/lists' % (username)
         return self.__call_trakt(url, cache_limit=0)
      
-#     def add_to_list(self, slug, items):
-#         return self.__manage_list('add', slug, items)
-#         
+    def add_to_list(self, section, slug, items):
+        return self.__manage_list('add', section, slug, items)
+         
     def add_to_collection(self, section, item):
         return self.__manage_collection('add', section, item)
          
@@ -100,9 +100,9 @@ class Trakt_API():
         data = self.__make_media_list(section, item, season, episode)
         return self.__call_trakt(url, data=data, cache_limit=0)
      
-#     def remove_from_list(self, slug, items):
-#         return self.__manage_list('delete', slug, items)
-#     
+    def remove_from_list(self, section, slug, items):
+        return self.__manage_list('delete', section, slug, items)
+     
     def add_to_watchlist(self, section, items):
         return self.__manage_watchlist('add', section, items)
          
@@ -219,12 +219,13 @@ class Trakt_API():
         if 'rating_advanced' in item: show['rating_advanced']=item['rating_advanced']
         return show
     
-#     def __manage_list(self, action, slug, items):
-#         url='/lists/items/%s/%s' % (action, API_KEY)
-#         if not isinstance(items, (list,tuple)): items=[items]
-#         extra_data={'slug': slug, 'items': items}
-#         return self.__call_trakt(url, extra_data, cache_limit=0)
-#     
+    def __manage_list(self, action, section, slug, items):
+        url='/users/%s/lists/%s/items' % (self.username, slug)
+        if action == 'remove': url = url + '/remove'
+        if not isinstance(items, (list,tuple)): items=[items]
+        data = self.__make_media_list_from_list(section, items)
+        return self.__call_trakt(url, data = data, cache_limit=0)
+     
     def __manage_watchlist(self, action, section, items):
         url='/sync/watchlist'
         if action == 'remove': url = url + '/remove'

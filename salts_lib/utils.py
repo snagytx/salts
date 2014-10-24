@@ -66,12 +66,12 @@ def art(name):
 
 def choose_list(username=None):
     lists = trakt_api.get_lists(username)
-    if username is None: lists.insert(0, {'name': 'watchlist', 'slug': WATCHLIST_SLUG})
+    if username is None: lists.insert(0, {'name': 'watchlist', 'ids': {'slug': WATCHLIST_SLUG}})
     if lists:
         dialog=xbmcgui.Dialog()
         index = dialog.select('Pick a list', [list_data['name'] for list_data in lists])
         if index>-1:
-            return lists[index]['slug']
+            return lists[index]['ids']['slug']
     else:
         builtin = 'XBMC.Notification(%s,No Lists exist for user: %s, 5000, %s)'
         xbmc.executebuiltin(builtin % (ADDON.get_name(), username, ICON_PATH))

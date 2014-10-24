@@ -369,20 +369,22 @@ def browse_calendar(mode, start_date=None):
 @url_dispatcher.register(MODES.MY_LISTS, ['section'])
 def browse_lists(section):
     lists = trakt_api.get_lists()
-    lists.insert(0, {'name': 'watchlist', 'slug': utils.WATCHLIST_SLUG})
+    lists.insert(0, {'name': 'watchlist', 'ids': {'slug': utils.WATCHLIST_SLUG}})
     totalItems=len(lists)
     for user_list in lists:
+        print user_list
+        ids = user_list['ids']
         liz = xbmcgui.ListItem(label=user_list['name'], iconImage=utils.art('list.png'), thumbnailImage=utils.art('list.png'))
         liz.setProperty('fanart_image', utils.art('fanart.jpg'))
-        queries = {'mode': MODES.SHOW_LIST, 'section': section, 'slug': user_list['slug']}
+        queries = {'mode': MODES.SHOW_LIST, 'section': section, 'slug': ids['slug']}
         liz_url = _SALTS.build_plugin_url(queries)
         
         menu_items=[]
-        queries={'mode': MODES.SET_FAV_LIST, 'slug': user_list['slug'], 'section': section}
+        queries={'mode': MODES.SET_FAV_LIST, 'slug': ids['slug'], 'section': section}
         menu_items.append(('Set as Favorites List', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
-        queries={'mode': MODES.SET_SUB_LIST, 'slug': user_list['slug'], 'section': section}
+        queries={'mode': MODES.SET_SUB_LIST, 'slug': ids['slug'], 'section': section}
         menu_items.append(('Set as Subscription List', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
-        queries={'mode': MODES.COPY_LIST, 'slug': COLLECTION_SLUG, 'section': section, 'target_slug': user_list['slug']}
+        queries={'mode': MODES.COPY_LIST, 'slug': COLLECTION_SLUG, 'section': section, 'target_slug': ids['slug']}
         menu_items.append(('Import from Collection', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
         liz.addContextMenuItems(menu_items, replaceItems=True)
         
@@ -461,7 +463,7 @@ def show_list(section, slug, username=None):
     if slug == utils.WATCHLIST_SLUG:
         items = trakt_api.show_watchlist(section)
     else:
-        _, items = trakt_api.show_list(slug, section, username)
+       items = trakt_api.show_list(slug, section, username)
     make_dir_from_list(section, items, slug)
 
 @url_dispatcher.register(MODES.SHOW_WATCHLIST, ['section'])
@@ -1133,7 +1135,7 @@ def remove_many_from_list(section, items, slug):
     if slug==utils.WATCHLIST_SLUG:
         response=trakt_api.remove_from_watchlist(section, items)
     else:
-        response=trakt_api.remove_from_list(slug, items)
+        response=trakt_api.remove_from_list(section, slug, items)
     return response
     
 @url_dispatcher.register(MODES.ADD_TO_COLL, ['mode', 'section', 'id_type', 'show_id'])
@@ -1162,7 +1164,7 @@ def add_many_to_list(section, items, slug=None):
     if slug==utils.WATCHLIST_SLUG:
         response=trakt_api.add_to_watchlist(section, items)
     elif slug:
-        response=trakt_api.add_to_list(slug, items)
+        response=trakt_api.add_to_list(section, slug, items)
     return response
     
 @url_dispatcher.register(MODES.COPY_LIST, ['section', 'slug'], ['username', 'target_slug'])
