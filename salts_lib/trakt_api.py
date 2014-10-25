@@ -145,21 +145,24 @@ class Trakt_API():
 #         url='/activity/friends.json/%s/%s' % (API_KEY, types)
 #         return self.__call_trakt(url)
 #         
-#     def get_calendar(self, start_date=None, cached=True):
-#         url='/calendar/shows.json/%s' % (API_KEY)
-#         if start_date: url += '/%s' % (start_date)
-#         return self.__call_trakt(url, cached=cached)
-#     
-#     def get_premieres(self, start_date=None, cached=True):
-#         url='/calendar/premieres.json/%s' % (API_KEY)
-#         if start_date: url += '/%s' % (start_date)
-#         return self.__call_trakt(url, cached=cached)
-#     
-#     def get_my_calendar(self, start_date=None, cached=True):
-#         url='/user/calendar/shows.json/%s/%s' % (API_KEY, self.username)
-#         if start_date: url += '/%s' % (start_date)
-#         return self.__call_trakt(url, cached=cached)
-#         
+    def get_premieres(self, start_date=None, cached=True):
+        url='/calendars/shows/premieres'
+        if start_date: url += '/%s' % (start_date)
+        params = {'extended': 'full,images', 'auth': False}
+        return self.__call_trakt(url, params=params, auth=False, cached=cached)
+     
+    def get_calendar(self, start_date=None, cached=True):
+        url='/calendars/shows'
+        if start_date: url += '/%s' % (start_date)
+        params = {'extended': 'full,images', 'auth': False}
+        return self.__call_trakt(url, params=params, auth=False, cached=cached)
+     
+    def get_my_calendar(self, start_date=None, cached=True):
+        url='/calendars/shows'
+        if start_date: url += '/%s' % (start_date)
+        params = {'extended': 'full,images', 'auth': True}
+        return self.__call_trakt(url, params=params, auth=True, cached=cached)
+         
     def get_seasons(self, slug):
         url = '/shows/%s/seasons' % (slug)
         params = {'extended': 'full,images'}
@@ -264,10 +267,11 @@ class Trakt_API():
             data[TRAKT_SECTIONS[section]].append(ids)
         return data
     
-    def __call_trakt(self, url, data = None, params=None, cache_limit=.25, cached=True):
+    def __call_trakt(self, url, data = None, params=None, auth=True, cache_limit=.25, cached=True):
         if not cached: cache_limit = 0
         json_data=json.dumps(data) if data else None
-        headers = {'Content-Type': 'application/json', 'trakt-api-key': V2_API_KEY, 'trakt-api-version': 2, 'trakt-user-login': self.username, 'trakt-user-token': self.token}
+        headers = {'Content-Type': 'application/json', 'trakt-api-key': V2_API_KEY, 'trakt-api-version': 2}
+        if auth: headers.update({'trakt-user-login': self.username, 'trakt-user-token': self.token})
         url = '%s%s%s' % (self.protocol, BASE_URL, url)
         if params: url = url + '?' + urllib.urlencode(params)
         log_utils.log('Trakt Call: %s, header: %s, data: %s' % (url, headers, data), xbmc.LOGDEBUG)
@@ -311,9 +315,7 @@ class Trakt_API():
                 else:
                     raise TraktError('Trakt Error: '+str(e))
 
-        print result
         response=json.loads(result)
-        print response
 
         if 'status' in response and response['status']=='failure':
             if 'message' in response: raise TraktError(response['message'])

@@ -357,7 +357,7 @@ def browse_calendar(mode, start_date=None):
         now = datetime.datetime.now()
         offset = int(_SALTS.get_setting('calendar-day'))
         start_date = now + datetime.timedelta(days=offset)
-        start_date = datetime.datetime.strftime(start_date,'%Y%m%d')
+        start_date = datetime.datetime.strftime(start_date,'%Y-%m-%d')
     if mode == MODES.MY_CAL:
         days=trakt_api.get_my_calendar(start_date)
     elif mode == MODES.CAL:
@@ -1516,12 +1516,12 @@ def make_dir_from_list(section, list_data, slug=None):
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def make_dir_from_cal(mode, start_date, days):
-    try: start_date=datetime.datetime.strptime(start_date,'%Y%m%d')
-    except TypeError: start_date = datetime.datetime(*(time.strptime(start_date, '%Y%m%d')[0:6]))
+    try: start_date=datetime.datetime.strptime(start_date,'%Y-%m-%d')
+    except TypeError: start_date = datetime.datetime(*(time.strptime(start_date, '%Y-%m-%d')[0:6]))
     last_week = start_date - datetime.timedelta(days=7)
     next_week = start_date + datetime.timedelta(days=7)
-    last_week = datetime.datetime.strftime(last_week, '%Y%m%d')
-    next_week = datetime.datetime.strftime(next_week, '%Y%m%d')
+    last_week = datetime.datetime.strftime(last_week, '%Y-%m-%d')
+    next_week = datetime.datetime.strftime(next_week, '%Y-%m-%d')
     
     liz = xbmcgui.ListItem(label='<< Previous Week', iconImage=utils.art('previous.png'), thumbnailImage=utils.art('previous.png'))
     liz.setProperty('fanart_image', utils.art('fanart.jpg'))
@@ -1530,22 +1530,23 @@ def make_dir_from_cal(mode, start_date, days):
     xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz, isFolder=True)
     
     totalItems=len(days)
-    for day in days:
-        date=utils.make_day(day['date'])
-        for episode_elem in day['episodes']:
-            show=episode_elem['show']
-            episode=episode_elem['episode']
-            fanart=show['images']['fanart']
+    for day in sorted(days.items()):
+        for item in day[1]:
+            episode = item['episode']
+            show=item['show']
+            utc_secs = utils.iso_2_utc(episode['first_aired'])
+            date = utils.make_day(datetime.date.fromtimestamp(utc_secs).isoformat())
             if _SALTS.get_setting('calendar_time')!='0':
-                local_time = utils.make_time(utils.iso_2_utc(episode['first_aired_iso']))
-                date_time = '%s@%s' % (date,local_time)
+                date_time = '%s@%s' % (date,utils.make_time(utc_secs))
             else:
                 date_time = date
 
+            fanart=show['images']['fanart']['full']
+            
             menu_items=[]
-            queries = {'mode': MODES.SEASONS, 'slug': trakt_api.get_slug(show['url']), 'fanart': fanart}
+            queries = {'mode': MODES.SEASONS, 'slug': show['ids']['slug'], 'fanart': fanart}
             menu_items.append(('Browse Seasons', 'Container.Update(%s)' % (_SALTS.build_plugin_url(queries))), )
-
+ 
             liz, liz_url =make_episode_item(show, episode, fanart, show_subs=False, menu_items=menu_items)
             label=liz.getLabel()
             label = '[[COLOR deeppink]%s[/COLOR]] %s - %s' % (date_time, show['title'], label.decode('utf-8', 'replace'))
