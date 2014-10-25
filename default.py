@@ -1534,6 +1534,7 @@ def make_dir_from_cal(mode, start_date, days):
         for item in day[1]:
             episode = item['episode']
             show=item['show']
+            fanart=show['images']['fanart']['full']
             utc_secs = utils.iso_2_utc(episode['first_aired'])
             date = utils.make_day(datetime.date.fromtimestamp(utc_secs).isoformat())
             if _SALTS.get_setting('calendar_time')!='0':
@@ -1541,8 +1542,6 @@ def make_dir_from_cal(mode, start_date, days):
             else:
                 date_time = date
 
-            fanart=show['images']['fanart']['full']
-            
             menu_items=[]
             queries = {'mode': MODES.SEASONS, 'slug': show['ids']['slug'], 'fanart': fanart}
             menu_items.append(('Browse Seasons', 'Container.Update(%s)' % (_SALTS.build_plugin_url(queries))), )
