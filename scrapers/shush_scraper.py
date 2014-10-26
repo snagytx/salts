@@ -63,10 +63,10 @@ class Shush_Scraper(scraper.Scraper):
             match = re.search('li\s*=\s*"([^"]+)', html)            
             if match:
                 proxy_link = match.group(1)
-                proxy_link = proxy_link.decode('base-64')
+                proxy_link = self.__decode(proxy_link)
                 swf_link = 'http://player.shush.tv/ce9raraB57/'
                 if proxy_link.startswith('http'):
-                    xml_link = swf_link + 'dedR4wRe2.xml'
+                    xml_link = swf_link + 'dedR7wRe2.xml'
                     html = self._http_get(xml_link, cache_limit=0)
                     match = re.search('url="(.*?)f.swf', html)
                     if match:
@@ -115,6 +115,41 @@ class Shush_Scraper(scraper.Scraper):
             sources[source]=formats[sources[source]]
         return sources
     
+    def __decode(self, data):
+        bcv="ABCDEFGHJILKNMOPSRTQUVWXYZabcdefghijlknmopqrstwuvxyz0123456789+/="
+        #var o1,o2,o3,h1,h2,h3,h4,bits,
+        i=0
+        enc=''
+        while (i<len(data)):
+        #do:
+            #h1=bcv.indexOf(data.charAt(i))
+            h1=bcv.find(data[i])
+            i=i+1
+            #h2=bcv.indexOf(data.charAt(i))
+            h2=bcv.find(data[i])
+            i=i+1
+            #h3=bcv.indexOf(data.charAt(i))
+            h3=bcv.find(data[i])
+            i=i+1
+            #h4=bcv.indexOf(data.charAt(i))
+            h4=bcv.find(data[i])
+            i=i+1
+            bits=h1<<18|h2<<12|h3<<6|h4
+            o1=bits>>16&0xff
+            o2=bits>>8&0xff
+            o3=bits&0xff
+            if(h3==64):
+                #enc+=String.fromCharCode(o1)
+                enc += chr(o1)
+            elif(h4==64):
+                #enc+=String.fromCharCode(o1,o2)
+                enc += chr(o1) + chr(o2)
+            else:
+                #enc+=String.fromCharCode(o1,o2,o3)
+                enc += chr(o1) + chr(o2) + chr(o3)
+        #while(i<data.length)
+        return enc
+
     def __parse_fmt2(self, html):
         pattern='"url"\s*:\s*"([^"]+)"\s*,\s*"height"\s*:\s*\d+\s*,\s*"width"\s*:\s*(\d+)\s*,\s*"type"\s*:\s*"video/'
         sources={}
