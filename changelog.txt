@@ -1,3 +1,7 @@
+[B]Version 0.0.36[/B]
+- Fix auto-play
+- Fix shush.se
+
 [B]Version 0.0.35[/B]
 - Improve next run TS in Manage Subs
 - Fix download folder not being changeable
