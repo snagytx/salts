@@ -56,7 +56,7 @@ class Popcornered_Scraper(scraper.Scraper):
             url = urlparse.urljoin(self.base_url,source_url)
             html = self._http_get(url, cache_limit=.5)
             
-            match = re.search('data-video="([^"]+)', html)
+            match = re.search('file\s*:\s*"([^"]+)', html)
             if match:
                 stream_url = self.base_url + '/' + urllib.quote(match.group(1))
                 hoster={'multi-part': False, 'host': 'popcornered.com', 'url': stream_url, 'class': self, 'rating': None, 'views': None, 'quality': QUALITIES.HD, 'direct': True}
