@@ -160,8 +160,8 @@ def make_art(show, fanart=''):
     if 'images' in show:
         images = show['images']
         if 'banner' in images: art_dict['banner']=images['banner']['full']
-        if 'fanart' in images: art_dict['fanart']=images['fanart']['full']
         if 'poster' in images: art_dict['thumb']=art_dict['poster']=images['poster']['full']
+        if 'fanart' in images and images['fanart']['full'] is not None: art_dict['fanart']=images['fanart']['full']
         if 'thumb' in images and images['thumb']['full'] is not None: art_dict['thumb']=images['thumb']['full']
         if 'screen' in images and images['screen']['full'] is not None: art_dict['thumb']=images['screen']['full']
         if 'screenshot' in images and images['screenshot']['full'] is not None: art_dict['thumb']=images['screenshot']['full']

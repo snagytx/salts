@@ -151,9 +151,9 @@ def browse_menu(section):
         if utils.menu_on('general_cal'): add_refresh_item({'mode': MODES.CAL}, 'General Calendar', utils.art('calendar.png'), utils.art('fanart.jpg'))
         if utils.menu_on('premiere_cal'): add_refresh_item({'mode': MODES.PREMIERES}, 'Premiere Calendar', utils.art('premiere_calendar.png'), utils.art('fanart.jpg'))
         if TOKEN:
-            if utils.menu_on('friends'): add_refresh_item({'mode': MODES.FRIENDS_EPISODE, 'section': section}, 'Friends Episode Activity', utils.art('friends_episode.png'), utils.art('fanart.jpg'))
+            if utils.menu_on('friends'): add_refresh_item({'mode': MODES.FRIENDS_EPISODE, 'section': section}, 'Friends Episode Activity [COLOR red][I](Temporarily Broken)[/I][/COLOR]', utils.art('friends_episode.png'), utils.art('fanart.jpg'))
     if TOKEN:
-        if utils.menu_on('friends'): add_refresh_item({'mode': MODES.FRIENDS, 'section': section}, 'Friends Activity', utils.art('friends.png'), utils.art('fanart.jpg'))
+        if utils.menu_on('friends'): add_refresh_item({'mode': MODES.FRIENDS, 'section': section}, 'Friends Activity [COLOR red][I](Temporarily Broken)[/I][/COLOR]', utils.art('friends.png'), utils.art('fanart.jpg'))
     if utils.menu_on('search'): _SALTS.add_directory({'mode': MODES.SEARCH, 'section': section}, {'title': 'Search'}, img=utils.art(search_img), fanart=utils.art('fanart.jpg'))
     if utils.menu_on('search'): _SALTS.add_directory({'mode': MODES.RECENT_SEARCH, 'section': section}, {'title': 'Recent Searches'}, img=utils.art(search_img), fanart=utils.art('fanart.jpg'))
     if utils.menu_on('search'): _SALTS.add_directory({'mode': MODES.SAVED_SEARCHES, 'section': section}, {'title': 'Saved Searches'}, img=utils.art(search_img), fanart=utils.art('fanart.jpg'))
@@ -1194,7 +1194,7 @@ def copy_list(section, slug, username=None, target_slug=None):
     if slug == COLLECTION_SLUG:
         items = trakt_api.get_collection(section)
     else:
-        _, items = trakt_api.show_list(slug, section, username)
+        items = trakt_api.show_list(slug, section, username)
     copy_items=[]
     for item in items:
         query=utils.show_id(item)
@@ -1277,7 +1277,7 @@ def update_strms(section, dialog=None):
     elif slug == utils.WATCHLIST_SLUG:
         items = trakt_api.show_watchlist(section)
     else:
-        _, items = trakt_api.show_list(slug, section)
+        items = trakt_api.show_list(slug, section)
     
     length=len(items)
     for i, item in enumerate(items):
@@ -1294,7 +1294,7 @@ def clean_subs():
     elif slug == utils.WATCHLIST_SLUG:
         items = trakt_api.show_watchlist(SECTIONS.TV)
     else:
-        _, items = trakt_api.show_list(slug, SECTIONS.TV)
+        items = trakt_api.show_list(slug, SECTIONS.TV)
     
     for item in items:
         show_slug=trakt_api.get_slug(item['url'])

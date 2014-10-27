@@ -19,8 +19,6 @@ import json
 import urllib2
 from urllib2 import HTTPError
 import urllib
-import hashlib
-import re
 import socket
 import ssl
 import time
@@ -30,7 +28,6 @@ from db_utils import DB_Connection
 from constants import TRAKT_SECTIONS
 from constants import TEMP_ERRORS
 from constants import SECTIONS
-from constants import TRAKT_SORT
 
 class TraktError(Exception):
     pass
@@ -183,10 +180,11 @@ class Trakt_API():
         params = {'extended': 'full,images'}
         return self.__call_trakt(url, params=params, cache_limit=8)
      
-#     def get_movie_details(self, slug):
-#         url = '/movie/summary.json/%s/%s' % (API_KEY, slug)
-#         return self.__call_trakt(url, cache_limit=8)
-#     
+    def get_movie_details(self, slug):
+        url = '/movies/%s' % (slug)
+        params = {'extended': 'full,images'}
+        return self.__call_trakt(url, params=params, cache_limit=8)
+     
     def search(self, section, query):
         url='/search'
         params = {'type': TRAKT_SECTIONS[section][:-1], 'query': query}
@@ -286,7 +284,6 @@ class Trakt_API():
             log_utils.log('Returning cached result for: %s' % (url), xbmc.LOGDEBUG)
         else: 
             try:
-                
                 request = urllib2.Request(url, data = json_data, headers = headers )
                 f=urllib2.urlopen(request, timeout = self.timeout)
                 result=f.read()
