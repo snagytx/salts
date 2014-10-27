@@ -178,10 +178,11 @@ class Trakt_API():
         params = {'extended': 'full,images'}
         return self.__call_trakt(url, params=params, cache_limit=8)
      
-#     def get_episode_details(self, slug, season, episode):
-#         url = '/show/episode/summary.json/%s/%s/%s/%s' % (API_KEY, slug, season, episode)
-#         return self.__call_trakt(url, cache_limit=8)
-#     
+    def get_episode_details(self, slug, season, episode):
+        url = '/shows/%s/seasons/%s/episodes/%s' % (slug, season, episode)
+        params = {'extended': 'full,images'}
+        return self.__call_trakt(url, params=params, cache_limit=8)
+     
 #     def get_movie_details(self, slug):
 #         url = '/movie/summary.json/%s/%s' % (API_KEY, slug)
 #         return self.__call_trakt(url, cache_limit=8)
@@ -199,13 +200,15 @@ class Trakt_API():
         response = self.__call_trakt(url, params=params, cached=cached)
         return [item[TRAKT_SECTIONS[section][:-1]] for item in response]
      
-#     def get_watched(self, section, cached=True):
-#         url='/user/library/%s/watched.json/%s/%s/min' % (TRAKT_SECTIONS[section], API_KEY, self.username)
-#         return self.__call_trakt(url, cached=cached)
-#         
-    def get_show_progress(self, slug, cached=True):
+    def get_watched(self, section, full=False, cached=True):
+        url='/sync/watched/%s' % (TRAKT_SECTIONS[section])
+        params = {'extended': 'full,images'} if full else None
+        return self.__call_trakt(url, params=params, cached=cached)
+         
+    def get_show_progress(self, slug, full=False, cached=True):
         url='/shows/%s/progress/watched' % (slug)
-        return self.__call_trakt(url, cached=cached)
+        params = {'extended': 'full,images'} if full else None
+        return self.__call_trakt(url, params=params, cached=cached)
       
     def rate(self, section, item, rating, season='', episode=''):
         url ='/sync/ratings'

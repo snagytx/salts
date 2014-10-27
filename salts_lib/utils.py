@@ -162,8 +162,9 @@ def make_art(show, fanart=''):
         if 'banner' in images: art_dict['banner']=images['banner']['full']
         if 'fanart' in images: art_dict['fanart']=images['fanart']['full']
         if 'poster' in images: art_dict['thumb']=art_dict['poster']=images['poster']['full']
-        if 'thumb' in images: art_dict['thumb']=images['thumb']['full']
-        if 'screen' in images: art_dict['thumb']=images['screen']['full']
+        if 'thumb' in images and images['thumb']['full'] is not None: art_dict['thumb']=images['thumb']['full']
+        if 'screen' in images and images['screen']['full'] is not None: art_dict['thumb']=images['screen']['full']
+        if 'screenshot' in images and images['screenshot']['full'] is not None: art_dict['thumb']=images['screenshot']['full']
     return art_dict
 
 def make_info(item, show=''):
@@ -861,3 +862,20 @@ def get_extension(url, response):
     
 def url2name(url):
     return os.path.basename(urllib.unquote(urlparse.urlsplit(url)[2]))
+
+def sort_progress(episodes, sort_order):
+    if sort_order == TRAKT_SORT.TITLE:
+        return sorted(episodes, key=lambda x:x['show']['title'].lstrip('The '))
+    elif sort_order == TRAKT_SORT.ACTIVITY:
+        return sorted(episodes, key=lambda x:iso_2_utc(x['last_watched_at']), reverse=True)
+    elif sort_order == TRAKT_SORT.LEAST_COMPLETED:
+        return sorted(episodes, key=lambda x:(x['percent_completed'], x['completed']))
+    elif sort_order == TRAKT_SORT.MOST_COMPLETED:
+        return sorted(episodes, key=lambda x:(x['percent_completed'], x['completed']), reverse=True)
+    elif sort_order == TRAKT_SORT.PREVIOUSLY_AIRED:
+        return sorted(episodes, key=lambda x:iso_2_utc(x['episode']['first_aired']))
+    elif sort_order == TRAKT_SORT.RECENTLY_AIRED:
+        return sorted(episodes, key=lambda x:iso_2_utc(x['episode']['first_aired']), reverse=True)
+    else: # default sort set to activity
+        return sorted(episodes, key=lambda x:x['last_watched_at'], reverse=True)
+
