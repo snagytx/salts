@@ -1465,8 +1465,9 @@ def make_dir_from_list(section, list_data, slug=None):
     totalItems=len(list_data)
     
     cache_watched = _SALTS.get_setting('cache_watched')=='true'
+    watched={}
+    in_collection={}
     if TOKEN:
-        watched={}
         if section == SECTIONS.MOVIES:
             movie_watched = trakt_api.get_watched(section, cached=cache_watched)
             for item in movie_watched:
@@ -1499,11 +1500,11 @@ def make_dir_from_list(section, list_data, slug=None):
         
         if section == SECTIONS.MOVIES:
             show['watched'] = watched.get(show['ids']['slug'], False)
-        else:
-            progress = trakt_api.get_show_progress(show['ids']['slug'], cached=cache_watched)
-            show['watched'] = not progress.get('next_episode',True)
+        elif TOKEN:
+                progress = trakt_api.get_show_progress(show['ids']['slug'], cached=cache_watched)
+                show['watched'] = not progress.get('next_episode',True)
         #if not show['watched']: log_utils.log('Setting watched status on %s (%s): %s' % (show['title'], show['year'], show['watched']), xbmc.LOGDEBUG)
-        
+
         show['in_collection']=in_collection.get(show['ids']['slug'],False)
             
         liz, liz_url =make_item(section_params, show, menu_items)

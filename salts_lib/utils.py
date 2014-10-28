@@ -577,34 +577,24 @@ def iso_2_utc(iso_ts):
     except: seconds = delta.seconds + delta.days * 24 * 3600 # close enough
     return seconds
 
-# def fa_2_utc(first_aired):
-#     """
-#     This should only require subtracting off the difference between PST and UTC, but it doesn't
-#     and I don't know why. Regardless, this works.
-#     """
-#     # dif in seconds between local timezone and gmt timezone
-#     utc_dif = time.mktime(time.gmtime()) - time.mktime(time.localtime())
-#     return first_aired - (8*60*60 - utc_dif)
-
 def get_trakt_token():
     username=ADDON.get_setting('username')
     password=ADDON.get_setting('password')
+    token=ADDON.get_setting('trakt_token')
     last_hash=ADDON.get_setting('last_hash')
     cur_hash = hashlib.md5(username+password).hexdigest()
-    if cur_hash != last_hash:
+    
+    if not token or cur_hash != last_hash:
         try:
             token=trakt_api.login()
+            log_utils.log('Token Returned: %s' % (token), xbmc.LOGDEBUG)
         except:
             token=''
-        log_utils.log('Checked valid account (%s): %s != %s' % (token, last_hash, cur_hash), xbmc.LOGDEBUG)
-
-        if token:
-            ADDON.set_setting('trakt_token', token)
-            ADDON.set_setting('last_hash', cur_hash)
-    else:
-        log_utils.log('Assuming valid account: %s == %s' % (last_hash, cur_hash), xbmc.LOGDEBUG)
-        token=ADDON.get_setting('trakt_token')
         
+        if token:
+            ADDON.set_setting('last_hash', cur_hash)
+            
+    ADDON.set_setting('trakt_token', token)
     return token
 
 def format_sub_label(sub):
