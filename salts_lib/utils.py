@@ -114,7 +114,6 @@ def make_seasons_info(progress):
     season_info={}
     if progress:
         for season in progress['seasons']:
-            print season
             info={}
             if 'aired' in season: info['episode']=info['TotalEpisodes']=season['aired']
             if 'completed' in season: info['WatchedEpisodes']=season['completed']

@@ -192,9 +192,9 @@ class Trakt_API():
         response = self.__call_trakt(url, params = params)
         return [item[TRAKT_SECTIONS[section][:-1]] for item in response]
          
-    def get_collection(self, section, cached=True):
+    def get_collection(self, section, full=True, cached=True):
         url='/users/%s/collection/%s' % (self.username, TRAKT_SECTIONS[section])
-        params = {'extended': 'full,images'}
+        params = {'extended': 'full,images'} if full else None
         response = self.__call_trakt(url, params=params, cached=cached)
         return [item[TRAKT_SECTIONS[section][:-1]] for item in response]
      

@@ -482,7 +482,7 @@ def show_watchlist(section):
 
 @url_dispatcher.register(MODES.SHOW_COLLECTION, ['section'])
 def show_collection(section):
-    items = trakt_api.get_collection(section)
+    items = trakt_api.get_collection(section, cached=_SALTS.get_setting('cache_collection')=='true')
     make_dir_from_list(section, items, COLLECTION_SLUG)
     
 @url_dispatcher.register(MODES.SHOW_PROGRESS)
@@ -927,7 +927,6 @@ def play_source(mode, hoster_url, video_type, slug, season='', episode=''):
 
 def auto_play_sources(hosters, video_type, slug, season, episode):
     for item in hosters:
-        # TODO: Skip multiple sources for now
         if item['multi-part']:
             continue
 
@@ -943,7 +942,6 @@ def auto_play_sources(hosters, video_type, slug, season, episode):
 
 def pick_source_dialog(hosters):
     for item in hosters:
-        # TODO: Skip multiple sources for now
         if item['multi-part']:
             continue
 
@@ -971,7 +969,6 @@ def pick_source_dir(mode, hosters, video_type, slug, season='', episode=''):
         folder = False
 
     for item in hosters:
-        # TODO: Skip multiple sources for now
         if item['multi-part']:
             continue
 
@@ -1467,39 +1464,23 @@ def make_dir_from_list(section, list_data, slug=None):
     section_params=utils.get_section_params(section)
     totalItems=len(list_data)
     
-#     watched={}
-#     if TOKEN:
-#         cache_watched = _SALTS.get_setting('cache_watched')=='true'
-#         if section == SECTIONS.TV:
-#             progress = trakt_api.get_progress(full=False, cached=cache_watched)
-#             now = time.time()
-#             for item in progress:
-#                 for id_type in ['imdb_id', 'tvdb_id']:
-#                     if id_type in item['show'] and item['show'][id_type]:
-#                         if item['next_episode'] and item['next_episode']['first_aired']<now:
-#                             watched[item['show'][id_type]]=False
-#                         else:
-#                             watched[item['show'][id_type]]=True
-#         else:
-#             movie_watched = trakt_api.get_watched(section, cached=cache_watched)
-#             for item in movie_watched:
-#                 for id_type in ['imdb_id', 'tmdb_id']:
-#                     if id_type in item and item[id_type]:
-#                         watched[item[id_type]] = item['plays']>0
-    
+    cache_watched = _SALTS.get_setting('cache_watched')=='true'
+    if TOKEN:
+        watched={}
+        if section == SECTIONS.MOVIES:
+            movie_watched = trakt_api.get_watched(section, cached=cache_watched)
+            for item in movie_watched:
+                watched[item['movie']['ids']['slug']] = item['plays']>0
+        collection = trakt_api.get_collection(section, full=False, cached=_SALTS.get_setting('cache_collection')=='true')
+        in_collection = dict.fromkeys([show['ids']['slug'] for show in collection], True)
+
     for show in list_data:
-        print show
         menu_items=[]
         show_id=utils.show_id(show)
-        if slug:
-            if slug==COLLECTION_SLUG:
-                queries = {'mode': MODES.REM_FROM_COLL, 'section': section}
-                queries.update(show_id)
-                menu_items.append((REM_COLL_LABEL, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
-            else:
-                queries = {'mode': MODES.REM_FROM_LIST, 'slug': slug, 'section': section}
-                queries.update(show_id)
-                menu_items.append(('Remove from List', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+        if slug and slug != COLLECTION_SLUG:
+            queries = {'mode': MODES.REM_FROM_LIST, 'slug': slug, 'section': section}
+            queries.update(show_id)
+            menu_items.append(('Remove from List', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
                 
         sub_slug=_SALTS.get_setting('%s_sub_slug' % (section))
         if TOKEN and sub_slug:
@@ -1516,10 +1497,14 @@ def make_dir_from_list(section, list_data, slug=None):
                 queries = {'mode': MODES.URL_EXISTS, 'slug': show_slug}                
                 menu_items.append((label, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
         
-#         if 'imdb_id' in show: show['watched'] = watched.get(show['imdb_id'], False)
-#         elif 'tvdb_id' in show: show['watched'] = watched.get(show['tvdb_id'], False)
-#         elif 'tmdb_id' in show: show['watched'] = watched.get(show['tmdb_id'], False)
-#         #if not show['watched']: log_utils.log('Setting watched status on %s (%s): %s' % (show['title'], show['year'], show['watched']), xbmc.LOGDEBUG)
+        if section == SECTIONS.MOVIES:
+            show['watched'] = watched.get(show['ids']['slug'], False)
+        else:
+            progress = trakt_api.get_show_progress(show['ids']['slug'], cached=cache_watched)
+            show['watched'] = not progress.get('next_episode',True)
+        #if not show['watched']: log_utils.log('Setting watched status on %s (%s): %s' % (show['title'], show['year'], show['watched']), xbmc.LOGDEBUG)
+        
+        show['in_collection']=in_collection.get(show['ids']['slug'],False)
             
         liz, liz_url =make_item(section_params, show, menu_items)
         
@@ -1663,19 +1648,7 @@ def make_episode_item(show, episode, fanart, show_subs=True, menu_items=None):
     else:
         menu_items.insert(0, ('Show Information', 'XBMC.Action(Info)'), )
 
-    #TODO: Broken, V2 doesn't return in_collection
-    if 'in_collection' in episode and episode['in_collection']:
-        collection_mode=MODES.REM_FROM_COLL
-        label = 'Remove Show from Collection'
-    else:
-        collection_mode=MODES.ADD_TO_COLL
-        label = 'Add Show to Collection'
-        
     show_id=utils.show_id(show)
-    queries = {'mode': collection_mode, 'section': SECTIONS.TV}
-    queries.update(show_id)
-    menu_items.append((label, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
-
     queries = {'mode': MODES.ADD_TO_LIST, 'section': SECTIONS.TV}
     queries.update(show_id)
     menu_items.append(('Add Show to List', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
@@ -1749,15 +1722,14 @@ def make_item(section_params, show, menu_items=None):
         
     if TOKEN:
         show_id=utils.show_id(show)
-        if REM_COLL_LABEL not in (item[0] for item in menu_items):
-            if 'in_collection' in show and show['in_collection']:
-                queries = {'mode': MODES.REM_FROM_COLL, 'section': section_params['section']}
-                queries.update(show_id)
-                menu_items.append((REM_COLL_LABEL, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
-            else:
-                queries = {'mode': MODES.ADD_TO_COLL, 'section': section_params['section']}
-                queries.update(show_id)
-                menu_items.append(('Add to Collection', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+        if 'in_collection' in show and show['in_collection']:
+            queries = {'mode': MODES.REM_FROM_COLL, 'section': section_params['section']}
+            queries.update(show_id)
+            menu_items.append((REM_COLL_LABEL, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+        else:
+            queries = {'mode': MODES.ADD_TO_COLL, 'section': section_params['section']}
+            queries.update(show_id)
+            menu_items.append(('Add to Collection', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
         
         queries = {'mode': MODES.ADD_TO_LIST, 'section': section_params['section']}
         queries.update(show_id)
