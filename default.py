@@ -24,6 +24,7 @@ import xbmcplugin
 import xbmcgui
 import xbmc
 import xbmcvfs
+import urllib2
 from addon.common.addon import Addon
 from salts_lib.db_utils import DB_Connection
 from salts_lib.url_dispatcher import URL_Dispatcher
@@ -401,7 +402,14 @@ def browse_other_lists(section):
     lists = db_connection.get_other_lists(section)
     totalItems=len(lists)
     for other_list in lists:
-        header = trakt_api.get_list_header(other_list[1], other_list[0])
+        try:
+            header = trakt_api.get_list_header(other_list[1], other_list[0])
+        except urllib2.HTTPError as e:
+            if e.code == 404:
+                header = None
+            else:
+                raise
+
         if header:
             found=True
             if other_list[2]:

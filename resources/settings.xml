@@ -50,7 +50,7 @@
 	    <setting id="TV_fav_slug" type="text" visible="false"/>
 	    <setting id="Movies_fav_slug" type="text" visible="false"/>
 	    <setting id="remind_count" type="number" default="0" visible="false"/>
-	    <setting id="trakt_token" type="text" default="" visible="true"/>
+	    <setting id="trakt_token" type="text" default="" visible="false"/>
     </category>
 
     <category label="Library Integration">
