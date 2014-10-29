@@ -53,7 +53,6 @@ class Trakt_API():
         if not self.username or not self.password: return ''
         data = {'login': self.username, 'password': self.password}
         response = self.__call_trakt(url, data, cached=False)
-        print response
         return response['token']
     
     def show_list(self, slug, section, username=None, cached=True):
@@ -106,7 +105,7 @@ class Trakt_API():
         return self.__call_trakt(url, data=data, cache_limit=0)
      
     def remove_from_list(self, section, slug, items):
-        return self.__manage_list('delete', section, slug, items)
+        return self.__manage_list('remove', section, slug, items)
      
     def add_to_watchlist(self, section, items):
         return self.__manage_watchlist('add', section, items)

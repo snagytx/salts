@@ -1289,7 +1289,7 @@ def update_strms(section, dialog=None):
         if dialog:
             percent_progress = i*100 / length
             dialog.update(percent_progress, 'Stream All The Sources', 'Updating %s: %s (%s)' % (section, re.sub(' \(\d{4}\)$','',item['title']), item['year']))
-        add_to_library(section_params['video_type'], item['title'], item['year'], trakt_api.get_slug(item['url']))
+        add_to_library(section_params['video_type'], item['title'], item['year'], item['ids']['slug'])
 
 @url_dispatcher.register(MODES.CLEAN_SUBS)
 def clean_subs():
@@ -1301,23 +1301,19 @@ def clean_subs():
     else:
         items = trakt_api.show_list(slug, SECTIONS.TV)
     
+    del_items = []
     for item in items:
-        show_slug=trakt_api.get_slug(item['url'])
+        show_slug=item['ids']['slug']
         show=trakt_api.get_show_details(show_slug)
         if show['status'].upper()=='ENDED':
-            del_item = {'type': TRAKT_SECTIONS[SECTIONS.TV][:-1]}
-            if 'imdb_id' in show:
-                show_id={'imdb_id': show['imdb_id']}
-            elif 'tvdb_id' in show:
-                show_id={'tvdb_id': show['tvdb_id']}
-            else:
-                show_id={'title': show['title'], 'year': show['year']}
-            del_item.update(show_id)
+            show_id = utils.show_id(item)
+            del_items.append({show_id['id_type']:show_id['show_id']})
             
-            if slug == utils.WATCHLIST_SLUG:
-                trakt_api.remove_from_watchlist(SECTIONS.TV, del_item)
-            else:
-                trakt_api.remove_from_list(slug, del_item)
+    if del_items:
+        if slug == utils.WATCHLIST_SLUG:
+            trakt_api.remove_from_watchlist(SECTIONS.TV, del_items)
+        else:
+            trakt_api.remove_from_list(SECTIONS.TV, slug, del_items)
 
 @url_dispatcher.register(MODES.FLUSH_CACHE)
 def flush_cache():
@@ -1390,20 +1386,20 @@ def add_to_library(video_type, title, year, slug):
         if not seasons:
             log_utils.log('No Seasons found for %s (%s)' % (show['title'], show['year']), xbmc.LOGERROR)
 
-        for season in reversed(seasons):
-            season_num = season['season']
+        for season in seasons:
+            season_num = season['number']
             if _SALTS.get_setting('include_specials')=='true' or season_num != 0: 
                 episodes = trakt_api.get_episodes(slug, season_num)
                 for episode in episodes:
                     if utils.show_requires_source(slug):
                         require_source=True
                     else:
-                        if include_unknown or (episode['first_aired_iso']!=None and utils.iso_2_utc(episode['first_aired_iso'])<=time.time()):
+                        if include_unknown or (episode['first_aired']!=None and utils.iso_2_utc(episode['first_aired'])<=time.time()):
                             require_source = False
                         else:
                             continue
                     
-                    ep_num = episode['episode']
+                    ep_num = episode['number']
                     filename = utils.filename_from_title(show['title'], video_type)
                     filename = filename % ('%02d' % int(season_num), '%02d' % int(ep_num))
                     final_path = os.path.join(make_path(save_path, video_type, show['title'], season=season_num), filename)
