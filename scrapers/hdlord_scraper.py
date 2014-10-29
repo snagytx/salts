@@ -61,58 +61,14 @@ class HDLord_Scraper(scraper.Scraper):
             for match in re.finditer('proxy\.link\s*=\s*([^"]+)', html):
                 proxy_link = match.group(1)
                 proxy_link = proxy_link.split('*', 1)[-1]
-                print proxy_link
-                stream_url = GKDecrypter.decrypter(198,128).decrypt(proxy_link, base64.urlsafe_b64decode('uhaVp8Gvykcy1bFQafBR'),'ECB').split('\0')[0]
-                print stream_url
-                hoster = {'multi-part': False, 'url': stream_url, 'class': self, 'quality': QUALITIES.HD, 'host': urlparse.urlsplit(stream_url).hostname, 'rating': None, 'views': None, 'direct': True}
-                hosters.append(hoster)
+                stream_url = GKDecrypter.decrypter(198,128).decrypt(proxy_link, 'uhaVp8Gvykcy1bFQafBR','ECB').split('\0')[0]
+                host = urlparse.urlsplit(stream_url).hostname
+                if host and stream_url not in (hoster['url'] for hoster in hosters):
+                    hoster = {'multi-part': False, 'url': stream_url, 'class': self, 'quality': QUALITIES.HD, 'host': host, 'rating': None, 'views': None, 'direct': True}
+                    hosters.append(hoster)
          
         return hosters
 
-#     def __parse_fmt(self, html):
-#         html = re.sub('\s', '', html)
-#         html = html.replace('\\u0026', '&')
-#         html = html.replace('\\u003d', '=')
-#         sources={}
-#         formats={}
-#         for match in re.finditer('\["(.*?)","(.*?)"\]', html):
-#             key, value = match.groups()
-#             if key == 'fmt_stream_map':
-#                 items = value.split(',')
-#                 for item in items:
-#                     source_fmt, source_url = item.split('|')
-#                     sources[source_url]=source_fmt
-#             elif key == 'fmt_list':
-#                 items = value.split(',')
-#                 for item in items:
-#                     format_key, q_str, _ = item.split('/', 2)
-#                     w,_ = q_str.split('x')
-#                     formats[format_key]=self.__set_quality(w)
-#         
-#         for source in sources:
-#             sources[source]=formats[sources[source]]
-#         return sources
-#     
-# 
-#     def __parse_fmt2(self, html):
-#         pattern='"url"\s*:\s*"([^"]+)"\s*,\s*"height"\s*:\s*\d+\s*,\s*"width"\s*:\s*(\d+)\s*,\s*"type"\s*:\s*"video/'
-#         sources={}
-#         for match in re.finditer(pattern, html):
-#             url, width = match.groups()
-#             url = url.replace('%3D', '=')
-#             sources[url]=self.__set_quality(width)
-#         return sources
-#             
-#     def __set_quality(self, width):
-#         width=int(width)
-#         if width>=1280:
-#             quality=QUALITIES.HD
-#         elif width>640:
-#             quality=QUALITIES.HIGH
-#         else:
-#             quality=QUALITIES.MEDIUM
-#         return quality
-#     
     def get_url(self, video):
         return super(HDLord_Scraper, self)._default_get_url(video)
     
