@@ -18,6 +18,7 @@
 import scraper
 import re
 import urllib2
+import urllib
 import urlparse
 import xbmcaddon
 import xbmc
@@ -70,7 +71,7 @@ class Vidics_Scraper(scraper.Scraper):
                 
                 for match in re.finditer('class="movie_link.*?href="([^"]+)[^>]+>([^<]+)', fragment, re.DOTALL):
                     media_url, host = match.groups()
-                    hosters.append({'multi-part': False, 'url': media_url, 'class': self, 'quality': None, 'host': host, 'rating': None, 'views': None, 'direct': False})
+                    hosters.append({'multi-part': False, 'url': media_url, 'class': self, 'quality': None, 'host': host.lower(), 'rating': None, 'views': None, 'direct': False})
                     
         return hosters
 
@@ -82,7 +83,7 @@ class Vidics_Scraper(scraper.Scraper):
             search_url = urlparse.urljoin(self.base_url, '/Category-Movies/Genre-Any/Letter-Any/ByPopularity/1/Search-')
         else:
             search_url = urlparse.urljoin(self.base_url, '/Category-TvShows/Genre-Any/Letter-Any/ByPopularity/1/Search-')
-        search_url += '%s.html' % (title)
+        search_url += '%s.html' % (urllib.quote_plus(title))
         html = self._http_get(search_url, cache_limit=.25)
 
         results=[]
