@@ -1394,7 +1394,7 @@ def add_to_library(video_type, title, year, slug):
                     if utils.show_requires_source(slug):
                         require_source=True
                     else:
-                        if include_unknown or (episode['first_aired']!=None and utils.iso_2_utc(episode['first_aired'])<=time.time()):
+                        if (episode['first_aired'] != None and utils.iso_2_utc(episode['first_aired'])<=time.time()) or (include_unknown and episode['first_aired'] == None):
                             require_source = False
                         else:
                             continue
