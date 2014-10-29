@@ -1532,13 +1532,13 @@ def make_dir_from_cal(mode, start_date, days):
     except TypeError: start_date = datetime.datetime(*(time.strptime(start_date, '%Y-%m-%d')[0:6]))
     last_week = start_date - datetime.timedelta(days=7)
     next_week = start_date + datetime.timedelta(days=7)
-    last_week = datetime.datetime.strftime(last_week, '%Y-%m-%d')
-    next_week = datetime.datetime.strftime(next_week, '%Y-%m-%d')
+    last_str = datetime.datetime.strftime(last_week, '%Y-%m-%d')
+    next_str = datetime.datetime.strftime(next_week, '%Y-%m-%d')
     
     liz = xbmcgui.ListItem(label='<< Previous Week', iconImage=utils.art('previous.png'), thumbnailImage=utils.art('previous.png'))
     liz.setProperty('fanart_image', utils.art('fanart.jpg'))
     
-    liz_url = _SALTS.build_plugin_url({'mode': mode, 'start_date': last_week})
+    liz_url = _SALTS.build_plugin_url({'mode': mode, 'start_date': last_str})
     xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz, isFolder=True)
     
     totalItems=len(days)
@@ -1553,8 +1553,8 @@ def make_dir_from_cal(mode, start_date, days):
             if show_date < start_date.date():
                 log_utils.log('Skipping show before start: |%s| before |%s|' % (show_date, start_date.date()), xbmc.LOGDEBUG)
                 continue
-            elif show_date > (start_date + datetime.timedelta(days=7)).date():
-                log_utils.log('Stopping because show after end: |%s| before |%s|' % (show_date, (start_date + datetime.timedelta(days=7)).date()), xbmc.LOGDEBUG)
+            elif show_date > next_week.date():
+                log_utils.log('Stopping because show after end: |%s| before |%s|' % (show_date, next_week.date()), xbmc.LOGDEBUG)
                 break
             
             date = utils.make_day(datetime.date.fromtimestamp(utc_secs).isoformat())
@@ -1577,7 +1577,7 @@ def make_dir_from_cal(mode, start_date, days):
 
     liz = xbmcgui.ListItem(label='Next Week >>', iconImage=utils.art('next.png'), thumbnailImage=utils.art('next.png'))
     liz.setProperty('fanart_image', utils.art('fanart.jpg'))
-    liz_url = _SALTS.build_plugin_url({'mode': mode, 'start_date': next_week})
+    liz_url = _SALTS.build_plugin_url({'mode': mode, 'start_date': next_str})
     xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz, isFolder=True)    
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
