@@ -51,7 +51,7 @@ class Movie25_Scraper(scraper.Scraper):
             return match.group(1)
 
     def format_source_label(self, item):
-        return '[%s] %s (%s Up, %s Down) (%s/100)' % (item['quality'], item['host'], item['up'], item['down'], item['rating'])
+        return '[%s] %s' % (item['quality'], item['host'])
     
     def get_sources(self, video):
         source_url= self.get_url(video)
@@ -65,15 +65,10 @@ class Movie25_Scraper(scraper.Scraper):
             if match:
                 quality = QUALITY_MAP.get(match.group(1).upper())
     
-            pattern='li class="link_name">\s*(.*?)\s*</li>.*?href="([^"]+).*?<div class="good".*?/>\s*(.*?)\s*</a>.*?<div class="bad".*?/>\s*(.*?)\s*</a>'
+            pattern='li class="link_name">\s*(.*?)\s*</li>.*?href="([^"]+)'
             for match in re.finditer(pattern, html, re.DOTALL):
-                host, url, up, down = match.groups()
-                up=int(up)
-                down=int(down)
-                hoster = {'multi-part': False, 'host': host, 'class': self, 'url': url, 'quality': quality, 'up': up, 'down': down, 'direct': False}
-                rating=up*100/(up+down) if (up>0 or down>0) else None
-                hoster['rating']=rating
-                hoster['views']=up+down
+                host, url = match.groups()
+                hoster = {'multi-part': False, 'host': host, 'class': self, 'url': url, 'quality': quality, 'rating': None, 'views': None, 'direct': False}
                 hosters.append(hoster)
         return hosters
 
