@@ -27,9 +27,9 @@ from salts_lib import GKDecrypter
 from salts_lib import log_utils
 from salts_lib.constants import VIDEO_TYPES
 from salts_lib.constants import QUALITIES
+from salts_lib.constants import USER_AGENT
 
 BASE_URL = 'http://hdlord.com'
-QUALITY_MAP = {'mobile': QUALITIES.LOW, 'lowest': QUALITIES.LOW, 'low': QUALITIES.MEDIUM, 'sd': QUALITIES.HIGH, 'hd': QUALITIES.HD}
 
 class HDLord_Scraper(scraper.Scraper):
     base_url=BASE_URL
@@ -65,44 +65,61 @@ class HDLord_Scraper(scraper.Scraper):
             if match:
                 views = match.group(1)
                 
-            for match in re.finditer('proxy\.link\s*=\s*([^"]+)', html):
+            seen_urls = []
+            for match in re.finditer('proxy\.link\s*=\s*([^&"]+)', html):
                 proxy_link = match.group(1)
                 proxy_link = proxy_link.split('*', 1)[-1]
+                proxy_link = proxy_link.strip()
+                print '|%s|' % proxy_link
                 stream_url = GKDecrypter.decrypter(198,128).decrypt(proxy_link, base64.urlsafe_b64decode('dWhhVnA4R3Z5a2N5MWJGUWFmQlI='),'ECB').split('\0')[0]
+                print stream_url
                 host = urlparse.urlsplit(stream_url).hostname
-                if host:
+                
+                if host and stream_url not in seen_urls:
                     if 'odnoklassniki.ru' in stream_url:
                         sources = self.parse_format(stream_url)
-                        direct = True
                     else:
                         sources = [{'url': stream_url, 'quality': QUALITIES.HD}]
-                        direct = False
                         
                     for source in sources:
-                        hoster = {'multi-part': False, 'url': source['url'], 'class': self, 'quality': source['quality'], 'host': host, 'rating': None, 'views': views, 'direct': direct}
+                        hoster = {'multi-part': False, 'url': source['url'], 'class': self, 'quality': source['quality'], 'host': host, 'rating': None, 'views': views, 'direct': True}
                         hosters.append(hoster)
+                seen_urls.append(stream_url)
          
         return hosters
 
     def parse_format(self, host_url):
         html = self._http_get(host_url, cache_limit=0)
-        match = re.search(r'"videos\\":\[(.*?)\]', html)
+        match = re.search(r'metadataEmbedded(.*?)wmode', html)
+        sources = []
         if match:
-            print html
             html = match.group(1)
             html = html.replace('\\\\', '\\')
             html = html.replace('\\"', '"')
+            html = html.replace('\\"', '"')
             html = html.replace('\\u0026', '&')
             html = html.replace('\\u003d', '=')
-            print html
-            sources = []
-            for match in re.finditer('"name":"([^"]+)","url":"([^"]+)', html):
-                quality, url = match.groups()
-                url = url + '&bytes=95-10000|User-Agent=Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:33.0) Gecko/20100101 Firefox/33.0'
-                print url, quality
-                source = {'url': url, 'quality': QUALITY_MAP.get(quality, QUALITIES.LOW)}
+            html = html.replace('\\u003c', '<')
+            html = html.replace('\\u003e', '>')
+            html = html.replace('&amp;', '&')
+            for match in re.finditer('\s+width="([^"]+).*?<BaseURL>([^<]+)', html):
+                width, url = match.groups()
+                url = url + '&bytes=0-2097152|User-Agent=%s' % (USER_AGENT)
+                source = {'url': url, 'quality': self.__get_quality(width)}
                 sources.append(source)
         return sources
+    
+    def __get_quality(self, width):
+        width=int(width)
+        if width>=1280:
+            quality=QUALITIES.HD
+        elif width>640:
+            quality=QUALITIES.HIGH
+        elif width>255:
+            quality=QUALITIES.MEDIUM
+        else:
+            quality=QUALITIES.LOW
+        return quality
     
     def get_url(self, video):
         return super(HDLord_Scraper, self)._default_get_url(video)

@@ -43,7 +43,7 @@ P_MODES = __enum(THREADS=0, PROCESSES=1, NONE=2)
 WATCHLIST_SLUG = 'watchlist_slug'
 COLLECTION_SLUG='collection_slug'
 REM_COLL_LABEL='Remove from Collection'
-USER_AGENT = ("Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:32.0) Gecko/20100101 Firefox/32.0")
+USER_AGENT = ("Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:32.0) Gecko/20100101 Firefox/33.0")
 SEARCH_HISTORY = 10
 DEFAULT_EXT = '.mpg'
 CHUNK_SIZE=512 * 1024
