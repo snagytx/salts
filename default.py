@@ -43,8 +43,9 @@ password=_SALTS.get_setting('password')
 TOKEN=utils.get_trakt_token()
 use_https=_SALTS.get_setting('use_https')=='true'
 trakt_timeout=int(_SALTS.get_setting('trakt_timeout'))
+list_size=int(_SALTS.get_setting('list_size'))
 
-trakt_api=Trakt_API(username,password, TOKEN, use_https, trakt_timeout)
+trakt_api=Trakt_API(username,password, TOKEN, use_https, list_size, trakt_timeout)
 url_dispatcher=URL_Dispatcher()
 db_connection=DB_Connection()
 
@@ -137,6 +138,7 @@ def browse_menu(section):
 
     if utils.menu_on('trending'): _SALTS.add_directory({'mode': MODES.TRENDING, 'section': section}, {'title': 'Trending %s' % (section_label)}, img=utils.art('trending.png'), fanart=utils.art('fanart.jpg'))
     if utils.menu_on('popular'): _SALTS.add_directory({'mode': MODES.POPULAR, 'section': section}, {'title': 'Popular %s' % (section_label)}, img=utils.art('popular.png'), fanart=utils.art('fanart.jpg'))
+    if utils.menu_on('recent'): _SALTS.add_directory({'mode': MODES.RECENT, 'section': section}, {'title': 'Recently Updated %s' % (section_label)}, img=utils.art('recent.png'), fanart=utils.art('fanart.jpg'))
     if TOKEN:
         if utils.menu_on('recommended'): _SALTS.add_directory({'mode': MODES.RECOMMEND, 'section': section}, {'title': 'Recommended %s' % (section_label)}, img=utils.art('recommended.png'), fanart=utils.art('fanart.jpg'))
         if utils.menu_on('collection'): add_refresh_item({'mode': MODES.SHOW_COLLECTION, 'section': section}, 'My %s Collection' % (section_label[:-1]), utils.art('collection.png'), utils.art('fanart.jpg'))
@@ -314,6 +316,14 @@ def browse_trending(section):
 @url_dispatcher.register(MODES.POPULAR, ['section'])
 def browse_popular(section):
     list_data = trakt_api.get_popular(section)
+    make_dir_from_list(section, list_data)
+
+@url_dispatcher.register(MODES.RECENT, ['section'])
+def browse_recent(section):
+    now = datetime.datetime.now()
+    start_date = now - datetime.timedelta(days=7)
+    start_date = datetime.datetime.strftime(start_date,'%Y-%m-%d')
+    list_data = trakt_api.get_recent(section, start_date)
     make_dir_from_list(section, list_data)
 
 @url_dispatcher.register(MODES.RECOMMEND, ['section'])
@@ -1538,6 +1548,15 @@ def make_dir_from_cal(mode, start_date, days):
             show=item['show']
             fanart=show['images']['fanart']['full']
             utc_secs = utils.iso_2_utc(episode['first_aired'])
+            show_date = datetime.date.fromtimestamp(utc_secs)
+            
+            if show_date < start_date.date():
+                log_utils.log('Skipping show before start: |%s| before |%s|' % (show_date, start_date.date()), xbmc.LOGDEBUG)
+                continue
+            elif show_date > (start_date + datetime.timedelta(days=7)).date():
+                log_utils.log('Stopping because show after end: |%s| before |%s|' % (show_date, (start_date + datetime.timedelta(days=7)).date()), xbmc.LOGDEBUG)
+                break
+            
             date = utils.make_day(datetime.date.fromtimestamp(utc_secs).isoformat())
             if _SALTS.get_setting('calendar_time')!='0':
                 date_time = '%s@%s' % (date,utils.make_time(utc_secs))

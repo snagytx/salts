@@ -33,6 +33,7 @@ password=ADDON.get_setting('password')
 token = ADDON.get_setting('trakt_token')
 use_https=ADDON.get_setting('use_https')=='true'
 trakt_timeout=int(ADDON.get_setting('trakt_timeout'))
+list_size=int(ADDON.get_setting('list_size'))
 
 P_MODE = int(ADDON.get_setting('parallel_mode'))
 if P_MODE == P_MODES.THREADS:
@@ -50,7 +51,7 @@ elif P_MODE == P_MODES.PROCESSES:
         builtin = 'XBMC.Notification(%s,Process Mode not supported on this platform falling back to Thread Mode, 7500, %s)'
         xbmc.executebuiltin(builtin % (ADDON.get_name(), ICON_PATH))
 
-trakt_api=Trakt_API(username,password, token, use_https, trakt_timeout)
+trakt_api=Trakt_API(username,password, token, use_https, list_size, trakt_timeout)
 db_connection=DB_Connection()
 
 THEME_LIST = ['Shine', 'Luna_Blue', 'Iconic']

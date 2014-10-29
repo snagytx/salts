@@ -41,12 +41,13 @@ V2_API_KEY ='eb41e95243d8c95152ed72a1fc0394c93cb785cb33aed609fdde1a07454584b4'
 RESULTS_LIMIT=10
     
 class Trakt_API():
-    def __init__(self, username, password, token=None, use_https=False, timeout=5):
+    def __init__(self, username, password, token=None, use_https=False, list_size = RESULTS_LIMIT, timeout=5):
         self.username = username
         self.password = password
         self.token = token
         self.protocol='https://' if use_https else 'http://'
         self.timeout=timeout
+        self.list_size = list_size
         
     def login(self):
         url = '/auth/login'
@@ -115,14 +116,20 @@ class Trakt_API():
     
     def get_trending(self, section):
         url='/%s/trending' % (TRAKT_SECTIONS[section])
-        params = {'extended': 'full,images', 'limit': RESULTS_LIMIT}
+        params = {'extended': 'full,images', 'limit': self.list_size}
         response=self.__call_trakt(url, params=params)
         return [item[TRAKT_SECTIONS[section][:-1]] for item in response]
     
     def get_popular(self, section):
         url='/%s/popular' % (TRAKT_SECTIONS[section])
-        params = {'extended': 'full,images', 'limit': RESULTS_LIMIT}
+        params = {'extended': 'full,images', 'limit': self.list_size}
         return self.__call_trakt(url, params=params)
+    
+    def get_recent(self, section, date):
+        url='/%s/updates/%s' % (TRAKT_SECTIONS[section], date)
+        params = {'extended': 'full,images', 'limit': self.list_size}
+        response = self.__call_trakt(url, params=params)
+        return [item[TRAKT_SECTIONS[section][:-1]] for item in response]
     
     def get_genres(self, section):
         url='/genres/%s' % (TRAKT_SECTIONS[section])
@@ -130,7 +137,7 @@ class Trakt_API():
         
     def get_recommendations(self, section):
         url='/recommendations/%s' % (TRAKT_SECTIONS[section])
-        params = {'extended': 'full,images', 'limit': RESULTS_LIMIT}
+        params = {'extended': 'full,images', 'limit': self.list_size}
         return self.__call_trakt(url, params=params)
          
 #     def get_friends_activity(self, section, include_episodes=False):

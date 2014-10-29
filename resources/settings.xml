@@ -17,6 +17,7 @@
 	<category label="User Interface">
 	    <setting id="show_trending" type="bool" label="Show Trending" default="true"/>
 	    <setting id="show_popular" type="bool" label="Show Popular" default="true"/>
+	    <setting id="show_recent" type="bool" label="Show Recently Updated" default="true"/>
 	    <setting id="show_recommended" type="bool" label="Show Recommended" default="true"/>
 	    <setting id="show_collection" type="bool" label="Show My Collection" default="true"/>
 	    <setting id="show_favorites" type="bool" label="Show My Favorites" default="true"/>
@@ -42,6 +43,7 @@
 		<setting id="password" type="text" label="Trakt Password" default="" option="hidden"/>
 	    <setting id="use_https" type="bool" label="Use HTTPS" default="false"/>
 		<setting id="trakt_timeout" type="slider" label="Trakt Timeout (seconds) (0=No Limit)" default="30" range="0,120" option="int"/>
+		<setting id="list_size" type="slider" label="Trakt List Size" default="30" range="1,100" option="int"/>
 		<setting id="cache_watched" type="bool" label="Cache watched status" default="true"/>
 		<setting id="cache_collection" type="bool" label="Cache Collection" default="true"/>
 		<setting id="last_hash" type="text" default="" visible="false"/>
