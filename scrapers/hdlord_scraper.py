@@ -51,7 +51,9 @@ class HDLord_Scraper(scraper.Scraper):
         return link
     
     def format_source_label(self, item):
-        label='[%s] %s (%s views) ' % (item['quality'], item['host'], item['views'])
+        label='[%s]' % (item['quality'])
+        if 'res' in item: label = '%s (%s)' % (label, item['res'])
+        label = '%s %s (%s views)' % (label, item['host'], item['views'])
         return label
     
     def get_sources(self, video):
@@ -77,11 +79,19 @@ class HDLord_Scraper(scraper.Scraper):
                 if host and stream_url not in seen_urls:
                     if 'odnoklassniki.ru' in stream_url:
                         sources = self.parse_format(stream_url)
+                        host = 'hdlord.com'
+                        direct = True
+                    elif 'google.com' in stream_url:
+                        sources = self.parse_format2(stream_url)
+                        host = 'hdlord.com'
+                        direct = True
                     else:
                         sources = [{'url': stream_url, 'quality': QUALITIES.HD}]
+                        direct = False
                         
                     for source in sources:
-                        hoster = {'multi-part': False, 'url': source['url'], 'class': self, 'quality': source['quality'], 'host': host, 'rating': None, 'views': views, 'direct': True}
+                        hoster = {'multi-part': False, 'class': self, 'host': host, 'rating': None, 'views': views, 'direct': direct}
+                        hoster.update(source)
                         hosters.append(hoster)
                 seen_urls.append(stream_url)
          
@@ -105,6 +115,43 @@ class HDLord_Scraper(scraper.Scraper):
                 source = {'url': url, 'quality': QUALITY_MAP.get(quality, QUALITIES.MEDIUM)}
                 sources.append(source)
         return sources
+    
+    def parse_format2(self, host_url):
+        html = self._http_get(host_url, cache_limit=.5)
+        html = re.sub('\s','', html)
+        print html
+        match = re.search(r'(\[\s*\[\d+,\d+,\d+.*?\]\s*\])', html)
+        sources = []
+        if match:
+            html = match.group(1)
+            html = html.replace('\\"', '"')
+            html = html.replace('\\u0026', '&')
+            html = html.replace('\\u003d', '=')
+            html = html.replace('\\u003c', '<')
+            html = html.replace('\\u003e', '>')
+            print html
+            for match in re.finditer('(\d+),\d+,"(https://redirector[^"]+)', html):
+                width, url = match.groups()
+                source = {'url': url}
+                source.update(self.__set_quality(width))
+                sources.append(source)
+        return sources
+     
+    def __set_quality(self, width):
+        width=int(width)
+        if width>=1920:
+            quality=QUALITIES.HD
+            res='1080p'
+        elif width>=1280:
+            quality=QUALITIES.HD
+            res = '720p'
+        elif width>640:
+            quality=QUALITIES.HIGH
+            res='480p'
+        else:
+            quality=QUALITIES.MEDIUM
+            res='360p'
+        return {'quality': quality, 'res': res}
     
     def get_url(self, video):
         return super(HDLord_Scraper, self)._default_get_url(video)
