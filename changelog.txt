@@ -1,3 +1,7 @@
+[B]Version 0.0.37[/B]
+- Fix vidics.ch
+- Fix movie25
+
 [B]Version 0.0.36[/B]
 - Fix auto-play
 - Fix shush.se
