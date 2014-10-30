@@ -156,18 +156,20 @@ def make_list_item(label, meta):
 #TODO: Take advantage of smaller images
 def make_art(show, fanart=''):
     if not fanart: fanart = art('fanart.jpg')
-    art_dict={'banner': '', 'fanart': fanart, 'thumb': '', 'poster': ''}
+    art_dict={'banner': '', 'fanart': fanart, 'thumb': '', 'poster': PLACE_POSTER}
     if 'images' in show:
         images = show['images']
-        if 'banner' in images: art_dict['banner']=images['banner']['full']
-        if 'poster' in images: art_dict['thumb']=art_dict['poster']=images['poster']['full']
+        if 'banner' in images and images['poster']['full'] is not None: art_dict['banner']=images['banner']['full']
+        if 'poster' in images and images['poster']['full'] is not None: art_dict['thumb']=art_dict['poster']=images['poster']['full']
         if 'fanart' in images and images['fanart']['full'] is not None: art_dict['fanart']=images['fanart']['full']
         if 'thumb' in images and images['thumb']['full'] is not None: art_dict['thumb']=images['thumb']['full']
         if 'screen' in images and images['screen']['full'] is not None: art_dict['thumb']=images['screen']['full']
         if 'screenshot' in images and images['screenshot']['full'] is not None: art_dict['thumb']=images['screenshot']['full']
     return art_dict
 
-def make_info(item, show=''):
+def make_info(item, show=None, people=None):
+    if people is None: people = {}
+    if show is None: show={}
     #log_utils.log('Making Info: Show: %s' % (show), xbmc.LOGDEBUG)
     #log_utils.log('Making Info: Item: %s' % (item), xbmc.LOGDEBUG)
     info={}
@@ -192,7 +194,6 @@ def make_info(item, show=''):
     if 'rating' in item: info['rating']=item['rating']
     if 'released' in item: info['premiered']=item['released']
     info.update(make_ids(item))
-    info.update(make_people(item))
     
     if 'first_aired' in item:
         utc_air_time = iso_2_utc(item['first_aired'])
@@ -227,7 +228,7 @@ def make_info(item, show=''):
     if 'title' in show: info['tvshowtitle']=show['title']
     if 'network' in show: info['studio']=show['network']
     info.update(make_ids(show))
-    info.update(make_people(show))
+    info.update(make_people(people))
     return info
     
 def make_ids(item):
@@ -243,10 +244,15 @@ def make_ids(item):
     
 def make_people(item):
     people={}
-    if 'people' in item: people['cast']=[actor['name'] for actor in item['people']['actors'] if actor['name']]
-    if 'people' in item: people['castandrole']=['%s as %s' % (actor['name'],actor['character']) for actor in item['people']['actors'] if actor['name'] and actor['character']]
-    if 'people' in item and 'directors' in item['people']: people['director']=', '.join([director['name'] for director in item['people']['directors']])
-    if 'people' in item and 'writers' in item['people']: people['writer']=', '.join([writer['name'] for writer in item['people']['writers']])
+    if 'cast' in item: people['cast']=[person['person']['name'] for person in item['cast']]
+    if 'cast' in item: people['castandrole']=['%s as %s' % (person['person']['name'], person['character']) for person in item['cast']]
+    if 'crew' in item and 'directing' in item['crew']:
+        directors = [director['person']['name'] for director in item['crew']['directing'] if director['job'].lower() == 'director']
+        people['director']=', '.join(directors)
+    if 'crew' in item and 'writing' in item['crew']:
+        writers = [writer['person']['name'] for writer in item['crew']['writing'] if writer['job'].lower() in ['writer', 'screenplay', 'author']]
+        people['writer']=', '.join(writers)
+    
     return people
     
 def get_section_params(section):

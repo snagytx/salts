@@ -42,7 +42,6 @@ DIRS = __enum(UP='up', DOWN='down')
 P_MODES = __enum(THREADS=0, PROCESSES=1, NONE=2)
 WATCHLIST_SLUG = 'watchlist_slug'
 COLLECTION_SLUG='collection_slug'
-REM_COLL_LABEL='Remove from Collection'
 USER_AGENT = ("Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:32.0) Gecko/20100101 Firefox/33.0")
 SEARCH_HISTORY = 10
 DEFAULT_EXT = '.mpg'
@@ -54,7 +53,6 @@ PROGRESS = __enum(OFF=0, WINDOW=1, BACKGROUND=2)
 SORT_KEYS = {}
 SORT_KEYS['quality'] = {None: 0, QUALITIES.LOW: 1, QUALITIES.MEDIUM: 2, QUALITIES.HIGH: 3, QUALITIES.HD: 4}
 SORT_LIST = ['none', 'source', 'quality', 'views', 'rating', 'direct']
-
 SORT_SIGNS = {'0': -1, '1': 1} # 0 = Best to Worst; 1 = Worst to Best
 
 HOURS_LIST={}
@@ -77,3 +75,5 @@ HOST_Q[QUALITIES.HIGH]=['vidzi.tv', 'vidspot.net', 'vidbull.com', 'thevideo.me']
 HOST_Q[QUALITIES.HD]=['thefile.me', 'sharesix', 'mightyupload', 'filenuke', 'hugefiles', '180upload', 'vidxden']
 
 Q_ORDER = {QUALITIES.LOW: 1, QUALITIES.MEDIUM: 2, QUALITIES.HIGH: 3, QUALITIES.HD: 4}
+
+PLACE_POSTER = 'http://v2.trakt.tv/assets/placeholders/medium/poster-efb7b911e9602e7ceae9e0c37bf80f84.png'

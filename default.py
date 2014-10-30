@@ -899,7 +899,8 @@ def play_source(mode, hoster_url, video_type, slug, season='', episode=''):
             
             ep_meta = trakt_api.get_episode_details(slug, season, episode)
             show_meta = trakt_api.get_show_details(slug)
-            info = utils.make_info(ep_meta, show_meta)
+            people = trakt_api.get_people(SECTIONS.TV, slug) if _SALTS.get_setting('include_people')=='true' else None
+            info = utils.make_info(ep_meta, show_meta, people)
             images={}
             images['images']=show_meta['images']
             images['images'].update(ep_meta['images'])
@@ -913,7 +914,8 @@ def play_source(mode, hoster_url, video_type, slug, season='', episode=''):
             file_name = utils.filename_from_title(slug, video_type)
             
             item = trakt_api.get_movie_details(slug)
-            info = utils.make_info(item)
+            people = trakt_api.get_people(SECTIONS.MOVIES, slug) if _SALTS.get_setting('include_people')=='true' else None
+            info = utils.make_info(item, people=people)
             art=utils.make_art(item)
             
             path = make_path(path, video_type, item['title'], item['year'])
@@ -1710,7 +1712,8 @@ def make_item(section_params, show, menu_items=None):
     liz=utils.make_list_item(label, show)
     slug=show['ids']['slug']
     liz.setProperty('slug', slug)
-    info = utils.make_info(show)
+    people = trakt_api.get_people(section_params['section'], slug) if _SALTS.get_setting('include_people')=='true' else None 
+    info = utils.make_info(show, people=people)
     if not section_params['folder']:
         liz.setProperty('IsPlayable', 'true')
     
@@ -1749,7 +1752,7 @@ def make_item(section_params, show, menu_items=None):
         if 'in_collection' in show and show['in_collection']:
             queries = {'mode': MODES.REM_FROM_COLL, 'section': section_params['section']}
             queries.update(show_id)
-            menu_items.append((REM_COLL_LABEL, 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
+            menu_items.append(('Remove from Collection', 'RunPlugin(%s)' % (_SALTS.build_plugin_url(queries))), )
         else:
             queries = {'mode': MODES.ADD_TO_COLL, 'section': section_params['section']}
             queries.update(show_id)

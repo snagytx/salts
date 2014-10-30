@@ -194,6 +194,11 @@ class Trakt_API():
         params = {'extended': 'full,images'}
         return self.__call_trakt(url, params=params, cache_limit=8)
      
+    def get_people(self, section, slug, full=False):
+        url = '/%s/%s/people' % (TRAKT_SECTIONS[section], slug)
+        params = {'extended': 'full,images'} if full else None
+        return self.__call_trakt(url, params=params, cache_limit=24)
+    
     def search(self, section, query):
         url='/search'
         params = {'type': TRAKT_SECTIONS[section][:-1], 'query': query}
