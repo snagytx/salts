@@ -159,12 +159,12 @@ def make_art(show, fanart=''):
     art_dict={'banner': '', 'fanart': fanart, 'thumb': '', 'poster': PLACE_POSTER}
     if 'images' in show:
         images = show['images']
-        if 'banner' in images and images['poster']['full'] is not None: art_dict['banner']=images['banner']['full']
-        if 'poster' in images and images['poster']['full'] is not None: art_dict['thumb']=art_dict['poster']=images['poster']['full']
-        if 'fanart' in images and images['fanart']['full'] is not None: art_dict['fanart']=images['fanart']['full']
-        if 'thumb' in images and images['thumb']['full'] is not None: art_dict['thumb']=images['thumb']['full']
-        if 'screen' in images and images['screen']['full'] is not None: art_dict['thumb']=images['screen']['full']
-        if 'screenshot' in images and images['screenshot']['full'] is not None: art_dict['thumb']=images['screenshot']['full']
+        if 'banner' in images and images['poster']['full']: art_dict['banner']=images['banner']['full']
+        if 'poster' in images and images['poster']['full']: art_dict['thumb']=art_dict['poster']=images['poster']['full']
+        if 'fanart' in images and images['fanart']['full']: art_dict['fanart']=images['fanart']['full']
+        if 'thumb' in images and images['thumb']['full']: art_dict['thumb']=images['thumb']['full']
+        if 'screen' in images and images['screen']['full']: art_dict['thumb']=images['screen']['full']
+        if 'screenshot' in images and images['screenshot']['full']: art_dict['thumb']=images['screenshot']['full']
     return art_dict
 
 def make_info(item, show=None, people=None):
