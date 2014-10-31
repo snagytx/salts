@@ -133,7 +133,7 @@ class Trakt_API():
     
     def get_genres(self, section):
         url='/genres/%s' % (TRAKT_SECTIONS[section])
-        return self.__call_trakt(url, cache_limit=24)
+        return self.__call_trakt(url, cache_limit=7*24)
         
     def get_recommendations(self, section):
         url='/recommendations/%s' % (TRAKT_SECTIONS[section])
