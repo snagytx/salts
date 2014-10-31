@@ -119,7 +119,6 @@ class HDLord_Scraper(scraper.Scraper):
     def parse_format2(self, host_url):
         html = self._http_get(host_url, cache_limit=.5)
         html = re.sub('\s','', html)
-        print html
         match = re.search(r'(\[\s*\[\d+,\d+,\d+.*?\]\s*\])', html)
         sources = []
         if match:
@@ -129,7 +128,6 @@ class HDLord_Scraper(scraper.Scraper):
             html = html.replace('\\u003d', '=')
             html = html.replace('\\u003c', '<')
             html = html.replace('\\u003e', '>')
-            print html
             for match in re.finditer('(\d+),\d+,"(https://redirector[^"]+)', html):
                 width, url = match.groups()
                 source = {'url': url}
