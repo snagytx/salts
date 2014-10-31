@@ -69,7 +69,7 @@ class View47_Scraper(scraper.Scraper):
                     if media_url: hosters += self.__get_view47_sources(media_url)
                 else:
                     media_url = EPID_URL + '?' + urllib.urlencode({'epid': ep_id})
-                    hosters.append({'multi-part': False, 'url': media_url, 'class': self, 'quality': QUALITIES.HD, 'host': host, 'rating': None, 'views': None, 'direct': False})
+                    hosters.append({'multi-part': False, 'url': media_url, 'class': self, 'quality': QUALITIES.HD, 'host': host.lower(), 'rating': None, 'views': None, 'direct': False})
                 
         return hosters
 
