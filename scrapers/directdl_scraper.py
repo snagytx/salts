@@ -66,7 +66,11 @@ class DirectDownload_Scraper(scraper.Scraper):
             html = self._http_get(url, cache_limit=.5)            
             js_result = json.loads(html)
             query = urlparse.parse_qs(urlparse.urlparse(url).query)
-            match_quality = query['quality'] if 'quality' in query else Q_ORDER
+            match_quality = Q_ORDER
+            if 'quality' in query:
+                temp_quality = re.sub('\s','',query['quality'][0])
+                match_quality = temp_quality.split(',')
+                 
             for result in js_result:
                 if result['quality'] in match_quality:
                     for link in result['links']:
@@ -140,7 +144,7 @@ class DirectDownload_Scraper(scraper.Scraper):
 
     def __translate_search(self, url):
         query = urlparse.parse_qs(urlparse.urlparse(url).query)
-        quality = ','.join(query['quality']) if 'quality' in query else ','.join(Q_ORDER)
+        quality = re.sub('\s', '', query['quality'][0]) if 'quality' in query else ','.join(Q_ORDER)
         return urlparse.urljoin(self.base_url, (SEARCH_URL % (urllib.quote(query['query'][0]), quality)))
     
     def __login(self):
