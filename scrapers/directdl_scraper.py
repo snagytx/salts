@@ -71,12 +71,16 @@ class DirectDownload_Scraper(scraper.Scraper):
                 temp_quality = re.sub('\s','',query['quality'][0])
                 match_quality = temp_quality.split(',')
                  
+            import urlresolver
             for result in js_result:
                 if result['quality'] in match_quality:
                     for link in result['links']:
-                        hoster={'multi-part': False, 'class': self, 'views': None, 'url': link['url'], 'rating': None, 'direct': False, 'host': link['hostname'], 
-                                'quality': QUALITY_MAP[result['quality']], 'dd_qual': result['quality'], 'direct': True}
-                        hosters.append(hoster)
+                        # validate url since host validation fails for real-debrid; mark links direct to avoid unusable check
+                        if urlresolver.HostedMediaFile(link['url']):
+                            hostname = urlparse.urlparse(link['url']).hostname
+                            hoster={'multi-part': False, 'class': self, 'views': None, 'url': link['url'], 'rating': None, 'direct': False, 'host': hostname, 
+                                    'quality': QUALITY_MAP[result['quality']], 'dd_qual': result['quality'], 'direct': True}
+                            hosters.append(hoster)
 
         return hosters
     
@@ -123,7 +127,9 @@ class DirectDownload_Scraper(scraper.Scraper):
         if not self.username or not self.password:
             return ''
         
+        log_utils.log('Url: %s' % (url), xbmc.LOGDEBUG)
         if url.replace(self.base_url,'').startswith('/search'):
+            log_utils.log('Translating Search Url: %s' % (url), xbmc.LOGDEBUG)
             url = self.__translate_search(url)
         
         html=super(DirectDownload_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, data=data, cache_limit=cache_limit)
