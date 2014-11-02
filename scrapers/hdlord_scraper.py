@@ -22,6 +22,7 @@ import xbmcaddon
 import xbmc
 import base64
 import urllib
+import json
 from salts_lib.db_utils import DB_Connection
 from salts_lib import GKDecrypter
 from salts_lib import log_utils
@@ -31,6 +32,7 @@ from salts_lib.constants import USER_AGENT
 
 BASE_URL = 'http://hdlord.com'
 QUALITY_MAP = {'mobile': QUALITIES.LOW, 'lowest': QUALITIES.LOW, 'low': QUALITIES.MEDIUM, 'sd': QUALITIES.HIGH, 'hd': QUALITIES.HD}
+OD_META_URL = 'http://www.odnoklassniki.ru/dk?cmd=videoPlayerMetadata&mid=%s'
 
 class HDLord_Scraper(scraper.Scraper):
     base_url=BASE_URL
@@ -98,21 +100,15 @@ class HDLord_Scraper(scraper.Scraper):
         return hosters
 
     def parse_format(self, host_url):
+        video_id = host_url.rsplit('/',1)[-1]
+        host_url =  OD_META_URL % (video_id)
         html = self._http_get(host_url, cache_limit=.5)
-        html = re.sub('\s','', html)
-        match = re.search(r'videos\\":\[(.*?)\]', html)
+        js_result = json.loads(html)
         sources = []
-        if match:
-            html = match.group(1)
-            html = html.replace('\\"', '"')
-            html = html.replace('\\\\u0026', '&')
-            html = html.replace('\\\\u003d', '=')
-            html = html.replace('\\\\u003c', '<')
-            html = html.replace('\\\\u003e', '>')
-            for match in re.finditer('"name":"([^"]+)","url":"([^"]+)', html):
-                quality, url = match.groups()
-                url = url + '&start=0|User-Agent=%s' % (USER_AGENT)
-                source = {'url': url, 'quality': QUALITY_MAP.get(quality, QUALITIES.MEDIUM)}
+        if 'videos' in js_result:
+            for video in js_result['videos']:
+                url = video['url'] + '&start=0|User-Agent=%s' % (USER_AGENT)
+                source = {'url': url, 'quality': QUALITY_MAP.get(video['name'], QUALITIES.MEDIUM)}
                 sources.append(source)
         return sources
     
