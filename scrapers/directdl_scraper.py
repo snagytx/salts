@@ -29,6 +29,7 @@ from salts_lib.constants import QUALITIES
 
 BASE_URL = 'http://directdownload.tv'
 LOGOUT = 'href="/index/logout"'
+SEARCH_URL = '/index/search/keyword/%s'
 
 Q_ORDER = ['pdtv', 'dsr', 'dvdrip', 'hdtv', 'realhd', 'webdl', 'webdl1080p']
 Q_DICT = dict((quality,i) for i,quality in enumerate(Q_ORDER))
@@ -55,7 +56,7 @@ class DirectDownload_Scraper(scraper.Scraper):
         return link
 
     def format_source_label(self, item):
-        return '[%s] %s (%s/100)' % (item['quality'], item['host'], item['rating'])
+        return '[%s] %s' % (item['quality'], item['host'])
     
     def get_sources(self, video):
         source_url= self.get_url(video)
@@ -64,12 +65,12 @@ class DirectDownload_Scraper(scraper.Scraper):
             url = urlparse.urljoin(self.base_url,source_url)
             html = self._http_get(url, cache_limit=.5)            
             js_result = json.loads(html)
-            index = int(urlparse.parse_qs(urlparse.urlparse(url).query)['match'][0])
-            if index<len(js_result):
-                match = js_result[index]
-                for link in match['links']:
-                    hoster={'multi-part': False, 'class': self, 'views': None, 'url': link['url'], 'rating': None, 'direct': False, 'host': link['hostname'], 'quality': QUALITY_MAP[match['quality']], 'direct': True}
-                    hosters.append(hoster)
+            match_quality = urlparse.parse_qs(urlparse.urlparse(url).query)['match'][0]
+            for result in js_result:
+                if match_quality == result['quality']:
+                    for link in result['links']:
+                        hoster={'multi-part': False, 'class': self, 'views': None, 'url': link['url'], 'rating': None, 'direct': False, 'host': link['hostname'], 'quality': QUALITY_MAP[result['quality']], 'direct': True}
+                        hosters.append(hoster)
 
         return hosters
     
@@ -100,13 +101,13 @@ class DirectDownload_Scraper(scraper.Scraper):
         return settings
 
     def search(self, video_type, title, year):
-        search_url = urlparse.urljoin(self.base_url, '/index/search/keyword/%s/qualities/pdtv,dsr,hdtv,realhd,dvdrip,webdl,webdl1080p/from/0/search')
+        search_url = urlparse.urljoin(self.base_url, SEARCH_URL)
         search_url = search_url % (urllib.quote(title))
         html = self._http_get(search_url, cache_limit=.25)
         results=[]
         js_result = json.loads(html)
-        for i, match in enumerate(js_result):
-            url = search_url  + '?match=%s' % (i) 
+        for match in js_result:
+            url = search_url  + '?match=%s' % match['quality']
             result={'url': url.replace(self.base_url, ''), 'title': match['release'], 'quality': match['quality'], 'year': ''}
             results.append(result)
         return results
@@ -115,12 +116,17 @@ class DirectDownload_Scraper(scraper.Scraper):
         # return all uncached blank pages if no user or pass
         if not self.username or not self.password:
             return ''
-         
+        
+        url = re.sub('\?match=.*$','', url)
+        temp_url = url.replace(self.base_url,'')
+        if temp_url.startswith('/index/search/keyword/'): url += '/qualities/pdtv,dsr,hdtv,realhd,dvdrip,webdl,webdl1080p/from/0/search'
+        
         html=super(DirectDownload_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, data=data, cache_limit=cache_limit)
         
         fake = None
         try:
             js_result=json.loads(html)
+            fake = False
             fake = js_result[0]['fake']
         except: pass
         
