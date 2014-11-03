@@ -721,7 +721,7 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
             builtin = 'XBMC.Notification(%s,No Sources Found%s, 5000, %s)'
             xbmc.executebuiltin(builtin % (_SALTS.get_name(), msg, ICON_PATH))
             return False
-        
+
         if timeout_msg:
             builtin = 'XBMC.Notification(%s,%s, 5000, %s)'
             xbmc.executebuiltin(builtin % (_SALTS.get_name(), timeout_msg, ICON_PATH))
@@ -739,6 +739,13 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
         import urlresolver
         
         hosters = filter_unusable_hosters(hosters)
+        
+        if not hosters:
+            log_utils.log('No Useable Sources found for: |%s|' % (video))
+            msg = ' (%s)' % timeout_msg if timeout_msg else ''
+            builtin = 'XBMC.Notification(%s,No Useable Sources Found%s, 5000, %s)'
+            xbmc.executebuiltin(builtin % (_SALTS.get_name(), msg, ICON_PATH))
+            return False
         
         pseudo_tv = xbmcgui.Window(10000).getProperty('PseudoTVRunning')
         if pseudo_tv=='True' or (mode == MODES.GET_SOURCES and _SALTS.get_setting('auto-play')=='true'):
