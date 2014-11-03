@@ -78,7 +78,7 @@ class DirectDownload_Scraper(scraper.Scraper):
                         # validate url since host validation fails for real-debrid; mark links direct to avoid unusable check
                         if urlresolver.HostedMediaFile(link['url']):
                             hostname = urlparse.urlparse(link['url']).hostname
-                            hoster={'multi-part': False, 'class': self, 'views': None, 'url': link['url'], 'rating': None, 'direct': False, 'host': hostname, 
+                            hoster={'multi-part': False, 'class': self, 'views': None, 'url': link['url'], 'rating': None, 'host': hostname, 
                                     'quality': QUALITY_MAP[result['quality']], 'dd_qual': result['quality'], 'direct': True}
                             hosters.append(hoster)
 
