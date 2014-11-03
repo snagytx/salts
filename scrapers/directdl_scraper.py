@@ -64,23 +64,24 @@ class DirectDownload_Scraper(scraper.Scraper):
         if source_url:
             url = urlparse.urljoin(self.base_url,source_url)
             html = self._http_get(url, cache_limit=.5)            
-            js_result = json.loads(html)
-            query = urlparse.parse_qs(urlparse.urlparse(url).query)
-            match_quality = Q_ORDER
-            if 'quality' in query:
-                temp_quality = re.sub('\s','',query['quality'][0])
-                match_quality = temp_quality.split(',')
-                 
-            import urlresolver
-            for result in js_result:
-                if result['quality'] in match_quality:
-                    for link in result['links']:
-                        # validate url since host validation fails for real-debrid; mark links direct to avoid unusable check
-                        if urlresolver.HostedMediaFile(link['url']):
-                            hostname = urlparse.urlparse(link['url']).hostname
-                            hoster={'multi-part': False, 'class': self, 'views': None, 'url': link['url'], 'rating': None, 'host': hostname, 
-                                    'quality': QUALITY_MAP[result['quality']], 'dd_qual': result['quality'], 'direct': True}
-                            hosters.append(hoster)
+            if html:
+                js_result = json.loads(html)
+                query = urlparse.parse_qs(urlparse.urlparse(url).query)
+                match_quality = Q_ORDER
+                if 'quality' in query:
+                    temp_quality = re.sub('\s','',query['quality'][0])
+                    match_quality = temp_quality.split(',')
+                     
+                import urlresolver
+                for result in js_result:
+                    if result['quality'] in match_quality:
+                        for link in result['links']:
+                            # validate url since host validation fails for real-debrid; mark links direct to avoid unusable check
+                            if urlresolver.HostedMediaFile(link['url']):
+                                hostname = urlparse.urlparse(link['url']).hostname
+                                hoster={'multi-part': False, 'class': self, 'views': None, 'url': link['url'], 'rating': None, 'host': hostname, 
+                                        'quality': QUALITY_MAP[result['quality']], 'dd_qual': result['quality'], 'direct': True}
+                                hosters.append(hoster)
 
         return hosters
     
@@ -115,11 +116,12 @@ class DirectDownload_Scraper(scraper.Scraper):
         search_url += title
         html = self._http_get(search_url, cache_limit=.25)
         results=[]
-        js_result = json.loads(html)
-        for match in js_result:
-            url = search_url  + '&quality=%s' % match['quality']
-            result={'url': url.replace(self.base_url, ''), 'title': match['release'], 'quality': match['quality'], 'year': ''}
-            results.append(result)
+        if html:
+            js_result = json.loads(html)
+            for match in js_result:
+                url = search_url  + '&quality=%s' % match['quality']
+                result={'url': url.replace(self.base_url, ''), 'title': match['release'], 'quality': match['quality'], 'year': ''}
+                results.append(result)
         return results
 
     def _http_get(self, url, data=None, cache_limit=8):
