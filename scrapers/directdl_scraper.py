@@ -127,8 +127,7 @@ class DirectDownload_Scraper(scraper.Scraper):
         if not self.username or not self.password:
             return ''
         
-        log_utils.log('Url: %s' % (url), xbmc.LOGDEBUG)
-        if url.replace(self.base_url,'').startswith('/search'):
+        if 'search?query' in url:
             log_utils.log('Translating Search Url: %s' % (url), xbmc.LOGDEBUG)
             url = self.__translate_search(url)
         
