@@ -1639,7 +1639,7 @@ def make_episode_item(show, episode, fanart, show_subs=True, menu_items=None):
             
     meta=utils.make_info(episode, show)
     meta['images']=show['images']
-    if episode['images']['screenshot']['full']: meta['images']['thumb']=episode['images']['screenshot']
+    if episode['images']['screenshot']: meta['images']['thumb']=episode['images']['screenshot']
     
     liz=utils.make_list_item(label, meta)
     if not folder:

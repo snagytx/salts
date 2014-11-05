@@ -153,18 +153,21 @@ def make_list_item(label, meta):
     if 'ids' in meta and 'tvdb' in meta['ids']: listitem.setProperty('tvdb_id', str(meta['ids']['tvdb']))
     return listitem
 
-#TODO: Take advantage of smaller images
-def make_art(show, fanart=''):
-    if not fanart: fanart = art('fanart.jpg')
-    art_dict={'banner': '', 'fanart': fanart, 'thumb': '', 'poster': PLACE_POSTER}
+def make_art(show):
+    min_size = int(ADDON.get_setting('image_size'))
+    art_dict={'banner': '', 'fanart': art('fanart.jpg'), 'thumb': '', 'poster': PLACE_POSTER}
     if 'images' in show:
         images = show['images']
-        if 'banner' in images and images['poster']['full']: art_dict['banner']=images['banner']['full']
-        if 'poster' in images and images['poster']['full']: art_dict['thumb']=art_dict['poster']=images['poster']['full']
-        if 'fanart' in images and images['fanart']['full']: art_dict['fanart']=images['fanart']['full']
-        if 'thumb' in images and images['thumb']['full']: art_dict['thumb']=images['thumb']['full']
-        if 'screen' in images and images['screen']['full']: art_dict['thumb']=images['screen']['full']
-        if 'screenshot' in images and images['screenshot']['full']: art_dict['thumb']=images['screenshot']['full']
+        for i in range(0,min_size+1):
+            if 'banner' in images and IMG_SIZES[i] in images['banner'] and images['banner'][IMG_SIZES[i]]: art_dict['banner']=images['banner'][IMG_SIZES[i]]
+            if 'fanart' in images and IMG_SIZES[i] in images['fanart'] and images['fanart'][IMG_SIZES[i]]: art_dict['fanart']=images['fanart'][IMG_SIZES[i]]
+            if 'poster' in images and IMG_SIZES[i] in images['poster'] and images['poster'][IMG_SIZES[i]]: art_dict['thumb']=art_dict['poster']=images['poster'][IMG_SIZES[i]]
+            if 'thumb' in images and IMG_SIZES[i] in images['thumb'] and images['thumb'][IMG_SIZES[i]]: art_dict['thumb']=images['thumb'][IMG_SIZES[i]]
+            if 'screen' in images and IMG_SIZES[i] in images['screen'] and images['screen'][IMG_SIZES[i]]: art_dict['thumb']=images['screen'][IMG_SIZES[i]]
+            if 'screenshot' in images and IMG_SIZES[i] in images['screenshot'] and images['screenshot'][IMG_SIZES[i]]: art_dict['thumb']=images['screenshot'][IMG_SIZES[i]]
+            if 'logo' in images and IMG_SIZES[i] in images['logo'] and images['logo'][IMG_SIZES[i]]: art_dict['clearlogo']=images['logo'][IMG_SIZES[i]]
+            if 'clearart' in images and IMG_SIZES[i] in images['clearart'] and images['clearart'][IMG_SIZES[i]]: art_dict['clearart']=images['clearart'][IMG_SIZES[i]]
+    print art_dict
     return art_dict
 
 def make_info(item, show=None, people=None):
