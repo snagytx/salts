@@ -85,7 +85,11 @@ class OneClickWatch_Scraper(scraper.Scraper):
         else:
             select = int(xbmcaddon.Addon().getSetting('%s-select' % (self.get_name())))
             if video.video_type == VIDEO_TYPES.EPISODE:
-                search_title = '%s S%02dE%02d' % (video.title, int(video.season), int(video.episode))
+                if not self._force_title(video):
+                    search_title = '%s S%02dE%02d' % (video.title, int(video.season), int(video.episode))
+                else:
+                    if not video.ep_title: return None
+                    search_title = '%s %s' % (video.title, video.ep_title)
             else:
                 search_title = '%s %s' % (video.title, video.year)
             results = self.search(video.video_type, search_title, video.year)

@@ -104,9 +104,7 @@ class Local_Scraper(scraper.Scraper):
         url = None
         filename = ''
         
-        slug_str = xbmcaddon.Addon().getSetting('force_title_match')
-        slug_list = slug_str.split('|') if slug_str else []
-        force_title = video.slug in slug_list
+        force_title = self._force_title(video)
 
         if not force_title:
             run = cmd % (params['id'][0], video.season, 'episode', video.episode)

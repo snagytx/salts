@@ -93,18 +93,19 @@ class SimplyMovies_Scraper(scraper.Scraper):
         return results
     
     def _get_episode_url(self, show_url, video):
-        url = urlparse.urljoin(self.base_url, show_url)
-        html = self._http_get(url, cache_limit=2)
-        pattern='h3>Season\s+%s(.*?)(?:<h3>|</div>)' % (video.season)
-        match = re.search(pattern, html, re.DOTALL)
-        if match:
-            container=match.group(1)
-            pattern='href="([^"]+)">Episode %s(?:|<)' % (video.episode)
-            match = re.search(pattern, container, re.DOTALL)
+        if self._force_title(video):
+            url = urlparse.urljoin(self.base_url, show_url)
+            html = self._http_get(url, cache_limit=2)
+            pattern='h3>Season\s+%s(.*?)(?:<h3>|</div>)' % (video.season)
+            match = re.search(pattern, html, re.DOTALL)
             if match:
-                url=match.group(1)
-                url = '/'+url if not url.startswith('/') else url
-                return url
+                container=match.group(1)
+                pattern='href="([^"]+)">Episode %s(?:|<)' % (video.episode)
+                match = re.search(pattern, container, re.DOTALL)
+                if match:
+                    url=match.group(1)
+                    url = '/'+url if not url.startswith('/') else url
+                    return url
         
     def _http_get(self, url, cache_limit=8):
         return super(SimplyMovies_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, cache_limit=cache_limit)

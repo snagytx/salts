@@ -58,6 +58,7 @@ class MyVidLinks_Scraper(scraper.Scraper):
         source_url= self.get_url(video)
         hosters=[]
         if source_url:
+            self.__fix_base_url(video.video_type)
             url = urlparse.urljoin(self.base_url,source_url)
             html = self._http_get(url, cache_limit=.5)
 
@@ -101,6 +102,14 @@ class MyVidLinks_Scraper(scraper.Scraper):
             hosters.append(hoster)
         return hosters
     
+    def __fix_base_url(self, video_type):
+        if video_type == VIDEO_TYPES.MOVIE:
+            if not self.base_url.startswith('http://movies.') :
+                self.base_url = self.base_url.replace('http://', 'http://movies.')
+        else:
+            if not self.base_url.startswith('http://tv.'):
+                self.base_url = self.base_url.replace('http://', 'http://tv.')
+        
     def get_url(self, video):
         url = None
         result = self.db_connection.get_related_url(video.video_type, video.title, video.year, self.get_name(), video.season, video.episode)
@@ -110,7 +119,11 @@ class MyVidLinks_Scraper(scraper.Scraper):
         else:
             select = int(xbmcaddon.Addon().getSetting('%s-select' % (self.get_name())))
             if video.video_type == VIDEO_TYPES.EPISODE:
-                search_title = '%s S%02dE%02d' % (video.title, int(video.season), int(video.episode))
+                if not self._force_title(video):
+                    search_title = '%s S%02dE%02d' % (video.title, int(video.season), int(video.episode))
+                else:
+                    if not video.ep_title: return None
+                    search_title = '%s %s' % (video.title, video.ep_title)
             else:
                 search_title = '%s %s' % (video.title, video.year)
             results = self.search(video.video_type, search_title, video.year)
@@ -148,6 +161,7 @@ class MyVidLinks_Scraper(scraper.Scraper):
         return settings
 
     def search(self, video_type, title, year):
+        self.__fix_base_url(video_type)
         search_url = urlparse.urljoin(self.base_url, '/?s=')
         search_url += urllib.quote_plus(title)
         html = self._http_get(search_url, cache_limit=.25)
@@ -157,6 +171,7 @@ class MyVidLinks_Scraper(scraper.Scraper):
         pattern ='<h4>\s*<a\s+href="([^"]+)"\s+rel="bookmark"\s+title="([^"]+)'
         for match in re.finditer(pattern, html, re.DOTALL):
             url, title  = match.groups('')
+            
             if filter_days:
                 match = re.search('/(\d{4})/(\d{2})/(\d{2})/', url)
                 if match:
@@ -167,6 +182,7 @@ class MyVidLinks_Scraper(scraper.Scraper):
                 
             match_year = ''
             title = title.replace('&#8211;', '-')
+            title = title.replace('&#8217;', "'")
             if video_type == VIDEO_TYPES.MOVIE:
                 match = re.search('(.*?)\s*[\[(]?(\d{4})[)\]]?\s*(.*)', title)
                 if match:

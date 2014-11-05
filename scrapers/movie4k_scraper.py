@@ -106,18 +106,19 @@ class Movie4K_Scraper(scraper.Scraper):
         return results
 
     def _get_episode_url(self, show_url, video):
-        url = urlparse.urljoin(self.base_url, show_url)
-        html = self._http_get(url, cache_limit=.25)
-        match = re.search('<div id="episodediv%s"(.*?)</div>' % (video.season), html, re.DOTALL)
-        if match:
-            fragment = match.group(1)
-            pattern = 'value="([^"]+)">Episode %s<' % (video.episode)
-            match = re.search(pattern, fragment)
+        if not self._force_title(video):
+            url = urlparse.urljoin(self.base_url, show_url)
+            html = self._http_get(url, cache_limit=.25)
+            match = re.search('<div id="episodediv%s"(.*?)</div>' % (video.season), html, re.DOTALL)
             if match:
-                url = match.group(1)
-                url = url.replace(self.base_url,'')
-                if not url.startswith('/'): url = '/' + url
-                return url
+                fragment = match.group(1)
+                pattern = 'value="([^"]+)">Episode %s<' % (video.episode)
+                match = re.search(pattern, fragment)
+                if match:
+                    url = match.group(1)
+                    url = url.replace(self.base_url,'')
+                    if not url.startswith('/'): url = '/' + url
+                    return url
 
 
     def _http_get(self, url, cookies=None, data=None, cache_limit=8):

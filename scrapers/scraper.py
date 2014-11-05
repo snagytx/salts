@@ -286,9 +286,7 @@ class Scraper(object):
         url = urlparse.urljoin(self.base_url, show_url)
         html = self._http_get(url, cache_limit=2)
         if html:
-            slug_str = xbmcaddon.Addon().getSetting('force_title_match')
-            slug_list = slug_str.split('|') if slug_str else []
-            force_title = video.slug in slug_list
+            force_title = self._force_title(video)
             
             if not force_title: 
                 match = re.search(episode_pattern, html, re.DOTALL)
@@ -305,6 +303,11 @@ class Scraper(object):
                     if norm_title == self._normalize_title(title):
                         return url.replace(self.base_url, '')
 
+    def _force_title(self, video):
+            slug_str = xbmcaddon.Addon().getSetting('force_title_match')
+            slug_list = slug_str.split('|') if slug_str else []
+            return video.slug in slug_list
+    
     def _normalize_title(self, title):
         new_title=title.upper()
         new_title=re.sub('\W', '', new_title)
