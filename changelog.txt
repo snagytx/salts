@@ -1,4 +1,7 @@
-[B]Version 0.0.39[/B]
+[B]Version 0.0.41[/B]
+- Fix some scrapers not enforcing title searches
+
+[B]Version 0.0.40[/B]
 - Added directdownload.tv scraper
 - Improve hdlord scraper
 - Add check for no hosters after filters are applied
