@@ -221,7 +221,22 @@ class Trakt_API():
         url='/shows/%s/progress/watched' % (slug)
         params = {'extended': 'full,images'} if full else None
         return self.__call_trakt(url, params=params, cached=cached)
-      
+    
+    def get_bookmarks(self):
+        url='/sync/playback'
+        return self.__call_trakt(url, cached=False)
+
+    def get_bookmark(self, slug, season, episode):
+        response = self.get_bookmarks()
+        for bookmark in response:
+            if not season or not episode:
+                if bookmark['type'] == 'movie' and slug == bookmark['movie']['ids']['slug']:
+                    return bookmark['progress']
+            else:
+                #log_utils.log('Resume: %s, %s, %s, %s' % (bookmark, slug, season, episode), xbmc.LOGDEBUG)
+                if bookmark['type'] == 'episode' and slug == bookmark['show']['ids']['slug'] and bookmark['episode']['season']==int(season) and bookmark['episode']['number']==int(episode):
+                    return bookmark['progress']
+          
     def rate(self, section, item, rating, season='', episode=''):
         url ='/sync/ratings'
         data = self.__make_media_list(section, item, season, episode)

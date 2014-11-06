@@ -880,9 +880,10 @@ def play_source(mode, hoster_url, video_type, slug, season='', episode=''):
 
     if mode not in [MODES.DOWNLOAD_SOURCE, MODES.DIRECT_DOWNLOAD]:
         resume_point = 0
-        if db_connection.bookmark_exists(slug, season, episode):
+        if utils.bookmark_exists(slug, season, episode):
             if utils.get_resume_choice(slug, season, episode):
-                resume_point = db_connection.get_bookmark(slug, season, episode)
+                resume_point = utils.get_bookmark(slug, season, episode)
+                log_utils.log('Resume Point: %s' % (resume_point), xbmc.LOGDEBUG)
         
     try:
         win = xbmcgui.Window(10000)
@@ -890,6 +891,9 @@ def play_source(mode, hoster_url, video_type, slug, season='', episode=''):
         win.setProperty('salts.playing.slug', slug)
         win.setProperty('salts.playing.season', str(season))
         win.setProperty('salts.playing.episode', str(episode))
+        if _SALTS.get_setting('trakt_bookmark')=='true':
+            win.setProperty('salts.playing.trakt_resume', str(resume_point))
+
         art={'thumb': '', 'fanart': ''}
         info={}
         if video_type == VIDEO_TYPES.EPISODE:
@@ -934,8 +938,9 @@ def play_source(mode, hoster_url, video_type, slug, season='', episode=''):
             win.setProperty('salts.playing.srt', srt_path)
 
     listitem = xbmcgui.ListItem(path=stream_url, iconImage=art['thumb'], thumbnailImage=art['thumb'])
-    listitem.setProperty('ResumeTime', str(resume_point))
-    listitem.setProperty('Totaltime', str(99999)) # dummy value to force resume to work
+    if _SALTS.get_setting('trakt_bookmark')!='true':
+        listitem.setProperty('ResumeTime', str(resume_point))
+        listitem.setProperty('Totaltime', str(99999)) # dummy value to force resume to work
     listitem.setProperty('fanart_image', art['fanart'])
     try: listitem.setArt(art)
     except:pass

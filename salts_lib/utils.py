@@ -167,7 +167,6 @@ def make_art(show):
             if 'screenshot' in images and IMG_SIZES[i] in images['screenshot'] and images['screenshot'][IMG_SIZES[i]]: art_dict['thumb']=images['screenshot'][IMG_SIZES[i]]
             if 'logo' in images and IMG_SIZES[i] in images['logo'] and images['logo'][IMG_SIZES[i]]: art_dict['clearlogo']=images['logo'][IMG_SIZES[i]]
             if 'clearart' in images and IMG_SIZES[i] in images['clearart'] and images['clearart'][IMG_SIZES[i]]: art_dict['clearart']=images['clearart'][IMG_SIZES[i]]
-    print art_dict
     return art_dict
 
 def make_info(item, show=None, people=None):
@@ -764,10 +763,30 @@ def get_current_view():
         for view in views.split(','):
             if xbmc.getInfoLabel('Control.GetLabel(%s)' % (view)): return view
 
+def bookmark_exists(slug, season, episode):
+    if ADDON.get_setting('trakt_bookmark')=='true':
+        bookmark = trakt_api.get_bookmark(slug, season, episode)
+        return bookmark is not None
+    else:
+        return db_connection.bookmark_exists(slug, season, episode)
+
 # returns true if user chooses to resume, else false
 def get_resume_choice(slug, season, episode):
-    question = 'Resume from %s' % (format_time(db_connection.get_bookmark(slug, season, episode)))
-    return xbmcgui.Dialog().yesno('Resume?', question, '', '', 'Start from beginning', 'Resume')==1
+    if ADDON.get_setting('trakt_bookmark')=='true':
+        resume_point = '%s%%' % (trakt_api.get_bookmark(slug, season, episode))
+        header = 'Trakt Bookmark Exists'
+    else:
+        resume_point = format_time(db_connection.get_bookmark(slug, season, episode))
+        header = 'Local Bookmark Exists'
+    question = 'Resume from %s' % (resume_point)
+    return xbmcgui.Dialog().yesno(header, question, '', '', 'Start from beginning', 'Resume')==1
+
+def get_bookmark(slug, season, episode):
+    if ADDON.get_setting('trakt_bookmark')=='true':
+        bookmark = trakt_api.get_bookmark(slug, season, episode)
+    else:
+        bookmark = db_connection.get_bookmark(slug, season, episode)
+    return bookmark
 
 def format_time(seconds):
     minutes, seconds = divmod(seconds, 60)

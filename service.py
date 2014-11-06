@@ -46,6 +46,7 @@ class Service(xbmc.Player):
         self.win.clearProperty('salts.playing.season')
         self.win.clearProperty('salts.playing.episode')
         self.win.clearProperty('salts.playing.srt')
+        self.win.clearProperty('salts.playing.resume')
         self.tracked = False    
         self._totalTime = 999999
         self.slug = None
@@ -60,6 +61,7 @@ class Service(xbmc.Player):
         self.season = self.win.getProperty('salts.playing.season')
         self.episode = self.win.getProperty('salts.playing.episode')
         srt_path = self.win.getProperty('salts.playing.srt')
+        resume_point = self.win.getProperty('salts.playing.trakt_resume')
         if playing: #Playback is ours
             log_utils.log('Service: tracking progress...')
             self.tracked = True
@@ -76,8 +78,12 @@ class Service(xbmc.Player):
             except RuntimeError:
                 self._totalTime = 0
                 break
-            log_utils.log("Total Time: %s" % (self._totalTime), xbmc.LOGDEBUG)
             xbmc.sleep(1000)
+
+        if resume_point:
+            resume_time = float(resume_point) * self._totalTime / 100
+            log_utils.log("Resume Percent: %s, Resume Time: %s Total Time: %s" % (resume_point, resume_time, self._totalTime), xbmc.LOGDEBUG)
+            self.seekTime(resume_time )
 
     def onPlayBackStopped(self):
         log_utils.log('Service: Playback Stopped')

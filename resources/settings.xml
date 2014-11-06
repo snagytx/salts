@@ -44,6 +44,7 @@
 	    <setting id="use_https" type="bool" label="Use HTTPS" default="false"/>
 		<setting id="trakt_timeout" type="slider" label="Trakt Timeout (seconds) (0=No Limit)" default="30" range="0,120" option="int"/>
 		<setting id="list_size" type="slider" label="Trakt List Size" default="30" range="1,100" option="int"/>
+		<setting id="trakt_bookmark" type="bool" label="Use Trakt Bookmarks" default="false"/>
 		<setting id="cache_watched" type="bool" label="Cache watched status" default="true"/>
 		<setting id="cache_collection" type="bool" label="Cache Collection" default="true"/>
 		<setting id="include_people" type="bool" label="Include People" default="false"/>
