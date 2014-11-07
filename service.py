@@ -96,7 +96,7 @@ class Service(xbmc.Player):
             log_utils.log('Service: Played %s of %s total = %s%%' % (pTime, tTime, percent_played), xbmc.LOGDEBUG)
             if playedTime == 0 and self._totalTime == 999999:
                 log_utils.log('XBMC silently failed to start playback', xbmc.LOGWARNING)
-            elif playedTime>=1:
+            elif playedTime>=5:
                 log_utils.log('Service: Setting bookmark on |%s|%s|%s| to %s seconds' % (self.slug, self.season, self.episode, playedTime), xbmc.LOGDEBUG)
                 db_connection.set_bookmark(self.slug, playedTime, self.season, self.episode)
                 if percent_played>=75:
