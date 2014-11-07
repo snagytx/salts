@@ -878,8 +878,8 @@ def play_source(mode, hoster_url, video_type, slug, season='', episode=''):
             #xbmc.executebuiltin(builtin % (_SALTS.get_name(), hoster_url, ICON_PATH))
             return False
 
+    resume_point = 0
     if mode not in [MODES.DOWNLOAD_SOURCE, MODES.DIRECT_DOWNLOAD]:
-        resume_point = 0
         if utils.bookmark_exists(slug, season, episode):
             if utils.get_resume_choice(slug, season, episode):
                 resume_point = utils.get_bookmark(slug, season, episode)
