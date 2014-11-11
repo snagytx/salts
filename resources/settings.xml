@@ -332,6 +332,12 @@
          <setting id="WatchYourFlix_try" type="number" default="0" visible="false"/>
          <setting id="WatchYourFlix_fail" type="number" default="0" visible="false"/>
          <setting id="WatchYourFlix_check" type="number" default="0" visible="false"/>
+         <setting id="movietv.to-enable" type="bool" label="movietv.to Enabled" default="true" visible="true"/>
+         <setting id="movietv.to-base_url" type="text" label="     Base Url" default="http://movietv.to" visible="eq(-1,true)"/>
+         <setting id="movietv.to-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>
+         <setting id="movietv.to_try" type="number" default="0" visible="false"/>
+         <setting id="movietv.to_fail" type="number" default="0" visible="false"/>
+         <setting id="movietv.to_check" type="number" default="0" visible="false"/>
     </category>
 	
     <category label="Subtitles">
