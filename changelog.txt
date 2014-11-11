@@ -1,3 +1,9 @@
+[B]Version 0.0.42[/B]
+- Add watchyourflix.com scraper
+- Add movietv.to scraper
+- Fix film-streaming.in scraper
+- Add 5th sort key and add "direct" sort option
+
 [B]Version 0.0.41[/B]
 - Fix some scrapers not enforcing title searches
 
