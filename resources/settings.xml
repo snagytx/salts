@@ -92,14 +92,16 @@
 	<category label="Source Sorting">
 		<setting id="enable_sort" type="bool" label="Sort Sources" default="false"/>
 		<setting id="filter-unknown" type="bool" label="Drop Sources with unknown sort values" default="false" visible="eq(-1,true)"/>
-		<setting id="sort1_field" type="enum" label="1st Sort Key" values="None|Source|Quality|Views|Rating" default="0" visible="eq(-2,true)"/>
+		<setting id="sort1_field" type="enum" label="1st Sort Key" values="None|Source|Quality|Views|Rating|Direct" default="0" visible="eq(-2,true)"/>
 		<setting id="sort1_order" type="enum" label="1st Sort Key Order" values="Best to Worst|Worst to Best" default="0" visible="eq(-3,true) + !eq(-1,0)"/>
-		<setting id="sort2_field" type="enum" label="2nd Sort Key" values="None|Source|Quality|Views|Rating" default="0" visible="eq(-4,true) + !eq(-2,0)"/>
+		<setting id="sort2_field" type="enum" label="2nd Sort Key" values="None|Source|Quality|Views|Rating|Direct" default="0" visible="eq(-4,true) + !eq(-2,0)"/>
 		<setting id="sort2_order" type="enum" label="2nd Sort Key Order" values="Best to Worst|Worst to Best" default="0" visible="eq(-5,true) + !eq(-1,0)+!eq(-3,0)"/>
-		<setting id="sort3_field" type="enum" label="3rd Sort Key" values="None|Source|Quality|Views|Rating" default="0" visible="eq(-6,true) + !eq(-2,0) + !eq(-4,0)"/>
+		<setting id="sort3_field" type="enum" label="3rd Sort Key" values="None|Source|Quality|Views|Rating|Direct" default="0" visible="eq(-6,true) + !eq(-2,0) + !eq(-4,0)"/>
 		<setting id="sort3_order" type="enum" label="3rd Sort Key Order" values="Best to Worst|Worst to Best" default="0" visible="eq(-7,true) + !eq(-1,0) + !eq(-3,0) + !eq(-5,0) "/>
-		<setting id="sort4_field" type="enum" label="4th Sort Key" values="None|Source|Quality|Views|Rating" default="0" visible="eq(-8,true) + !eq(-2,0) + !eq(-4,0) + !eq(-6,0)"/>
+		<setting id="sort4_field" type="enum" label="4th Sort Key" values="None|Source|Quality|Views|Rating|Direct" default="0" visible="eq(-8,true) + !eq(-2,0) + !eq(-4,0) + !eq(-6,0)"/>
 		<setting id="sort4_order" type="enum" label="4th Sort Key Order" values="Best to Worst|Worst to Best" default="0" visible="eq(-9,true) + !eq(-1,0) + !eq(-3,0) + !eq(-5,0) + !eq(-7,0)"/>
+		<setting id="sort5_field" type="enum" label="5th Sort Key" values="None|Source|Quality|Views|Rating|Direct" default="0" visible="eq(-10,true) + !eq(-2,0) + !eq(-4,0) + !eq(-6,0) + !eq(8,0)"/>
+		<setting id="sort5_order" type="enum" label="5th Sort Key Order" values="Best to Worst|Worst to Best" default="0" visible="eq(-11,true) + !eq(-1,0) + !eq(-3,0) + !eq(-5,0) + !eq(-7,0) + !eq(-9,0)"/>
 		<setting id="source_sort_order" type="text" label="Source Sort Order" enable="false" visible="false"/>
 		<setting id="force_title_match" type="text" label="Shows forced to match only on title" enable="false" visible="false"/>
 		<setting id="toggle_enable" type="bool" label="Enable/Disable Check" default="false" enable="false" visible="false"/>

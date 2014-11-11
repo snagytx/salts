@@ -53,7 +53,7 @@ PROGRESS = __enum(OFF=0, WINDOW=1, BACKGROUND=2)
 # unknown (i.e. None) is always worst
 SORT_KEYS = {}
 SORT_KEYS['quality'] = {None: 0, QUALITIES.LOW: 1, QUALITIES.MEDIUM: 2, QUALITIES.HIGH: 3, QUALITIES.HD: 4}
-SORT_LIST = ['none', 'source', 'quality', 'views', 'rating']
+SORT_LIST = ['none', 'source', 'quality', 'views', 'rating', 'direct']
 
 SORT_SIGNS = {'0': -1, '1': 1} # 0 = Best to Worst; 1 = Worst to Best
 

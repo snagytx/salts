@@ -75,7 +75,7 @@ class FilmStreaming_Scraper(scraper.Scraper):
         html = self._http_get(search_url, cache_limit=.25)
         results=[]
         if not re.search('I am sorry, what are you looking for', html, re.I):
-            pattern ='T-FilmBaslik">.*?href="([^"]+)"\s+title="([^"]+)\s+\((\d{4})\)'
+            pattern ='FilmBaslik">.*?href="([^"]+)"\s+title="([^"]+)\s+\((\d{4})\)'
             for match in re.finditer(pattern, html, re.DOTALL):
                 url, title, match_year = match.groups('')
                 if not year or not match_year or year == match_year:
