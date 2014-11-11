@@ -26,7 +26,6 @@ from salts_lib.db_utils import DB_Connection
 from salts_lib import log_utils
 from salts_lib.constants import VIDEO_TYPES
 from salts_lib.constants import QUALITIES
-from salts_lib.constants import USER_AGENT
 
 BASE_URL = 'http://movietv.to'
 
