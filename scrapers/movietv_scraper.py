@@ -67,7 +67,6 @@ class MovieTV_Scraper(scraper.Scraper):
             match = re.search(pattern, html)
             if match:
                 js_data = json.loads(match.group(1))
-                print js_data
                 if video.video_type == VIDEO_TYPES.EPISODE:
                     js_data = js_data[str(video.episode)][0] if str(video.episode) in js_data else {}
                         

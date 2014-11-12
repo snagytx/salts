@@ -303,7 +303,7 @@ def get_sort_key(item):
                 item_sort_key.append(sign*-1)
             else:
                 item_sort_key.append(sign*int(item[field]))
-    print 'item: %s sort_key: %s' % (item, item_sort_key)
+    #print 'item: %s sort_key: %s' % (item, item_sort_key)
     return tuple(item_sort_key)
 
 def make_source_sort_key():
