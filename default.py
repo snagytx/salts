@@ -551,8 +551,10 @@ def search(section, search_text=None):
         if keyboard.isConfirmed():
             search_text = keyboard.getText()
             if not search_text:
-                _SALTS.show_ok_dialog(['Blank searches are not allowed'], title=_SALTS.get_name())
-                continue
+                msg = 'Blank Searches are not allowed'
+                builtin = 'XBMC.Notification(%s,%s, 5000, %s)'
+                xbmc.executebuiltin(builtin % (_SALTS.get_name(), msg, ICON_PATH))
+                return
             else:
                 break
         else:
