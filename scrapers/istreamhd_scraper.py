@@ -126,7 +126,7 @@ class IStreamHD_Scraper(scraper.Scraper):
          
         html=super(IStreamHD_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, data=data, cache_limit=cache_limit)
         # if returned page is still the login page, then login and reissue http get
-        if re.search('<h1>Please logon</h1>', html):
+        if re.search('data-target="#login-overlay"', html) or re.search('<h1>Please logon</h1>', html):
             log_utils.log('Logging in for url (%s)' % (url), xbmc.LOGDEBUG)
             self.__login()
             html=super(IStreamHD_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, data=data, cache_limit=0)

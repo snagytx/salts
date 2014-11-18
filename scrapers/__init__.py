@@ -1,6 +1,6 @@
 __all__ = ['scraper', 'local_scraper', 'pw_scraper', 'uflix_scraper', 'watchseries_scraper', 'movie25_scraper', 'merdb_scraper', '2movies_scraper', 'icefilms_scraper', 'afdah_scraper', 
            'movieshd_scraper', 'simplymovies_scraper', 'yifytv_scraper', 'viooz_scraper', 'filmstreaming_scraper', 'allucto_scraper', 'onlinemovies_scraper', 'myvideolinks_scraper',
-           'filmikz_scraper', 'iwatch_scraper', 'popcornered_scraper', 'ororotv_scraper', 'view47_scraper', 'vidics_scraper', 'oneclickwatch_scraper', 'watchmovies_scraper',
+           'filmikz_scraper', 'iwatch_scraper', 'popcornered_scraper', 'ororotv_scraper', 'view47_scraper', 'vidics_scraper', 'oneclickwatch_scraper', 'watchmovies_scraper', 'istreamhd_scraper',
            'losmovies_scraper', 'movie4k_scraper', 'noobroom_scraper', 'solar_scraper', 'vkbox_scraper', 'hdlord_scraper', 'directdl_scraper', 'wyf_scraper', 'movietv_scraper']
 
 import re
