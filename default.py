@@ -768,7 +768,7 @@ def filter_unusable_hosters(hosters):
         if i<max and 'direct' in hoster and hoster['direct']==False:
             hmf = urlresolver.HostedMediaFile(host=hoster['host'], media_id='dummy') # use dummy media_id to force host validation
             if not hmf:
-                log_utils.log('Unusable source %s (%s) from %s' % (hoster['url'], hoster['host'], hoster['class'].get_name()), xbmc.LOGDEBUG)
+                log_utils.log('Unusable source %s (%s) from %s' % (hoster['url'], hoster['host'], hoster['class'].get_name()), xbmc.LOGINFO)
                 continue
         filtered_hosters.append(hoster)
     return filtered_hosters
