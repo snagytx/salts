@@ -755,6 +755,14 @@ def download_media(url, path, file_name):
         full_path = os.path.join(path, file_name)
         log_utils.log('Downloading: %s -> %s' % (url, full_path), xbmc.LOGDEBUG)
         
+        path = xbmc.makeLegalFilename(path)
+        if not xbmcvfs.exists(path):
+            try:
+                try: xbmcvfs.mkdirs(path)
+                except: os.mkdir(path)
+            except Exception as e:
+                raise Exception('Failed to create directory')
+
         file_desc = xbmcvfs.File(full_path, 'w')
         total_len = 0
         if progress:
@@ -774,7 +782,9 @@ def download_media(url, path, file_name):
                 break 
             
             total_len += len(data)
-            file_desc.write(data)
+            if not file_desc.write(data):
+                raise Exception('Failed to write file')
+            
             percent_progress = (total_len)*100/content_length if content_length>0 else 0
             log_utils.log('Position : %s / %s = %s%%' % (total_len, content_length, percent_progress), xbmc.LOGDEBUG)
             if progress == PROGRESS.WINDOW:

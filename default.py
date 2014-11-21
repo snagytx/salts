@@ -847,27 +847,34 @@ def play_source(mode, hoster_url, video_type, slug, season='', episode=''):
         art={'thumb': '', 'fanart': ''}
         info={}
         if video_type == VIDEO_TYPES.EPISODE:
+            path = _SALTS.get_setting('tv-download-folder')
             file_name = utils.filename_from_title(slug, VIDEO_TYPES.TVSHOW)
             file_name = file_name % ('%02d' % int(season), '%02d' % int(episode))
+            
             details = trakt_api.get_episode_details(slug, season, episode)
             info = utils.make_info(details['episode'], details['show'])
             show={}
             show['images']=details['show']['images']
             show['images'].update(details['episode']['images'])
             art=utils.make_art(show)
+            
+            path = make_path(path, VIDEO_TYPES.TVSHOW, details['show']['title'], season=season)
             file_name = utils.filename_from_title(details['show']['title'], VIDEO_TYPES.TVSHOW)
             file_name = file_name % ('%02d' % int(season), '%02d' % int(episode))
         else:
+            path = _SALTS.get_setting('movie-download-folder')
             file_name = utils.filename_from_title(slug, video_type)
+            
             item = trakt_api.get_movie_details(slug)
             info = utils.make_info(item)
             art=utils.make_art(item)
+            
+            path = make_path(path, video_type, item['title'], item['year'])
             file_name = utils.filename_from_title(item['title'], video_type, item['year'])
     except TransientTraktError as e:
         log_utils.log('During Playback: %s' % (str(e)), xbmc.LOGWARNING) # just log warning if trakt calls fail and leave meta and art blank
     
     if mode in [MODES.DOWNLOAD_SOURCE, MODES.DIRECT_DOWNLOAD]:
-        path = _SALTS.get_setting('download-folder')
         utils.download_media(stream_url, path, file_name)
         return True
     
@@ -1365,8 +1372,7 @@ def add_to_library(video_type, title, year, slug):
                     ep_num = episode['episode']
                     filename = utils.filename_from_title(show['title'], video_type)
                     filename = filename % ('%02d' % int(season_num), '%02d' % int(ep_num))
-                    show_folder = re.sub(r'([^\w\-_\. ]|\.$)', '_', show['title'])
-                    final_path = os.path.join(save_path, show_folder, 'Season %s' % (season_num), filename)
+                    final_path = os.path.join(make_path(save_path, video_type, show['title'], season=season_num), filename)
                     strm_string = _SALTS.build_plugin_url({'mode': MODES.GET_SOURCES, 'video_type': VIDEO_TYPES.EPISODE, 'title': title, 'year': year, 'season': season_num, 
                                                            'episode': ep_num, 'slug': slug, 'ep_title': episode['title'], 'dialog': True})
                     write_strm(strm_string, final_path, VIDEO_TYPES.EPISODE, show['title'], show['year'], slug, season_num, ep_num, require_source=require_source)
@@ -1376,9 +1382,18 @@ def add_to_library(video_type, title, year, slug):
         save_path = xbmc.translatePath(save_path)
         strm_string = _SALTS.build_plugin_url({'mode': MODES.GET_SOURCES, 'video_type': video_type, 'title': title, 'year': year, 'slug': slug, 'dialog': True})
         filename = utils.filename_from_title(title, VIDEO_TYPES.MOVIE, year)
-        dir_name = title if not year else '%s (%s)' % (title, year)
-        final_path = os.path.join(save_path, dir_name, filename)
+        final_path = os.path.join(make_path(save_path, video_type, title, year), filename)
         write_strm(strm_string, final_path, VIDEO_TYPES.MOVIE, title, year, slug, require_source=_SALTS.get_setting('require_source')=='true')
+
+def make_path(base_path, video_type, title, year = '', season = ''):
+    path = base_path
+    if video_type == VIDEO_TYPES.TVSHOW:
+        show_folder = re.sub(r'([^\w\-_\. ]|\.$)', '_', title)
+        path = os.path.join(base_path, show_folder, 'Season %s' % (season))
+    else:
+        dir_name = title if not year else '%s (%s)' % (title, year)
+        path = os.path.join(base_path, dir_name)
+    return path
 
 def write_strm(stream, path, video_type, title, year, slug, season='', episode='', require_source=False):
     path = xbmc.makeLegalFilename(path)
