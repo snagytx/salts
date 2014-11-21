@@ -847,6 +847,8 @@ def play_source(mode, hoster_url, video_type, slug, season='', episode=''):
         art={'thumb': '', 'fanart': ''}
         info={}
         if video_type == VIDEO_TYPES.EPISODE:
+            file_name = utils.filename_from_title(slug, VIDEO_TYPES.TVSHOW)
+            file_name = file_name % ('%02d' % int(season), '%02d' % int(episode))
             details = trakt_api.get_episode_details(slug, season, episode)
             info = utils.make_info(details['episode'], details['show'])
             show={}
@@ -856,6 +858,7 @@ def play_source(mode, hoster_url, video_type, slug, season='', episode=''):
             file_name = utils.filename_from_title(details['show']['title'], VIDEO_TYPES.TVSHOW)
             file_name = file_name % ('%02d' % int(season), '%02d' % int(episode))
         else:
+            file_name = utils.filename_from_title(slug, video_type)
             item = trakt_api.get_movie_details(slug)
             info = utils.make_info(item)
             art=utils.make_art(item)
