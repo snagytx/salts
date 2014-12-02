@@ -1,3 +1,14 @@
+[B]Version 0.0.45[/B]
+- Fix 2movies scraper
+- Fix afdah.com scraper
+- Fix filmstreaming.in scraper
+- Fix myvideolinks scraper
+- Fix oneclickwatch scraper
+- Fix onelinemovies scraper
+- Fixed yify.tv scraper
+- Disabled popcornerned scraper
+- Disabled simplymovies scraper
+
 [B]Version 0.0.44[/B]
 - Re-add istreamhd.org scraper
 - make unusable filter log info rather than debug
