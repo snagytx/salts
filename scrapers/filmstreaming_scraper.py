@@ -43,7 +43,13 @@ class FilmStreaming_Scraper(scraper.Scraper):
         return 'FilmStreaming.in'
     
     def resolve_link(self, link):
-        return link
+        if 'videomega' in link:
+            html = self._http_get(link, cache_limit=.5)
+            match = re.search('ref="([^"]+)', html)
+            if match:
+                return 'http://videomega.tv/iframe.php?ref=%s' % (match.group(1))
+        else:          
+            return link
 
     def format_source_label(self, item):
         return '[%s] %s (%s views) (%s/100)' % (item['quality'], item['host'],  item['views'], item['rating'])
