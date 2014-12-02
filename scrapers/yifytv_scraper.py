@@ -46,7 +46,7 @@ class YIFY_Scraper(scraper.Scraper):
         return 'yify.tv'
     
     def resolve_link(self, link):
-        url = '/reproductor2/pk/pk/plugins/player_p2.php'
+        url = '/player/pk/pk/plugins/player_p2.php'
         url = urlparse.urljoin(self.base_url ,url)
         data = {'url': link}
         html = ''
@@ -92,13 +92,15 @@ class YIFY_Scraper(scraper.Scraper):
         if source_url:
             url = urlparse.urljoin(self.base_url,source_url)
             html = self._http_get(url, cache_limit=.5)
-            match = re.search('showPkPlayer\("([^"]+)', html)
+
+            match = re.search('class="votes">(\d+)</strong>', html)
+            views=None
             if match:
+                views=int(match.group(1))
+                
+            for match in re.finditer('pic=([^&]+)', html):
                 video_id = match.group(1)                
-                hoster = {'multi-part': False, 'host': 'yify.tv', 'class': self, 'quality': QUALITIES.HD, 'views': None, 'rating': None, 'url': video_id, 'direct': True}
-                match = re.search('class="votes">(\d+)</strong>', html)
-                if match:
-                    hoster['views']=int(match.group(1))
+                hoster = {'multi-part': False, 'host': 'yify.tv', 'class': self, 'quality': QUALITIES.HD, 'views': views, 'rating': None, 'url': video_id, 'direct': True}
                 hosters.append(hoster)
         return hosters
 
