@@ -31,7 +31,7 @@ from salts_lib.constants import HOST_Q
 from salts_lib.constants import Q_ORDER
 from salts_lib.constants import BLOG_Q_MAP
 
-BASE_URL = 'http://oneclickwatch.org'
+BASE_URL = 'http://oneclickwatch.ws'
 
 class OneClickWatch_Scraper(scraper.Scraper):
     base_url=BASE_URL

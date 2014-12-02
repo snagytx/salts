@@ -253,7 +253,7 @@
          <setting id="vidics.ch_fail" type="number" default="0" visible="false"/>
          <setting id="vidics.ch_check" type="number" default="0" visible="false"/>
          <setting id="OneClickWatch-enable" type="bool" label="OneClickWatch Enabled" default="true" visible="true"/>
-         <setting id="OneClickWatch-base_url" type="text" label="     Base Url" default="http://oneclickwatch.org" visible="eq(-1,true)"/>
+         <setting id="OneClickWatch-base_url" type="text" label="     Base Url" default="http://oneclickwatch.ws" visible="eq(-1,true)"/>
          <setting id="OneClickWatch-sub_check" type="bool" label="     Include in Page Existence checks?" default="false" visible="eq(-2,true)"/>
          <setting id="OneClickWatch_try" type="number" default="0" visible="false"/>
          <setting id="OneClickWatch_fail" type="number" default="0" visible="false"/>
