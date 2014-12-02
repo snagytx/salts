@@ -60,9 +60,10 @@ class Afdah_Scraper(scraper.Scraper):
             else:
                 quality=QUALITIES.HIGH
                 
-            pattern = 'bullet.gif"[^>]+>\s*[^<]+</td><[^>]+>(.*?)\s*</td>.*?href="([^"]+)'
-            for match in re.finditer(pattern, html, re.DOTALL | re.I):
-                host, url = match.groups('')
+            pattern = 'href="([^"]+)".*play_video.gif'
+            for match in re.finditer(pattern, html, re.I):
+                url = match.group(1)
+                host = urlparse.urlparse(url).hostname
                 hoster = {'multi-part': False, 'url': url, 'host': host, 'class': self, 'quality': quality, 'rating': None, 'views': None, 'direct': False}
                 hosters.append(hoster)
         return hosters
