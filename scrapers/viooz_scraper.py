@@ -85,7 +85,7 @@ class VioozAc_Scraper(scraper.Scraper):
                 
                 hoster = {'multi-part': False, 'url': stream_url, 'class': self, 'quality': quality, 'host': urlparse.urlsplit(stream_url).hostname, 'rating': None, 'views': None, 'direct': direct}
                 hosters.append(hoster)
-        print hosters
+        #print hosters
         return hosters
 
     def get_url(self, video):
