@@ -104,8 +104,7 @@ class MyVidLinks_Scraper(scraper.Scraper):
     
     def __fix_base_url(self, video_type):
         if video_type == VIDEO_TYPES.MOVIE:
-            if not self.base_url.startswith('http://movies.') :
-                self.base_url = self.base_url.replace('http://', 'http://movies.')
+            self.base_url = 'http://myvideolinks.xyz'
         else:
             if not self.base_url.startswith('http://tv.'):
                 self.base_url = self.base_url.replace('http://', 'http://tv.')
