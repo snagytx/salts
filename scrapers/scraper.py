@@ -231,7 +231,7 @@ class Scraper(object):
             request.add_unredirected_header('Host', request.get_host())
             request.add_unredirected_header('Referer', url)
             response = urllib2.urlopen(request, timeout=timeout)
-            cj.save(ignore_discard=True)
+            cj.save(ignore_discard=True, ignore_expires=True)
             if response.info().get('Content-Encoding') == 'gzip':
                 buf = StringIO( response.read())
                 f = gzip.GzipFile(fileobj=buf)
