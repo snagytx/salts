@@ -324,6 +324,12 @@
          <setting id="movietv.to_try" type="number" default="0" visible="false"/>
          <setting id="movietv.to_fail" type="number" default="0" visible="false"/>
          <setting id="movietv.to_check" type="number" default="0" visible="false"/>
+         <setting id="MoviesOnline7-enable" type="bool" label="MoviesOnline7 Enabled" default="true" visible="true"/>
+         <setting id="MoviesOnline7-base_url" type="text" label="     Base Url" default="http://moviesonline7.co" visible="eq(-1,true)"/>
+         <setting id="MoviesOnline7-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>
+         <setting id="MoviesOnline7_try" type="number" default="0" visible="false"/>
+         <setting id="MoviesOnline7_fail" type="number" default="0" visible="false"/>
+         <setting id="MoviesOnline7_check" type="number" default="0" visible="false"/>
     </category>
 	
     <category label="Subtitles">
