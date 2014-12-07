@@ -1,3 +1,8 @@
+[B]Version 0.0.46[/B]
+- Cookie save fix
+- Add mysql import for Helix
+- Add moviesonline7.co scraper
+
 [B]Version 0.0.45[/B]
 - Fix 2movies scraper
 - Fix afdah.com scraper
