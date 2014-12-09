@@ -212,11 +212,11 @@ class Scraper(object):
                 settings[i]=settings[i].replace('default="true"', 'default="false"')
         return settings
         
-    def _cached_http_get(self, url, base_url, timeout, cookies=None, data=None, user_agent=None, cache_limit=8):
+    def _cached_http_get(self, url, base_url, timeout, cookies=None, data=None, headers=None, cache_limit=8):
         if cookies is None: cookies={}
         if timeout == 0: timeout = None
-        if user_agent is None: user_agent = USER_AGENT
-        log_utils.log('Getting Url: %s cookie=|%s| data=|%s|' % (url, cookies, data))
+        if headers is None: headers={}
+        log_utils.log('Getting Url: %s cookie=|%s| data=|%s| extra headers=|%s|' % (url, cookies, data, headers))
         db_connection = DB_Connection()
         _, html = db_connection.get_cached_url(url, cache_limit)
         if html:
@@ -227,9 +227,10 @@ class Scraper(object):
             cj = self._set_cookies(base_url, cookies)
             if data is not None: data=urllib.urlencode(data, True)    
             request = urllib2.Request(url, data=data)
-            request.add_header('User-Agent', user_agent)
+            request.add_header('User-Agent', USER_AGENT)
             request.add_unredirected_header('Host', request.get_host())
             request.add_unredirected_header('Referer', url)
+            for key in headers: request.add_header(key,headers[key])
             response = urllib2.urlopen(request, timeout=timeout)
             cj.save(ignore_discard=True, ignore_expires=True)
             if response.info().get('Content-Encoding') == 'gzip':

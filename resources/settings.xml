@@ -330,6 +330,12 @@
          <setting id="MoviesOnline7_try" type="number" default="0" visible="false"/>
          <setting id="MoviesOnline7_fail" type="number" default="0" visible="false"/>
          <setting id="MoviesOnline7_check" type="number" default="0" visible="false"/>
+         <setting id="hdmz-enable" type="bool" label="hdmz Enabled" default="true" visible="true"/>
+         <setting id="hdmz-base_url" type="text" label="     Base Url" default="http://www.hdmoviezone.net" visible="eq(-1,true)"/>
+         <setting id="hdmz-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>
+         <setting id="hdmz_try" type="number" default="0" visible="false"/>
+         <setting id="hdmz_fail" type="number" default="0" visible="false"/>
+         <setting id="hdmz_check" type="number" default="0" visible="false"/>
     </category>
 	
     <category label="Subtitles">

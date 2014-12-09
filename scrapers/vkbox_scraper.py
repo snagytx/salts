@@ -62,14 +62,13 @@ class VKBox_Scraper(scraper.Scraper):
         hosters = []
         if source_url:
             params = urlparse.parse_qs(urlparse.urlparse(source_url).query)
-            print params
             if video.video_type == VIDEO_TYPES.EPISODE:
                 magic_num = int(params['h'][0]) + int(params['u'][0]) + int(params['y'][0])
             else:
                 magic_num = int(params['id'][0]) + 537
             
             url = urlparse.urljoin(self.base_url, source_url)
-            html = self._http_get(url, user_agent = VKBOX_AGENT, cache_limit=.5)
+            html = self._http_get(url, headers = {'User-Agent': VKBOX_AGENT}, cache_limit=.5)
             if html:
                 json_data = json.loads(html)
                 
@@ -118,5 +117,5 @@ class VKBox_Scraper(scraper.Scraper):
             show_id = urlparse.parse_qs(urlparse.urlparse(show_url).query)['id'][0]
             return LINKS[video.video_type] % (show_id, int(video.season), int(video.episode))
     
-    def _http_get(self, url, user_agent=None, cache_limit=8):
-        return super(VKBox_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, user_agent=user_agent, cache_limit=cache_limit)
+    def _http_get(self, url, headers=None, cache_limit=8):
+        return super(VKBox_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, headers=headers, cache_limit=cache_limit)
