@@ -40,7 +40,6 @@ from salts_lib.constants import BLOG_Q_MAP
 BASE_URL=''
 CAPTCHA_BASE_URL = 'http://www.google.com/recaptcha/api'
 COOKIEPATH=xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile'))
-COOKIEFILE=os.path.join(COOKIEPATH,'cookies.lwp')
 
 Q_LIST = [item[0] for item in sorted(Q_ORDER.items(), key=lambda x:x[1])]
 
@@ -248,7 +247,8 @@ class Scraper(object):
 
     def _set_cookies(self, base_url, cookies):
         domain=urlparse.urlsplit(base_url).hostname
-        cj=cookielib.LWPCookieJar(COOKIEFILE)
+        cookie_file = os.path.join(COOKIEPATH,'%s_cookies.lwp' % (self.get_name()))
+        cj=cookielib.LWPCookieJar(cookie_file)
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
         urllib2.install_opener(opener)
         for key in cookies:
