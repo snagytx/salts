@@ -77,12 +77,12 @@ class MovieTV_Scraper(scraper.Scraper):
         return hosters
 
     def __get_stream_cookies(self):
-        cj = self._set_cookies(self.base_url, {'aoe': 'fm'})
+        cj = self._set_cookies(self.base_url, {})
         cookies = []
         for cookie in cj:
             if 'movietv.to' in cookie.domain:
-                cookies.append('%s=%s' % (cookie.name,cookie.value))
-        return urllib.quote(';'.join(cookies))
+                cookies.append('%s=%s' % (cookie.name,urllib.quote(cookie.value)))
+        return '; '.join(cookies)
     
     def get_url(self, video):
         return super(MovieTV_Scraper, self)._default_get_url(video)
@@ -99,7 +99,7 @@ class MovieTV_Scraper(scraper.Scraper):
         else:
             url += '&type=series'
         url += '&order=mc_num_of_votesDesc'
-        html = self._http_get(url, cache_limit=.25)
+        html = self._http_get(url, headers={'X-Requested-With': 'XMLHttpRequest'}, cache_limit=.25)
 
         results=[]
         if html:
@@ -116,5 +116,5 @@ class MovieTV_Scraper(scraper.Scraper):
             
         return results
     
-    def _http_get(self, url, data=None, cache_limit=8):
-        return super(MovieTV_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, data=data, cache_limit=cache_limit)
+    def _http_get(self, url, data=None, headers=None, cache_limit=8):
+        return super(MovieTV_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, data=data, headers=headers, cache_limit=cache_limit)
