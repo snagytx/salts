@@ -1,3 +1,11 @@
+[B]Version 0.0.47[/B]
+- Add hdmz scraper
+- Add steamallthis scraper
+- Delete hdlord, popcornered, and simplymovies scrapers
+- Fix movietv.to
+- Make cookies files per scraper to avoid multi-threading issues
+
+
 [B]Version 0.0.46[/B]
 - Cookie save fix
 - Add mysql import for Helix
