@@ -491,7 +491,7 @@ def show_list(section, slug, username=None):
     if slug == utils.WATCHLIST_SLUG:
         items = trakt_api.show_watchlist(section)
     else:
-       items = trakt_api.show_list(slug, section, username)
+        items = trakt_api.show_list(slug, section, username)
     make_dir_from_list(section, items, slug)
 
 @url_dispatcher.register(MODES.SHOW_WATCHLIST, ['section'])
@@ -809,9 +809,9 @@ def get_sources(mode, video_type, title, year, slug, season='', episode='', ep_t
 
 def filter_unusable_hosters(hosters):
     filtered_hosters=[]
-    max = int(_SALTS.get_setting('filter_unusable'))
+    filter_max = int(_SALTS.get_setting('filter_unusable'))
     for i, hoster in enumerate(hosters):
-        if i<max and 'direct' in hoster and hoster['direct']==False:
+        if i<filter_max and 'direct' in hoster and hoster['direct']==False:
             hmf = urlresolver.HostedMediaFile(host=hoster['host'], media_id='dummy') # use dummy media_id to force host validation
             if not hmf:
                 log_utils.log('Unusable source %s (%s) from %s' % (hoster['url'], hoster['host'], hoster['class'].get_name()), xbmc.LOGINFO)
