@@ -1489,10 +1489,12 @@ def make_dir_from_list(section, list_data, slug=None):
     watched={}
     in_collection={}
     if TOKEN:
-        if section == SECTIONS.MOVIES:
-            movie_watched = trakt_api.get_watched(section, cached=cache_watched)
-            for item in movie_watched:
+        watched_history = trakt_api.get_watched(section, cached=cache_watched)
+        for item in watched_history:
+            if section == SECTIONS.MOVIES:
                 watched[item['movie']['ids']['slug']] = item['plays']>0
+            else:
+                watched[item['show']['ids']['slug']] = len([e for s in item['seasons'] for e in s['episodes']]) 
         collection = trakt_api.get_collection(section, full=False, cached=_SALTS.get_setting('cache_collection')=='true')
         in_collection = dict.fromkeys([show['ids']['slug'] for show in collection], True)
 
@@ -1521,10 +1523,11 @@ def make_dir_from_list(section, list_data, slug=None):
         
         if section == SECTIONS.MOVIES:
             show['watched'] = watched.get(show['ids']['slug'], False)
-        elif TOKEN:
-                progress = trakt_api.get_show_progress(show['ids']['slug'], cached=cache_watched)
-                show['watched'] = not progress.get('next_episode',True)
-        #if not show['watched']: log_utils.log('Setting watched status on %s (%s): %s' % (show['title'], show['year'], show['watched']), xbmc.LOGDEBUG)
+        else:
+            try:
+                show['watched'] = watched[show['ids']['slug']] >= show['aired_episodes']
+            except:
+                show['watched'] = False
 
         show['in_collection']=in_collection.get(show['ids']['slug'],False)
             
