@@ -56,11 +56,11 @@ class hdmz_Scraper(scraper.Scraper):
         if source_url:
             url = urlparse.urljoin(self.base_url,source_url)
             html = self._http_get(url, cache_limit=.5)
-            php_url = re.findall('server_php\s*=\s*"([^"]+)', html)[-1]
+            php_url = re.findall('server1_php\s*=\s*"([^"]+)', html)[-1]
             match = re.search('file\s*=\s*"([^"]+)', html)
             if match:
                 file_hash = match.group(1)
-                data = self._http_get(php_url, data = {'url': file_hash}, headers = {'Origin': self.base_url}, cache_limit = 0)
+                data = self._http_get(php_url, data = {'url': file_hash}, headers = {'Origin': self.base_url, 'Referer': self.base_url}, cache_limit = 0)
                 if data:
                     js_data = json.loads(data)
                     for item in js_data['content']:
@@ -90,22 +90,23 @@ class hdmz_Scraper(scraper.Scraper):
         data = self._http_get(search_url, cache_limit=.25)
         if data:
             js_data = json.loads(data)
-            for item in js_data['feed']['entry']:
-                for link in item['link']:
-                    if link['rel'].lower() == 'alternate':
-                        url = link['href']
-                        title_year = link['title']
-                        match = re.search('(.*?)\s*\((\d{4})\)$', title_year)
-                        if match:
-                            match_title, match_year = match.groups()
-                        else:
-                            match_title = title_year
-                            match_year = ''
-                        break
-                        
-                if not year or not match_year or year == match_year:
-                    result={'url': url.replace(self.base_url, ''), 'title': match_title, 'year': match_year}
-                    results.append(result)
+            if 'entry' in js_data['feed']:
+                for item in js_data['feed']['entry']:
+                    for link in item['link']:
+                        if link['rel'].lower() == 'alternate':
+                            url = link['href']
+                            title_year = link['title']
+                            match = re.search('(.*?)\s*\((\d{4})\)$', title_year)
+                            if match:
+                                match_title, match_year = match.groups()
+                            else:
+                                match_title = title_year
+                                match_year = ''
+                            break
+                            
+                    if not year or not match_year or year == match_year:
+                        result={'url': url.replace(self.base_url, ''), 'title': match_title, 'year': match_year}
+                        results.append(result)
             
         return results
 

@@ -215,6 +215,7 @@ class Scraper(object):
         if cookies is None: cookies={}
         if timeout == 0: timeout = None
         if headers is None: headers={}
+        referer = headers['Referer'] if 'Referer' in headers else url
         log_utils.log('Getting Url: %s cookie=|%s| data=|%s| extra headers=|%s|' % (url, cookies, data, headers))
         db_connection = DB_Connection()
         _, html = db_connection.get_cached_url(url, cache_limit)
@@ -228,7 +229,7 @@ class Scraper(object):
             request = urllib2.Request(url, data=data)
             request.add_header('User-Agent', USER_AGENT)
             request.add_unredirected_header('Host', request.get_host())
-            request.add_unredirected_header('Referer', url)
+            request.add_unredirected_header('Referer', referer)
             for key in headers: request.add_header(key,headers[key])
             response = urllib2.urlopen(request, timeout=timeout)
             cj.save(ignore_discard=True, ignore_expires=True)
