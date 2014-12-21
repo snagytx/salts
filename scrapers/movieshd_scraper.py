@@ -58,7 +58,7 @@ class MoviesHD_Scraper(scraper.Scraper):
             url = urlparse.urljoin(self.base_url,source_url)
             html = self._http_get(url, cache_limit=.5)
             
-            match = re.search ("'([^']+hashkey=[^']+)", html)
+            match = re.search ("(?:'|\")([^'\"]+hashkey=[^'\"]+)", html)
             if match:
                 hash_url = match.group(1)
                 hoster = {'multi-part': False, 'url': hash_url, 'host': 'videomega.tv', 'class': self, 'quality': QUALITIES.HD, 'views': None, 'rating': None, 'up': None, 'down': None, 'direct': False}
