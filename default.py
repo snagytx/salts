@@ -341,7 +341,7 @@ def browse_friends(mode, section):
     for activity in activities['activity']:
         if 'episode' in activity:
             show=activity['show']
-            liz, liz_url = make_episode_item(show, activity['episode'], show['images']['fanart'], show_subs=False)
+            liz, liz_url = make_episode_item(show, activity['episode'], show_subs=False)
             folder=(liz.getProperty('isPlayable')!='true')
             label=liz.getLabel()
             label = '%s (%s) - %s' % (show['title'], show['year'], label.decode('utf-8', 'replace'))
@@ -530,7 +530,7 @@ def show_progress():
             queries = {'mode': MODES.SEASONS, 'slug': show['ids']['slug'], 'fanart': fanart}
             menu_items.append(('Browse Seasons', 'Container.Update(%s)' % (_SALTS.build_plugin_url(queries))), )
              
-            liz, liz_url = make_episode_item(show, episode['episode'], fanart, menu_items=menu_items)
+            liz, liz_url = make_episode_item(show, episode['episode'], menu_items=menu_items)
             label=liz.getLabel()
             label = '[[COLOR deeppink]%s[/COLOR]] %s - %s' % (date, show['title'], label.decode('utf-8', 'replace'))
             liz.setLabel(label) 
@@ -638,7 +638,6 @@ def recent_searches(section):
         queries = {'mode': MODES.SEARCH_RESULTS, 'section': section, 'query': search_text}
         xbmcplugin.addDirectoryItem(int(sys.argv[1]), _SALTS.build_plugin_url(queries), liz, isFolder=True) 
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
-        
 
 @url_dispatcher.register(MODES.SAVED_SEARCHES, ['section'])
 def saved_searches(section):
@@ -681,14 +680,14 @@ def browse_seasons(slug, fanart):
     for season in seasons:
         if _SALTS.get_setting('show_season0') == 'true' or season['number'] != 0:
             liz=make_season_item(season, info.get(str(season['number']), {'season': season['number']}), slug, fanart)
-            queries = {'mode': MODES.EPISODES, 'slug': slug, 'season': season['number'], 'fanart': fanart}
+            queries = {'mode': MODES.EPISODES, 'slug': slug, 'season': season['number']}
             liz_url = _SALTS.build_plugin_url(queries)
             xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz,isFolder=True,totalItems=totalItems)
     utils.set_view(CONTENT_TYPES.SEASONS, False)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
-@url_dispatcher.register(MODES.EPISODES, ['slug', 'season', 'fanart'])
-def browse_episodes(slug, season, fanart):
+@url_dispatcher.register(MODES.EPISODES, ['slug', 'season'])
+def browse_episodes(slug, season):
     show=trakt_api.get_show_details(slug)
     episodes=trakt_api.get_episodes(slug, season)
     progress = trakt_api.get_show_progress(slug, cached=_SALTS.get_setting('cache_watched')=='true')
@@ -699,7 +698,7 @@ def browse_episodes(slug, season, fanart):
         utc_air_time = utils.iso_2_utc(episode['first_aired'])
         if _SALTS.get_setting('show_unaired')=='true' or utc_air_time <= now:
             if _SALTS.get_setting('show_unknown')=='true' or utc_air_time:
-                liz, liz_url =make_episode_item(show, episode, fanart)
+                liz, liz_url =make_episode_item(show, episode)
                 xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz,isFolder=(liz.getProperty('isPlayable')!='true'),totalItems=totalItems)
     utils.set_view(CONTENT_TYPES.EPISODES, False)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
@@ -1577,7 +1576,7 @@ def make_dir_from_cal(mode, start_date, days):
             queries = {'mode': MODES.SEASONS, 'slug': show['ids']['slug'], 'fanart': fanart}
             menu_items.append(('Browse Seasons', 'Container.Update(%s)' % (_SALTS.build_plugin_url(queries))), )
  
-            liz, liz_url =make_episode_item(show, episode, fanart, show_subs=False, menu_items=menu_items)
+            liz, liz_url =make_episode_item(show, episode, show_subs=False, menu_items=menu_items)
             label=liz.getLabel()
             label = '[[COLOR deeppink]%s[/COLOR]] %s - %s' % (date_time, show['title'], label.decode('utf-8', 'replace'))
             if episode['season']==1 and episode['number']==1:
@@ -1617,8 +1616,8 @@ def make_season_item(season, info, slug, fanart):
     liz.addContextMenuItems(menu_items, replaceItems=True)
     return liz
 
-def make_episode_item(show, episode, fanart, show_subs=True, menu_items=None):
-    log_utils.log('Make Episode: Show: %s, Episode: %s, Fanart: %s, Show Subs: %s' % (show, episode, fanart, show_subs), xbmc.LOGDEBUG)
+def make_episode_item(show, episode, show_subs=True, menu_items=None):
+    log_utils.log('Make Episode: Show: %s, Episode: %s, Show Subs: %s' % (show, episode, show_subs), xbmc.LOGDEBUG)
     log_utils.log('Make Episode: Episode: %s' % (episode), xbmc.LOGDEBUG)
     if menu_items is None: menu_items = []
     folder = _SALTS.get_setting('source-win')=='Directory' and _SALTS.get_setting('auto-play')=='false'
