@@ -70,18 +70,21 @@ class VKBox_Scraper(scraper.Scraper):
             url = urlparse.urljoin(self.base_url, source_url)
             html = self._http_get(url, headers = {'User-Agent': VKBOX_AGENT}, cache_limit=.5)
             if html:
-                json_data = json.loads(html)
-                
-                try: langs = json_data['langs']
-                except: langs = json_data
-                for lang in langs:
-                    if lang['lang']=='en':
-                        stream_url = STREAM_URL % (str(int(lang['apple']) + magic_num), str(int(lang['google']) + magic_num), lang['microsoft'])
-                        hoster = {'multi-part': False, 'url': stream_url, 'host': 'vk.com', 'class': self, 'quality': QUALITIES.HD, 'views': None, 'rating': None, 'direct': False}
-                        hosters.append(hoster)
-                        break
+                try:
+                    json_data = json.loads(html)
+                except:
+                    log_utils.log('No JSON returned: %s' % (url), xbmc.LOGWARNING)
                 else:
-                    log_utils.log('No english language found from vkbox: %s' % (langs), xbmc.LOGWARNING)
+                    try: langs = json_data['langs']
+                    except: langs = json_data
+                    for lang in langs:
+                        if lang['lang']=='en':
+                            stream_url = STREAM_URL % (str(int(lang['apple']) + magic_num), str(int(lang['google']) + magic_num), lang['microsoft'])
+                            hoster = {'multi-part': False, 'url': stream_url, 'host': 'vk.com', 'class': self, 'quality': QUALITIES.HD, 'views': None, 'rating': None, 'direct': False}
+                            hosters.append(hoster)
+                            break
+                    else:
+                        log_utils.log('No english language found from vkbox: %s' % (langs), xbmc.LOGWARNING)
             else:
                 log_utils.log('No data returned from vkbox: %s' % (url), xbmc.LOGWARNING)
             
