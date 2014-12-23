@@ -1,10 +1,18 @@
+[B]Version 0.0.48[/B]
+- Add clickplay.to scraper
+- Add niter.tv scraper
+- Add stream-tv.co scraper
+- Fix myvideolinks.eu scraper
+- Fix hdmz scraper
+- Fix movieshd.co scraper
+- Improve vkbox scraper
+
 [B]Version 0.0.47[/B]
 - Add hdmz scraper
 - Add steamallthis scraper
 - Delete hdlord, popcornered, and simplymovies scrapers
 - Fix movietv.to
 - Make cookies files per scraper to avoid multi-threading issues
-
 
 [B]Version 0.0.46[/B]
 - Cookie save fix

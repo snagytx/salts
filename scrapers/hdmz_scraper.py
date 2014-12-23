@@ -56,7 +56,7 @@ class hdmz_Scraper(scraper.Scraper):
         if source_url:
             url = urlparse.urljoin(self.base_url,source_url)
             html = self._http_get(url, cache_limit=.5)
-            php_url = re.findall('server1_php\s*=\s*"([^"]+)', html)[-1]
+            php_url = re.findall('server\d*_php\s*=\s*"([^"]+)', html)[-1]
             match = re.search('file\s*=\s*"([^"]+)', html)
             if match:
                 file_hash = match.group(1)
