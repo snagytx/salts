@@ -98,7 +98,7 @@ class Niter_Scraper(scraper.Scraper):
             url = urlparse.urljoin(self.base_url,source_url)
             html = self._http_get(url, cache_limit=.5)
 
-            for match in re.finditer('pic=([^&]+)', html):
+            for match in re.finditer('pic=([^&<]+)', html):
                 video_id = match.group(1)                
                 hoster = {'multi-part': False, 'host': 'niter.tv', 'class': self, 'quality': QUALITIES.HD, 'views': None, 'rating': None, 'url': video_id, 'direct': True}
                 hosters.append(hoster)
