@@ -266,7 +266,7 @@ class Scraper(object):
         html = self._cached_http_get(challenge_url, CAPTCHA_BASE_URL, timeout=DEFAULT_TIMEOUT, cache_limit=0)
         match = re.search("challenge\s+\:\s+'([^']+)", html)
         captchaimg = 'http://www.google.com/recaptcha/api/image?c=%s' % (match.group(1))
-        img = xbmcgui.ControlImage(450,15,400,130,captchaimg)
+        img = xbmcgui.ControlImage(450,0,400,130,captchaimg)
         wdlg = xbmcgui.WindowDialog()
         wdlg.addControl(img)
         wdlg.show()

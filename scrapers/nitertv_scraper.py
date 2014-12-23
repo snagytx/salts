@@ -27,10 +27,10 @@ from salts_lib.constants import VIDEO_TYPES
 from salts_lib.db_utils import DB_Connection
 from salts_lib.constants import QUALITIES
 
-BASE_URL = 'http://yify.tv'
+BASE_URL = 'http://niter.tv'
 MAX_TRIES=3
 
-class YIFY_Scraper(scraper.Scraper):
+class Niter_Scraper(scraper.Scraper):
     base_url=BASE_URL
     def __init__(self, timeout=scraper.DEFAULT_TIMEOUT):
         self.timeout=timeout
@@ -43,7 +43,7 @@ class YIFY_Scraper(scraper.Scraper):
     
     @classmethod
     def get_name(cls):
-        return 'yify.tv'
+        return 'niter.tv'
     
     def resolve_link(self, link):
         url = '/player/pk/pk/plugins/player_p2.php'
@@ -89,7 +89,7 @@ class YIFY_Scraper(scraper.Scraper):
         return stream_url
 
     def format_source_label(self, item):
-        return '[%s] %s (%s views) (%s/100)' % (item['quality'], item['host'],  item['views'], item['rating'])
+        return '[%s] %s' % (item['quality'], item['host'])
     
     def get_sources(self, video):
         source_url= self.get_url(video)
@@ -98,34 +98,26 @@ class YIFY_Scraper(scraper.Scraper):
             url = urlparse.urljoin(self.base_url,source_url)
             html = self._http_get(url, cache_limit=.5)
 
-            match = re.search('class="votes">(\d+)</strong>', html)
-            views=None
-            if match:
-                views=int(match.group(1))
-                
             for match in re.finditer('pic=([^&]+)', html):
                 video_id = match.group(1)                
-                hoster = {'multi-part': False, 'host': 'yify.tv', 'class': self, 'quality': QUALITIES.HD, 'views': views, 'rating': None, 'url': video_id, 'direct': True}
+                hoster = {'multi-part': False, 'host': 'niter.tv', 'class': self, 'quality': QUALITIES.HD, 'views': None, 'rating': None, 'url': video_id, 'direct': True}
                 hosters.append(hoster)
         return hosters
 
     def get_url(self, video):
-        return super(YIFY_Scraper, self)._default_get_url(video)
+        return super(Niter_Scraper, self)._default_get_url(video)
 
     def search(self, video_type, title, year):
-        search_url = urlparse.urljoin(self.base_url, '/?no&order=desc&years=%s&s=' %  (year))
-        search_url += urllib.quote_plus(title)
+        search_url = urlparse.urljoin(self.base_url, '/search?q=')
+        search_url += urllib.quote(title)
         html = self._http_get(search_url, cache_limit=.25)
         results=[]
-        pattern ='var\s+posts\s+=\s+(.*);'
-        match = re.search(pattern, html)
-        if match:
-            fragment = match.group(1)
-            data = json.loads(fragment)
-            for post in data['posts']:
-                result = {'title': post['title'], 'year': post['year'], 'url': post['link'].replace(self.base_url,'')}
-                results.append(result)
+        pattern ='data-name="([^"]+).*?href="([^"]+)'
+        for match in re.finditer(pattern, html, re.DOTALL):
+            match_title, url = match.groups()
+            result = {'title': match_title, 'year': '', 'url': url.replace(self.base_url,'')}
+            results.append(result)
         return results
 
     def _http_get(self, url, data=None, cache_limit=8):
-        return super(YIFY_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, data=data, cache_limit=cache_limit)
+        return super(Niter_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, data=data, cache_limit=cache_limit)
