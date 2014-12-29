@@ -597,7 +597,10 @@ def get_trakt_token():
         try:
             token=trakt_api.login()
             log_utils.log('Token Returned: %s' % (token), xbmc.LOGDEBUG)
-        except:
+        except Exception as e:
+            log_utils.log('Login Failed: %s' % (e), xbmc.LOGWARNING)
+            builtin = 'XBMC.Notification(%s,Login Failed: %s, 7500, %s)'
+            xbmc.executebuiltin(builtin % (ADDON.get_name(), e, ICON_PATH))
             token=''
         
         if token:
