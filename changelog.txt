@@ -1,3 +1,8 @@
+[B]Version 0.0.50[/B]
+- Migrate SALTS to the Trakt V2 API
+- Improve niter.tv scraper
+- Filter promo links from pw scraper
+
 [B]Version 0.0.48[/B]
 - Add clickplay.to scraper
 - Add niter.tv scraper
