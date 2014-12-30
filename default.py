@@ -383,7 +383,6 @@ def browse_lists(section):
     lists.insert(0, {'name': 'watchlist', 'ids': {'slug': utils.WATCHLIST_SLUG}})
     totalItems=len(lists)
     for user_list in lists:
-        print user_list
         ids = user_list['ids']
         liz = xbmcgui.ListItem(label=user_list['name'], iconImage=utils.art('list.png'), thumbnailImage=utils.art('list.png'))
         liz.setProperty('fanart_image', utils.art('fanart.jpg'))
