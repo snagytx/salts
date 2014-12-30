@@ -30,7 +30,7 @@ MODES=__enum(MAIN='main', BROWSE='browse', TRENDING='trending', RECOMMEND='recom
            RES_SETTINGS='resolver_settings', ADDON_SETTINGS='addon_settings', TOGGLE_ALL='toggle_all', MOVE_TO='move_to', REM_FROM_COLL='rem_from_collection', 
            URL_EXISTS='url_exists', RECENT_SEARCH='recent_search', SAVED_SEARCHES='saved_searches', SAVE_SEARCH='save_search', DELETE_SEARCH='delete_search', SET_VIEW='set_view',
            SETTINGS='settings', SHOW_VIEWS='show_views', BROWSE_VIEW='browse_view', BROWSE_URLS='browse_urls', DELETE_URL='delete_url', DOWNLOAD_SOURCE='download_source',
-           DIRECT_DOWNLOAD='direct_download')
+           DIRECT_DOWNLOAD='direct_download', POPULAR='popular', RECENT='recent')
 SECTIONS=__enum(TV='TV', MOVIES='Movies')
 VIDEO_TYPES = __enum(TVSHOW='TV Show', MOVIE='Movie', EPISODE='Episode', SEASON='Season')
 CONTENT_TYPES = __enum(TVSHOWS='tvshows', MOVIES='movies', SEASONS='seasons', EPISODES='episodes')
@@ -42,7 +42,6 @@ DIRS = __enum(UP='up', DOWN='down')
 P_MODES = __enum(THREADS=0, PROCESSES=1, NONE=2)
 WATCHLIST_SLUG = 'watchlist_slug'
 COLLECTION_SLUG='collection_slug'
-REM_COLL_LABEL='Remove from Collection'
 USER_AGENT = ("Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:32.0) Gecko/20100101 Firefox/33.0")
 SEARCH_HISTORY = 10
 DEFAULT_EXT = '.mpg'
@@ -54,7 +53,6 @@ PROGRESS = __enum(OFF=0, WINDOW=1, BACKGROUND=2)
 SORT_KEYS = {}
 SORT_KEYS['quality'] = {None: 0, QUALITIES.LOW: 1, QUALITIES.MEDIUM: 2, QUALITIES.HIGH: 3, QUALITIES.HD: 4}
 SORT_LIST = ['none', 'source', 'quality', 'views', 'rating', 'direct']
-
 SORT_SIGNS = {'0': -1, '1': 1} # 0 = Best to Worst; 1 = Worst to Best
 
 HOURS_LIST={}
@@ -77,3 +75,6 @@ HOST_Q[QUALITIES.HIGH]=['vidzi.tv', 'vidspot.net', 'vidbull.com', 'thevideo.me']
 HOST_Q[QUALITIES.HD]=['thefile.me', 'sharesix', 'mightyupload', 'filenuke', 'hugefiles', '180upload', 'vidxden']
 
 Q_ORDER = {QUALITIES.LOW: 1, QUALITIES.MEDIUM: 2, QUALITIES.HIGH: 3, QUALITIES.HD: 4}
+
+PLACE_POSTER = 'http://trakt.tv/assets/placeholders/medium/poster-18881023d1e4a11a82fb8e39e2c1559e.png'
+IMG_SIZES = ['full', 'medium', 'thumb']

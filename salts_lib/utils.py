@@ -30,8 +30,10 @@ SORT_FIELDS =  [(SORT_LIST[int(ADDON.get_setting('sort1_field'))], SORT_SIGNS[AD
 
 username=ADDON.get_setting('username')
 password=ADDON.get_setting('password')
+token = ADDON.get_setting('trakt_token')
 use_https=ADDON.get_setting('use_https')=='true'
 trakt_timeout=int(ADDON.get_setting('trakt_timeout'))
+list_size=int(ADDON.get_setting('list_size'))
 
 P_MODE = int(ADDON.get_setting('parallel_mode'))
 if P_MODE == P_MODES.THREADS:
@@ -49,7 +51,7 @@ elif P_MODE == P_MODES.PROCESSES:
         builtin = 'XBMC.Notification(%s,Process Mode not supported on this platform falling back to Thread Mode, 7500, %s)'
         xbmc.executebuiltin(builtin % (ADDON.get_name(), ICON_PATH))
 
-trakt_api=Trakt_API(username,password, use_https, trakt_timeout)
+trakt_api=Trakt_API(username,password, token, use_https, list_size, trakt_timeout)
 db_connection=DB_Connection()
 
 THEME_LIST = ['Shine', 'Luna_Blue', 'Iconic']
@@ -65,27 +67,37 @@ def art(name):
 
 def choose_list(username=None):
     lists = trakt_api.get_lists(username)
-    if username is None: lists.insert(0, {'name': 'watchlist', 'slug': WATCHLIST_SLUG})
+    if username is None: lists.insert(0, {'name': 'watchlist', 'ids': {'slug': WATCHLIST_SLUG}})
     if lists:
         dialog=xbmcgui.Dialog()
         index = dialog.select('Pick a list', [list_data['name'] for list_data in lists])
         if index>-1:
-            return lists[index]['slug']
+            return lists[index]['ids']['slug']
     else:
         builtin = 'XBMC.Notification(%s,No Lists exist for user: %s, 5000, %s)'
         xbmc.executebuiltin(builtin % (ADDON.get_name(), username, ICON_PATH))
 
 def show_id(show):
     queries={}
-    if 'imdb_id' in show and show['imdb_id']:
-        queries['id_type']='imdb_id'
-        queries['show_id']=show['imdb_id']
-    elif 'tvdb_id' in show and show['tvdb_id']:
-        queries['id_type']='tvdb_id'
-        queries['show_id']=show['tvdb_id']
-    elif 'tmdb_id' in show and show['tmdb_id']:
-        queries['id_type']='tmdb_id'
-        queries['show_id']=show['tmdb_id']
+    ids = show['ids']
+    if 'slug' in ids and ids['slug']:
+        queries['id_type']='slug'
+        queries['show_id']=ids['slug']
+    elif 'trakt' in ids and ids['trakt']:
+        queries['id_type']='trakt'
+        queries['show_id']=ids['trakt']
+    elif 'imdb' in ids and ids['imdb']:
+        queries['id_type']='imdb'
+        queries['show_id']=ids['imdb']
+    elif 'tvdb' in ids and ids['tvdb']:
+        queries['id_type']='tvdb'
+        queries['show_id']=ids['tvdb']
+    elif 'tmdb' in ids and ids['tmdb']:
+        queries['id_type']='tmdb'
+        queries['show_id']=ids['tmdb']
+    elif 'tvrage' in ids and ids['tvrage']:
+        queries['id_type']='tvrage'
+        queries['show_id']=ids['tvrage']
     return queries
     
 def update_url(video_type, title, year, source, old_url, new_url, season, episode):
@@ -102,20 +114,34 @@ def update_url(video_type, title, year, source, old_url, new_url, season, episod
 def make_seasons_info(progress):
     season_info={}
     if progress:
-        show = progress['show']
         for season in progress['seasons']:
             info={}
-            if 'title' in show: info['TVShowTitle']=show['title']
-            if 'year' in show: info['year']=show['year']
-            if 'imdb_id' in show: info['code']=info['imdbnumber']=info['imdb_id']=show['imdb_id']
-            if 'tvdb_id' in show: info['tvdb_id']=show['tvdb_id']
             if 'aired' in season: info['episode']=info['TotalEpisodes']=season['aired']
             if 'completed' in season: info['WatchedEpisodes']=season['completed']
-            if 'left' in season: info['UnWatchedEpisodes']=season['left']
-            if 'completed' in season and 'left' in season: info['playcount']=season['completed'] if season['left']==0 else 0
-            if 'season' in season: info['season']=season['season']
-            season_info[str(season['season'])]=info
+            if 'aired' in season and 'completed' in season:
+                info['UnWatchedEpisodes']=season['aired'] - season['completed']
+                info['playcount']=season['aired'] if season['completed']==season['aired'] else 0
+                
+            if 'number' in season: info['season']=season['number']
+            season_info[str(season['number'])]=info
     return season_info
+
+def make_episodes_watched(episodes, progress):
+    watched={}
+    for season in progress['seasons']:
+        watched[str(season['number'])]={}
+        for ep_status in season['episodes']:
+            watched[str(season['number'])][str(ep_status['number'])]=ep_status['completed']
+    
+    for episode in episodes:
+        season_str = str(episode['season'])
+        episode_str = str(episode['number'])
+        if season_str in watched and episode_str in watched[season_str]:
+            episode['watched']=watched[season_str][episode_str]
+        else:
+            episode['watched']=False
+
+    return episodes
 
 def make_list_item(label, meta):
     art=make_art(meta)
@@ -123,61 +149,61 @@ def make_list_item(label, meta):
     listitem.setProperty('fanart_image', art['fanart'])
     try: listitem.setArt(art)
     except: pass
-    if 'imdb_id' in meta: listitem.setProperty('imdb_id', meta['imdb_id'])
-    if 'tvdb_id' in meta: listitem.setProperty('tvdb_id', str(meta['tvdb_id']))
+    if 'ids' in meta and 'imdb' in meta['ids']: listitem.setProperty('imdb_id', str(meta['ids']['imdb']))
+    if 'ids' in meta and 'tvdb' in meta['ids']: listitem.setProperty('tvdb_id', str(meta['ids']['tvdb']))
     return listitem
 
-def make_art(show, fanart=''):
-    if not fanart: fanart = art('fanart.jpg')
-    art_dict={'banner': '', 'fanart': fanart, 'thumb': '', 'poster': ''}
+def make_art(show):
+    min_size = int(ADDON.get_setting('image_size'))
+    art_dict={'banner': '', 'fanart': art('fanart.jpg'), 'thumb': '', 'poster': PLACE_POSTER}
     if 'images' in show:
-        if 'banner' in show['images']: art_dict['banner']=show['images']['banner']
-        if 'fanart' in show['images']: art_dict['fanart']=show['images']['fanart']
-        if 'poster' in show['images']: art_dict['thumb']=art_dict['poster']=show['images']['poster']
-        if 'screen' in show['images']: art_dict['thumb']=show['images']['screen']
+        images = show['images']
+        for i in range(0,min_size+1):
+            if 'banner' in images and IMG_SIZES[i] in images['banner'] and images['banner'][IMG_SIZES[i]]: art_dict['banner']=images['banner'][IMG_SIZES[i]]
+            if 'fanart' in images and IMG_SIZES[i] in images['fanart'] and images['fanart'][IMG_SIZES[i]]: art_dict['fanart']=images['fanart'][IMG_SIZES[i]]
+            if 'poster' in images and IMG_SIZES[i] in images['poster'] and images['poster'][IMG_SIZES[i]]: art_dict['thumb']=art_dict['poster']=images['poster'][IMG_SIZES[i]]
+            if 'thumb' in images and IMG_SIZES[i] in images['thumb'] and images['thumb'][IMG_SIZES[i]]: art_dict['thumb']=images['thumb'][IMG_SIZES[i]]
+            if 'screen' in images and IMG_SIZES[i] in images['screen'] and images['screen'][IMG_SIZES[i]]: art_dict['thumb']=images['screen'][IMG_SIZES[i]]
+            if 'screenshot' in images and IMG_SIZES[i] in images['screenshot'] and images['screenshot'][IMG_SIZES[i]]: art_dict['thumb']=images['screenshot'][IMG_SIZES[i]]
+            if 'logo' in images and IMG_SIZES[i] in images['logo'] and images['logo'][IMG_SIZES[i]]: art_dict['clearlogo']=images['logo'][IMG_SIZES[i]]
+            if 'clearart' in images and IMG_SIZES[i] in images['clearart'] and images['clearart'][IMG_SIZES[i]]: art_dict['clearart']=images['clearart'][IMG_SIZES[i]]
     return art_dict
 
-def make_info(item, show=''):
+def make_info(item, show=None, people=None):
+    if people is None: people = {}
+    if show is None: show={}
     #log_utils.log('Making Info: Show: %s' % (show), xbmc.LOGDEBUG)
     #log_utils.log('Making Info: Item: %s' % (item), xbmc.LOGDEBUG)
     info={}
     info['title']=item['title']
     if 'overview' in item: info['plot']=info['plotoutline']=item['overview']
     if 'runtime' in item: info['duration']=item['runtime']
-    if 'imdb_id' in item: info['code']=info['imdbnumber']=info['imdb_id']=item['imdb_id']
-    if 'tmdb_id' in item: info['tmdb_id']=item['tmdb_id']
-    if 'tvdb_id' in item: info['tvdb_id']=item['tvdb_id']
     if 'certification' in item: info['mpaa']=item['certification']
     if 'year' in item: info['year']=item['year']
-    if 'season' in item: info['season']=item['season']
-    if 'episode' in item: info['episode']=item['episode']
-    if 'number' in item: info['episode']=item['number']
-    if 'genres' in item: info['genre']=', '.join(item['genres'])
+    if 'season' in item: info['season']=item['season'] # needs check
+    if 'episode' in item: info['episode']=item['episode'] # needs check
+    if 'number' in item: info['episode']=item['number'] # needs check
+    if 'genres' in item:
+        genres = dict((genre['slug'],genre['name']) for genre in trakt_api.get_genres(SECTIONS.TV))
+        genres.update(dict((genre['slug'],genre['name']) for genre in trakt_api.get_genres(SECTIONS.MOVIES)))
+        item_genres = [genres[genre] for genre in item['genres'] if genre in genres]
+        info['genre']=', '.join(item_genres)
     if 'network' in item: info['studio']=item['network']
     if 'status' in item: info['status']=item['status']
     if 'tagline' in item: info['tagline']=item['tagline']
     if 'watched' in item and item['watched']: info['playcount']=1
     if 'plays' in item and item['plays']: info['playcount']=item['plays']
-    info.update(make_people(item))
+    if 'rating' in item: info['rating']=item['rating']
+    if 'released' in item: info['premiered']=item['released']
+    info.update(make_ids(item))
     
-    if 'ratings' in item: 
-        info['rating']=int(item['ratings']['percentage'])/10.0
-        info['votes']=item['ratings']['votes']
-
-    if 'first_aired_iso' in item or 'first_aired' in item:
-        utc_air_time = iso_2_utc(item['first_aired_iso']) if 'first_aired_iso' in item else fa_2_utc(item['first_aired'])
+    if 'first_aired' in item:
+        utc_air_time = iso_2_utc(item['first_aired'])
         try: info['aired']=info['premiered']=time.strftime('%Y-%m-%d', time.localtime(utc_air_time))
         except ValueError: # windows throws a ValueError on negative values to localtime  
             d=datetime.datetime.fromtimestamp(0) + datetime.timedelta(seconds=utc_air_time)
             info['aired']=info['premiered']=d.strftime('%Y-%m-%d')
      
-    if 'released' in item:
-        try: info['premiered']=time.strftime('%Y-%m-%d', time.localtime(item['released']))
-        except ValueError: # windows throws a ValueError on negative values to localtime
-            d=datetime.datetime.fromtimestamp(0) + datetime.timedelta(seconds=item['released'])
-            info['premiered']=d.strftime('%Y-%m-%d')
-         
-
     if 'seasons' in item:
         total_episodes=0
         watched_episodes=0
@@ -192,7 +218,7 @@ def make_info(item, show=''):
         info['WatchedEpisodes']=watched_episodes
         info['UnWatchedEpisodes']=total_episodes - watched_episodes
 
-    if 'trailer' in item:
+    if 'trailer' in item and item['trailer']:
         match=re.search('\?v=(.*)', item['trailer'])
         if match:
             info['trailer']='plugin://plugin.video.youtube/?action=play_video&videoid=%s' % (match.group(1)) 
@@ -200,21 +226,35 @@ def make_info(item, show=''):
     # override item params with show info if it exists
     if 'certification' in show: info['mpaa']=show['certification']
     if 'year' in show: info['year']=show['year']
-    if 'imdb_id' in show: info['code']=info['imdbnumber']=info['imdb_id']=show['imdb_id']
-    if 'tmdb_id' in show: info['tmdb_id']=show['tmdb_id']
-    if 'tvdb_id' in show: info['tvdb_id']=show['tvdb_id']
     if 'runtime' in show: info['duration']=show['runtime']
     if 'title' in show: info['tvshowtitle']=show['title']
     if 'network' in show: info['studio']=show['network']
-    info.update(make_people(show))
+    info.update(make_ids(show))
+    info.update(make_people(people))
+    return info
+    
+def make_ids(item):
+    info={}
+    if 'ids' in item:
+        ids=item['ids']
+        if 'imdb' in ids: info['code']=info['imdbnumber']=info['imdb_id']=ids['imdb']
+        if 'tmdb' in ids: info['tmdb_id']=ids['tmdb']
+        if 'tvdb' in ids: info['tvdb_id']=ids['tvdb']
+        if 'trakt' in ids: info['trakt_id']=ids['trakt']
+        if 'slug' in ids: info['slug']=ids['slug']
     return info
     
 def make_people(item):
     people={}
-    if 'people' in item: people['cast']=[actor['name'] for actor in item['people']['actors'] if actor['name']]
-    if 'people' in item: people['castandrole']=['%s as %s' % (actor['name'],actor['character']) for actor in item['people']['actors'] if actor['name'] and actor['character']]
-    if 'people' in item and 'directors' in item['people']: people['director']=', '.join([director['name'] for director in item['people']['directors']])
-    if 'people' in item and 'writers' in item['people']: people['writer']=', '.join([writer['name'] for writer in item['people']['writers']])
+    if 'cast' in item: people['cast']=[person['person']['name'] for person in item['cast']]
+    if 'cast' in item: people['castandrole']=['%s as %s' % (person['person']['name'], person['character']) for person in item['cast']]
+    if 'crew' in item and 'directing' in item['crew']:
+        directors = [director['person']['name'] for director in item['crew']['directing'] if director['job'].lower() == 'director']
+        people['director']=', '.join(directors)
+    if 'crew' in item and 'writing' in item['crew']:
+        writers = [writer['person']['name'] for writer in item['crew']['writing'] if writer['job'].lower() in ['writer', 'screenplay', 'author']]
+        people['writer']=', '.join(writers)
+    
     return people
     
 def get_section_params(section):
@@ -511,8 +551,10 @@ def make_time(utc_ts):
 
 def iso_2_utc(iso_ts):
     if not iso_ts or iso_ts is None: return 0
-    delim = iso_ts.rfind('+')
-    if delim == -1:  delim = iso_ts.rfind('-')
+    delim = -1
+    if not iso_ts.endswith('Z'):
+        delim = iso_ts.rfind('+')
+        if delim == -1:  delim = iso_ts.rfind('-')
     
     if delim>-1:
         ts = iso_ts[:delim]
@@ -522,16 +564,21 @@ def iso_2_utc(iso_ts):
         ts = iso_ts
         tz = None
     
+    if ts.find('.')>-1:
+        ts  = ts[:ts.find('.')]
+        
     try: d=datetime.datetime.strptime(ts,'%Y-%m-%dT%H:%M:%S')
     except TypeError: d = datetime.datetime(*(time.strptime(ts, '%Y-%m-%dT%H:%M:%S')[0:6]))
     
-    hours, minutes = tz.split(':')
-    hours = int(hours)
-    minutes= int(minutes)
-    if sign == '-':
-        hours = -hours
-        minutes = -minutes
-    dif = datetime.timedelta(minutes=minutes, hours=hours)
+    dif=datetime.timedelta()
+    if tz:
+        hours, minutes = tz.split(':')
+        hours = int(hours)
+        minutes= int(minutes)
+        if sign == '-':
+            hours = -hours
+            minutes = -minutes
+        dif = datetime.timedelta(minutes=minutes, hours=hours)
     utc_dt = d - dif
     epoch = datetime.datetime.utcfromtimestamp(0)
     delta = utc_dt - epoch
@@ -539,34 +586,28 @@ def iso_2_utc(iso_ts):
     except: seconds = delta.seconds + delta.days * 24 * 3600 # close enough
     return seconds
 
-def fa_2_utc(first_aired):
-    """
-    This should only require subtracting off the difference between PST and UTC, but it doesn't
-    and I don't know why. Regardless, this works.
-    """
-    # dif in seconds between local timezone and gmt timezone
-    utc_dif = time.mktime(time.gmtime()) - time.mktime(time.localtime())
-    return first_aired - (8*60*60 - utc_dif)
-
-def valid_account():
+def get_trakt_token():
     username=ADDON.get_setting('username')
     password=ADDON.get_setting('password')
+    token=ADDON.get_setting('trakt_token')
     last_hash=ADDON.get_setting('last_hash')
     cur_hash = hashlib.md5(username+password).hexdigest()
-    if cur_hash != last_hash:
+    
+    if not token or cur_hash != last_hash:
         try:
-            valid_account=trakt_api.valid_account()
-        except:
-            valid_account=False
-        log_utils.log('Checked valid account (%s): %s != %s' % (valid_account, last_hash, cur_hash), xbmc.LOGDEBUG)
-
-        if valid_account:
-            ADDON.set_setting('last_hash', cur_hash)
-    else:
-        log_utils.log('Assuming valid account: %s == %s' % (last_hash, cur_hash), xbmc.LOGDEBUG)
-        valid_account=True
+            token=trakt_api.login()
+            log_utils.log('Token Returned: %s' % (token), xbmc.LOGDEBUG)
+        except Exception as e:
+            log_utils.log('Login Failed: %s' % (e), xbmc.LOGWARNING)
+            builtin = 'XBMC.Notification(%s,Login Failed: %s, 7500, %s)'
+            xbmc.executebuiltin(builtin % (ADDON.get_name(), e, ICON_PATH))
+            token=''
         
-    return valid_account
+        if token:
+            ADDON.set_setting('last_hash', cur_hash)
+            
+    ADDON.set_setting('trakt_token', token)
+    return token
 
 def format_sub_label(sub):
     label = '%s - [%s] - (' % (sub['language'], sub['version'])
@@ -725,10 +766,30 @@ def get_current_view():
         for view in views.split(','):
             if xbmc.getInfoLabel('Control.GetLabel(%s)' % (view)): return view
 
+def bookmark_exists(slug, season, episode):
+    if ADDON.get_setting('trakt_bookmark')=='true':
+        bookmark = trakt_api.get_bookmark(slug, season, episode)
+        return bookmark is not None
+    else:
+        return db_connection.bookmark_exists(slug, season, episode)
+
 # returns true if user chooses to resume, else false
 def get_resume_choice(slug, season, episode):
-    question = 'Resume from %s' % (format_time(db_connection.get_bookmark(slug, season, episode)))
-    return xbmcgui.Dialog().yesno('Resume?', question, '', '', 'Start from beginning', 'Resume')==1
+    if ADDON.get_setting('trakt_bookmark')=='true':
+        resume_point = '%s%%' % (trakt_api.get_bookmark(slug, season, episode))
+        header = 'Trakt Bookmark Exists'
+    else:
+        resume_point = format_time(db_connection.get_bookmark(slug, season, episode))
+        header = 'Local Bookmark Exists'
+    question = 'Resume from %s' % (resume_point)
+    return xbmcgui.Dialog().yesno(header, question, '', '', 'Start from beginning', 'Resume')==1
+
+def get_bookmark(slug, season, episode):
+    if ADDON.get_setting('trakt_bookmark')=='true':
+        bookmark = trakt_api.get_bookmark(slug, season, episode)
+    else:
+        bookmark = db_connection.get_bookmark(slug, season, episode)
+    return bookmark
 
 def format_time(seconds):
     minutes, seconds = divmod(seconds, 60)
@@ -822,3 +883,20 @@ def get_extension(url, response):
     
 def url2name(url):
     return os.path.basename(urllib.unquote(urlparse.urlsplit(url)[2]))
+
+def sort_progress(episodes, sort_order):
+    if sort_order == TRAKT_SORT.TITLE:
+        return sorted(episodes, key=lambda x:x['show']['title'].lstrip('The '))
+    elif sort_order == TRAKT_SORT.ACTIVITY:
+        return sorted(episodes, key=lambda x:iso_2_utc(x['last_watched_at']), reverse=True)
+    elif sort_order == TRAKT_SORT.LEAST_COMPLETED:
+        return sorted(episodes, key=lambda x:(x['percent_completed'], x['completed']))
+    elif sort_order == TRAKT_SORT.MOST_COMPLETED:
+        return sorted(episodes, key=lambda x:(x['percent_completed'], x['completed']), reverse=True)
+    elif sort_order == TRAKT_SORT.PREVIOUSLY_AIRED:
+        return sorted(episodes, key=lambda x:iso_2_utc(x['episode']['first_aired']))
+    elif sort_order == TRAKT_SORT.RECENTLY_AIRED:
+        return sorted(episodes, key=lambda x:iso_2_utc(x['episode']['first_aired']), reverse=True)
+    else: # default sort set to activity
+        return sorted(episodes, key=lambda x:x['last_watched_at'], reverse=True)
+

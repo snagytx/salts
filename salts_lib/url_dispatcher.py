@@ -31,11 +31,11 @@ class URL_Dispatcher:
                 log_utils.log(message, xbmc.LOGERROR)
                 raise Exception(message)
 
-            log_utils.log('registering function: |%s|->|%s|' % (mode,str(f)), xbmc.LOGDEBUG)
+            #log_utils.log('registering function: |%s|->|%s|' % (mode,str(f)), xbmc.LOGDEBUG)
             self.func_registry[mode.strip()]=f
             self.args_registry[mode]=args
             self.kwargs_registry[mode]=kwargs
-            log_utils.log('registering args: |%s|-->(%s) and {%s}' % (mode, args, kwargs), xbmc.LOGDEBUG) 
+            #log_utils.log('registering args: |%s|-->(%s) and {%s}' % (mode, args, kwargs), xbmc.LOGDEBUG) 
             
             return f
         return decorator
