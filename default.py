@@ -499,6 +499,11 @@ def show_watchlist(section):
 @url_dispatcher.register(MODES.SHOW_COLLECTION, ['section'])
 def show_collection(section):
     items = trakt_api.get_collection(section, cached=_SALTS.get_setting('cache_collection')=='true')
+    sort_key = int(_SALTS.get_setting('sort_collection'))
+    if sort_key == 1:
+        items.reverse()
+    elif sort_key > 0:
+        items.sort(key=lambda x:x[['title', 'year'][sort_key - 2]])
     make_dir_from_list(section, items, COLLECTION_SLUG)
     
 def get_progress(cache_override=False):
