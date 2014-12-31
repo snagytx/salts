@@ -307,23 +307,23 @@ def toggle_scraper(name):
     _SALTS.set_setting('%s-enable' % (name), setting)
     xbmc.executebuiltin("XBMC.Container.Refresh")
     
-@url_dispatcher.register(MODES.TRENDING, ['section'])
-def browse_trending(section):
-    list_data = trakt_api.get_trending(section)
-    make_dir_from_list(section, list_data)
+@url_dispatcher.register(MODES.TRENDING, ['section'], ['page'])
+def browse_trending(section, page = 1):
+    list_data = trakt_api.get_trending(section, page)
+    make_dir_from_list(section, list_data, query = {'mode': MODES.TRENDING, 'section': section}, page = page)
 
-@url_dispatcher.register(MODES.POPULAR, ['section'])
-def browse_popular(section):
-    list_data = trakt_api.get_popular(section)
-    make_dir_from_list(section, list_data)
+@url_dispatcher.register(MODES.POPULAR, ['section'], ['page'])
+def browse_popular(section, page = 1):
+    list_data = trakt_api.get_popular(section, page)
+    make_dir_from_list(section, list_data, query = {'mode': MODES.POPULAR, 'section': section}, page = page)
 
-@url_dispatcher.register(MODES.RECENT, ['section'])
-def browse_recent(section):
+@url_dispatcher.register(MODES.RECENT, ['section'], ['page'])
+def browse_recent(section, page = 1):
     now = datetime.datetime.now()
     start_date = now - datetime.timedelta(days=7)
     start_date = datetime.datetime.strftime(start_date,'%Y-%m-%d')
-    list_data = trakt_api.get_recent(section, start_date)
-    make_dir_from_list(section, list_data)
+    list_data = trakt_api.get_recent(section, start_date, page)
+    make_dir_from_list(section, list_data, query = {'mode': MODES.RECENT, 'section': section}, page = page)
 
 @url_dispatcher.register(MODES.RECOMMEND, ['section'])
 def browse_recommendations(section):
@@ -666,10 +666,10 @@ def delete_search(search_id):
     db_connection.delete_search(search_id)
     xbmc.executebuiltin("XBMC.Container.Refresh")
 
-@url_dispatcher.register(MODES.SEARCH_RESULTS, ['section', 'query'])
-def search_results(section, query):
-    results = trakt_api.search(section, query)
-    make_dir_from_list(section, results)
+@url_dispatcher.register(MODES.SEARCH_RESULTS, ['section', 'query'], ['page'])
+def search_results(section, query, page = 1):
+    results = trakt_api.search(section, query, page)
+    make_dir_from_list(section, results, query = {'mode': MODES.SEARCH_RESULTS, 'section': section, 'query': query}, page = page)
 
 @url_dispatcher.register(MODES.SEASONS, ['slug', 'fanart'])
 def browse_seasons(slug, fanart):
@@ -1480,7 +1480,7 @@ def show_pickable_list(slug, pick_label, pick_mode, section):
     else:
         show_list(section, slug)
 
-def make_dir_from_list(section, list_data, slug=None):
+def make_dir_from_list(section, list_data, slug=None, query = None, page = None):
     section_params=utils.get_section_params(section)
     totalItems=len(list_data)
     
@@ -1533,6 +1533,12 @@ def make_dir_from_list(section, list_data, slug=None):
         liz, liz_url =make_item(section_params, show, menu_items)
         
         xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz, isFolder=section_params['folder'], totalItems=totalItems)
+
+    if query and page:
+        meta = {'title': 'Next Page >>'}
+        query['page']=int(page) + 1
+        _SALTS.add_directory(query, meta, img=utils.art('nextpage.png'), fanart=utils.art('fanart.jpg'), is_folder=True)
+
     utils.set_view(section_params['content_type'], False)
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 

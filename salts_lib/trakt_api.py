@@ -114,20 +114,23 @@ class Trakt_API():
     def remove_from_watchlist(self, section, items):
         return self.__manage_watchlist('remove', section, items)
     
-    def get_trending(self, section):
+    def get_trending(self, section, page = None):
         url='/%s/trending' % (TRAKT_SECTIONS[section])
         params = {'extended': 'full,images', 'limit': self.list_size}
+        if page: params['page'] = page
         response=self.__call_trakt(url, params=params)
         return [item[TRAKT_SECTIONS[section][:-1]] for item in response]
     
-    def get_popular(self, section):
+    def get_popular(self, section, page = None):
         url='/%s/popular' % (TRAKT_SECTIONS[section])
         params = {'extended': 'full,images', 'limit': self.list_size}
+        if page: params['page'] = page
         return self.__call_trakt(url, params=params)
     
-    def get_recent(self, section, date):
+    def get_recent(self, section, date, page = None):
         url='/%s/updates/%s' % (TRAKT_SECTIONS[section], date)
         params = {'extended': 'full,images', 'limit': self.list_size}
+        if page: params['page'] = page
         response = self.__call_trakt(url, params=params)
         return [item[TRAKT_SECTIONS[section][:-1]] for item in response]
     
@@ -199,9 +202,10 @@ class Trakt_API():
         params = {'extended': 'full,images'} if full else None
         return self.__call_trakt(url, params=params, cache_limit=24*7)
     
-    def search(self, section, query):
+    def search(self, section, query, page = None):
         url='/search'
-        params = {'type': TRAKT_SECTIONS[section][:-1], 'query': query}
+        params = {'type': TRAKT_SECTIONS[section][:-1], 'query': query, 'limit': self.list_size}
+        if page: params['page'] = page
         #params.update({'extended': 'full,images'})
         response = self.__call_trakt(url, params = params)
         return [item[TRAKT_SECTIONS[section][:-1]] for item in response]
