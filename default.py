@@ -184,8 +184,7 @@ def force_refresh(refresh_mode, section=None, slug=None, username=None):
     if refresh_mode == MODES.SHOW_COLLECTION:
         trakt_api.get_collection(section, cached=False)
     elif refresh_mode == MODES.SHOW_PROGRESS:
-        trakt_api.get_progress(cached=False)
-        trakt_api.get_progress(full=False, cached=False)
+        get_progress(cache_override = True)
     elif refresh_mode == MODES.MY_CAL:
         trakt_api.get_my_calendar(start_date, cached=False)
     elif refresh_mode == MODES.CAL:
@@ -502,12 +501,12 @@ def show_collection(section):
     items = trakt_api.get_collection(section, cached=_SALTS.get_setting('cache_collection')=='true')
     make_dir_from_list(section, items, COLLECTION_SLUG)
     
-@url_dispatcher.register(MODES.SHOW_PROGRESS)
-def show_progress():
-    watched_list = trakt_api.get_watched(SECTIONS.TV, full=True, cached=_SALTS.get_setting('cache_watched')=='true')
+def get_progress(cache_override=False):
+    cached = _SALTS.get_setting('cache_watched') =='true' and not cache_override
+    watched_list = trakt_api.get_watched(SECTIONS.TV, full=True, cached = cached)
     episodes = []
     for watched in watched_list:
-        progress = trakt_api.get_show_progress(watched['show']['ids']['slug'], full=True, cached=_SALTS.get_setting('cache_watched')=='true')
+        progress = trakt_api.get_show_progress(watched['show']['ids']['slug'], full=True, cached = cached)
         if 'next_episode' in progress and progress['next_episode']:
             episode = {'show': watched['show'], 'episode': progress['next_episode']}
             episode['last_watched_at']=watched['last_watched_at']
@@ -515,9 +514,11 @@ def show_progress():
             episode['completed']=progress['completed']
             episodes.append(episode)
 
-    episodes = utils.sort_progress(episodes, sort_order=SORT_MAP[int(_SALTS.get_setting('sort_progress'))])
+    return utils.sort_progress(episodes, sort_order=SORT_MAP[int(_SALTS.get_setting('sort_progress'))])
     
-    for episode in episodes:
+@url_dispatcher.register(MODES.SHOW_PROGRESS)
+def show_progress():
+    for episode in get_progress():
         log_utils.log('Episode: Sort Keys: Tile: |%s| Last Watched: |%s| Percent: |%s%%| Completed: |%s|' % (episode['show']['title'], episode['last_watched_at'], episode['percent_completed'], episode['completed']))
         first_aired_utc = utils.iso_2_utc(episode['episode']['first_aired'])
         if _SALTS.get_setting('show_unaired_next')=='true' or first_aired_utc <=time.time():
