@@ -845,7 +845,6 @@ def resolve_source(mode, class_url, video_type, slug, class_name, season='', epi
 
 @url_dispatcher.register(MODES.PLAY_TRAILER,['stream_url'])
 def play_trailer(stream_url):
-    print stream_url
     xbmc.Player().play(stream_url)
 
 def download_subtitles(language, title, year, season, episode):
@@ -1249,7 +1248,7 @@ def toggle_title(slug):
 def toggle_watched(section, id_type, show_id, watched=True, season='', episode=''):
     log_utils.log('In Watched: |%s|%s|%s|%s|%s|%s|' % (section, id_type, show_id, season, episode, watched), xbmc.LOGDEBUG)
     item = {id_type: show_id}
-    print trakt_api.set_watched(section, item, season, episode, watched)
+    trakt_api.set_watched(section, item, season, episode, watched)
     w_str='Watched' if watched else 'Unwatched'
     builtin = "XBMC.Notification(%s,Marked as %s,5000,%s)" % (_SALTS.get_name(), w_str, ICON_PATH)
     xbmc.executebuiltin(builtin)
