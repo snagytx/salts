@@ -1,3 +1,12 @@
+[B]Version 0.0.51[/B]
+- Fix force refresh on progress
+- Add pagination to trending, popular, recently updated, and search results
+- Add collection sort setting
+- Fix myvideolinks.eu url
+- Remove hdmz, watchyourflix, shush.se, and oneclickmoviez scrapers
+- Add tactical limit fix on My Next Episodes
+- Add moviestorm.eu scraper
+
 [B]Version 0.0.50[/B]
 - Migrate SALTS to the Trakt V2 API
 - Improve niter.tv scraper
