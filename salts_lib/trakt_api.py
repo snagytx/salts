@@ -289,7 +289,6 @@ class Trakt_API():
             data = {'shows': [ids]}
             if season:
                 data['shows'][0]['seasons']=[{'number': int(season)}]
-                print data
                 if episode:
                     data['shows'][0]['seasons'][0]['episodes']=[{'number':int(episode)}]
         return data
