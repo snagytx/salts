@@ -508,9 +508,13 @@ def show_collection(section):
     
 def get_progress(cache_override=False):
     cached = _SALTS.get_setting('cache_watched') =='true' and not cache_override
+    max_progress = int(_SALTS.get_setting('progress_size'))
     watched_list = trakt_api.get_watched(SECTIONS.TV, full=True, cached = cached)
     episodes = []
-    for watched in watched_list:
+    for i, watched in enumerate(watched_list):
+        if i != 0 and i >= max_progress:
+            break
+        
         progress = trakt_api.get_show_progress(watched['show']['ids']['slug'], full=True, cached = cached)
         if 'next_episode' in progress and progress['next_episode']:
             episode = {'show': watched['show'], 'episode': progress['next_episode']}
