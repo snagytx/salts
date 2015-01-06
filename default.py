@@ -1543,7 +1543,7 @@ def make_dir_from_list(section, list_data, slug=None, query = None, page = None)
         
         xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz, isFolder=section_params['folder'], totalItems=totalItems)
 
-    if query and page:
+    if query and page and totalItems>=int(_SALTS.get_setting('list_size')):
         meta = {'title': 'Next Page >>'}
         query['page']=int(page) + 1
         _SALTS.add_directory(query, meta, img=utils.art('nextpage.png'), fanart=utils.art('fanart.jpg'), is_folder=True)
