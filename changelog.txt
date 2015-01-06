@@ -1,8 +1,8 @@
-[B]Version 0.0.51[/B]
+[B]Version 0.0.52[/B]
 - Fix force refresh on progress
 - Add pagination to trending, popular, recently updated, and search results
 - Add collection sort setting
-- Fix myvideolinks.eu url
+- Fix myvideolinks.eu scraper
 - Remove hdmz, watchyourflix, shush.se, and oneclickmoviez scrapers
 - Add tactical limit fix on My Next Episodes
 - Add moviestorm.eu scraper
