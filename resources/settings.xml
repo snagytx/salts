@@ -346,6 +346,12 @@
          <setting id="stream-tv.co_try" type="number" default="0" visible="false"/>
          <setting id="stream-tv.co_fail" type="number" default="0" visible="false"/>
          <setting id="stream-tv.co_check" type="number" default="0" visible="false"/>
+         <setting id="moviestorm.eu-enable" type="bool" label="moviestorm.eu Enabled" default="true" visible="true"/>
+         <setting id="moviestorm.eu-base_url" type="text" label="     Base Url" default="http://moviestorm.eu" visible="eq(-1,true)"/>
+         <setting id="moviestorm.eu-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>
+         <setting id="moviestorm.eu_try" type="number" default="0" visible="false"/>
+         <setting id="moviestorm.eu_fail" type="number" default="0" visible="false"/>
+         <setting id="moviestorm.eu_check" type="number" default="0" visible="false"/>
     </category>
 	
     <category label="Subtitles">
