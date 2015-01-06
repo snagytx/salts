@@ -161,9 +161,17 @@ class MyVidLinks_Scraper(scraper.Scraper):
 
     def search(self, video_type, title, year):
         self.__fix_base_url(video_type)
-        search_url = urlparse.urljoin(self.base_url, '/?s=')
-        search_url += urllib.quote_plus(title)
-        html = self._http_get(search_url, cache_limit=.25)
+        if video_type == VIDEO_TYPES.MOVIE:
+            search_url = self.base_url
+            data = {'s': title}
+            cache_limit = 0
+        else:
+            search_url = urlparse.urljoin(self.base_url, '/?s=')
+            search_url += urllib.quote_plus(title)
+            data = None
+            cache_limit = .25
+            
+        html = self._http_get(search_url, data = data, cache_limit=cache_limit)
         results=[]
         filter_days = datetime.timedelta(days=int(xbmcaddon.Addon().getSetting('%s-filter' % (self.get_name()))))
         today = datetime.date.today()
@@ -174,8 +182,8 @@ class MyVidLinks_Scraper(scraper.Scraper):
             if filter_days:
                 match = re.search('/(\d{4})/(\d{2})/(\d{2})/', url)
                 if match:
-                    year, month, day = match.groups()
-                    post_date = datetime.date(int(year), int(month), int(day))
+                    post_year, post_month, post_day = match.groups()
+                    post_date = datetime.date(int(post_year), int(post_month), int(post_day))
                     if today - post_date > filter_days:
                         continue
                 
@@ -188,10 +196,11 @@ class MyVidLinks_Scraper(scraper.Scraper):
                     title, match_year, extra_title = match.groups()
                     title = '%s [%s]' % (title, extra_title)
 
+            print year, match_year
             if not year or not match_year or year == match_year:
                 result={'url': url.replace(self.base_url,''), 'title': title, 'year': match_year}
                 results.append(result)
         return results
 
-    def _http_get(self, url, cache_limit=8):
-        return super(MyVidLinks_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, cache_limit=cache_limit)
+    def _http_get(self, url, data=None, cache_limit=8):
+        return super(MyVidLinks_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, data=data, cache_limit=cache_limit)
