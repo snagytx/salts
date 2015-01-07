@@ -1538,7 +1538,7 @@ def make_dir_from_list(section, list_data, slug=None, query = None, page = None)
 
         show['in_collection']=in_collection.get(show['ids']['slug'],False)
             
-        liz, liz_url =make_item(section_params, show, menu_items)
+        liz, liz_url = make_item(section_params, show, menu_items)
         
         xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz, isFolder=section_params['folder'], totalItems=totalItems)
 
@@ -1728,6 +1728,7 @@ def make_episode_item(show, episode, show_subs=True, menu_items=None):
 
 def make_item(section_params, show, menu_items=None):
     if menu_items is None: menu_items=[]
+    if not isinstance(show['title'],basestring): show['title']=''
     show['title']=re.sub(' \(\d{4}\)$','',show['title'])
     label = '%s (%s)' % (show['title'], show['year'])
     liz=utils.make_list_item(label, show)
