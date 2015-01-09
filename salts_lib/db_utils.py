@@ -117,6 +117,7 @@ class DB_Connection():
             age = now - created
             if age < limit:
                 html=rows[0][1]
+        log_utils.log('DB Cache: Url: %s, Cache Hit: %s, created: %s, age: %s, limit: %s' % (url, bool(html), created, now - created, limit), xbmc.LOGDEBUG)
         return created, html
     
     def get_all_urls(self, include_response=False, order_matters=False):

@@ -1590,7 +1590,7 @@ def make_dir_from_cal(mode, start_date, days):
             queries = {'mode': MODES.SEASONS, 'slug': show['ids']['slug'], 'fanart': fanart}
             menu_items.append(('Browse Seasons', 'Container.Update(%s)' % (_SALTS.build_plugin_url(queries))), )
  
-            liz, liz_url =make_episode_item(show, episode, show_subs=False, menu_items=menu_items)
+            liz, liz_url = make_episode_item(show, episode, show_subs=False, menu_items=menu_items)
             label=liz.getLabel()
             label = '[[COLOR deeppink]%s[/COLOR]] %s - %s' % (date_time, show['title'], label.decode('utf-8', 'replace'))
             if episode['season']==1 and episode['number']==1:
