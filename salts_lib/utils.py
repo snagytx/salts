@@ -183,11 +183,11 @@ def make_info(item, show=None, people=None):
     if 'season' in item: info['season']=item['season'] # needs check
     if 'episode' in item: info['episode']=item['episode'] # needs check
     if 'number' in item: info['episode']=item['number'] # needs check
-    if 'genres' in item:
-        genres = dict((genre['slug'],genre['name']) for genre in trakt_api.get_genres(SECTIONS.TV))
-        genres.update(dict((genre['slug'],genre['name']) for genre in trakt_api.get_genres(SECTIONS.MOVIES)))
-        item_genres = [genres[genre] for genre in item['genres'] if genre in genres]
-        info['genre']=', '.join(item_genres)
+#     if 'genres' in item:
+#         genres = dict((genre['slug'],genre['name']) for genre in trakt_api.get_genres(SECTIONS.TV))
+#         genres.update(dict((genre['slug'],genre['name']) for genre in trakt_api.get_genres(SECTIONS.MOVIES)))
+#         item_genres = [genres[genre] for genre in item['genres'] if genre in genres]
+#         info['genre']=', '.join(item_genres)
     if 'network' in item: info['studio']=item['network']
     if 'status' in item: info['status']=item['status']
     if 'tagline' in item: info['tagline']=item['tagline']
