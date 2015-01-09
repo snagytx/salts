@@ -1501,7 +1501,7 @@ def make_dir_from_list(section, list_data, slug=None, query = None, page = None)
             if section == SECTIONS.MOVIES:
                 watched[item['movie']['ids']['slug']] = item['plays']>0
             else:
-                watched[item['show']['ids']['slug']] = len([e for s in item['seasons'] for e in s['episodes']]) 
+                watched[item['show']['ids']['slug']] = len([e for s in item['seasons'] if s['number'] != 0 for e in s['episodes']]) 
         collection = trakt_api.get_collection(section, full=False, cached=_SALTS.get_setting('cache_collection')=='true')
         in_collection = dict.fromkeys([show['ids']['slug'] for show in collection], True)
 
@@ -1531,7 +1531,9 @@ def make_dir_from_list(section, list_data, slug=None, query = None, page = None)
         if section == SECTIONS.MOVIES:
             show['watched'] = watched.get(show['ids']['slug'], False)
         else:
-            try: show['watched'] = watched[show['ids']['slug']] >= show['aired_episodes']
+            try:
+                show['watched'] = watched[show['ids']['slug']] >= show['aired_episodes']
+                show['watched_episodes'] = watched[show['ids']['slug']]
             except: show['watched'] = False
 
         show['in_collection']=in_collection.get(show['ids']['slug'],False)

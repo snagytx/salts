@@ -194,7 +194,9 @@ def make_info(item, show=None, people=None):
     if 'watched' in item and item['watched']: info['playcount']=1
     if 'plays' in item and item['plays']: info['playcount']=item['plays']
     if 'rating' in item: info['rating']=item['rating']
+    if 'votes' in item: info['votes']=item['votes']
     if 'released' in item: info['premiered']=item['released']
+    if 'trailer' in item and item['trailer']: info['trailer']=make_trailer(item['trailer'])
     info.update(make_ids(item))
     
     if 'first_aired' in item:
@@ -204,34 +206,27 @@ def make_info(item, show=None, people=None):
             d=datetime.datetime.fromtimestamp(0) + datetime.timedelta(seconds=utc_air_time)
             info['aired']=info['premiered']=d.strftime('%Y-%m-%d')
      
-    if 'seasons' in item:
-        total_episodes=0
-        watched_episodes=0
-        for season in item['seasons']:
-            if 'aired' in season and 'completed' in season:
-                total_episodes += season['aired']
-                watched_episodes += season['completed']
-            else:
-                total_episodes += len(season['episodes'])
-                watched_episodes += len(season['episodes'])
-        info['episode']=info['TotalEpisodes']=total_episodes
-        info['WatchedEpisodes']=watched_episodes
-        info['UnWatchedEpisodes']=total_episodes - watched_episodes
-
-    if 'trailer' in item and item['trailer']:
-        match=re.search('\?v=(.*)', item['trailer'])
-        if match:
-            info['trailer']='plugin://plugin.video.youtube/?action=play_video&videoid=%s' % (match.group(1)) 
-
+    if 'aired_episodes' in item:
+        info['episode']=info['TotalEpisodes']=item['aired_episodes']
+        info['WatchedEpisodes']=item['watched_episodes'] if 'watched_episodes' in item else 0
+        info['UnWatchedEpisodes']=info['TotalEpisodes'] - info['WatchedEpisodes']
+        
     # override item params with show info if it exists
     if 'certification' in show: info['mpaa']=show['certification']
     if 'year' in show: info['year']=show['year']
     if 'runtime' in show: info['duration']=show['runtime']
     if 'title' in show: info['tvshowtitle']=show['title']
     if 'network' in show: info['studio']=show['network']
+    if 'status' in show: info['status']=show['status']
+    if 'trailer' in show and show['trailer']: info['trailer']=make_trailer(show['trailer'])
     info.update(make_ids(show))
     info.update(make_people(people))
     return info
+    
+def make_trailer(trailer_url):
+    match=re.search('\?v=(.*)', trailer_url)
+    if match:
+        return 'plugin://plugin.video.youtube/?action=play_video&videoid=%s' % (match.group(1)) 
     
 def make_ids(item):
     info={}
