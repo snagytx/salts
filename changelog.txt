@@ -1,3 +1,9 @@
+[B]Version 0.0.53[/B]
+- Disable genres to workaround api issue (temporarily)
+- Fix items missing a title
+- Fix issue with caching
+- Add watched indicators to calendars
+
 [B]Version 0.0.52[/B]
 - Fix force refresh on progress
 - Add pagination to trending, popular, recently updated, and search results
