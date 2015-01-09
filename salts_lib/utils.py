@@ -208,7 +208,7 @@ def make_info(item, show=None, people=None):
      
     if 'aired_episodes' in item:
         info['episode']=info['TotalEpisodes']=item['aired_episodes']
-        info['WatchedEpisodes']=item['watched_episodes'] if 'watched_episodes' in item else 0
+        info['WatchedEpisodes']=item['watched_count'] if 'watched_count' in item else 0
         info['UnWatchedEpisodes']=info['TotalEpisodes'] - info['WatchedEpisodes']
         
     # override item params with show info if it exists

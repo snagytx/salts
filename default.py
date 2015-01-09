@@ -1533,7 +1533,7 @@ def make_dir_from_list(section, list_data, slug=None, query = None, page = None)
         else:
             try:
                 show['watched'] = watched[show['ids']['slug']] >= show['aired_episodes']
-                show['watched_episodes'] = watched[show['ids']['slug']]
+                show['watched_count'] = watched[show['ids']['slug']]
             except: show['watched'] = False
 
         show['in_collection']=in_collection.get(show['ids']['slug'],False)
