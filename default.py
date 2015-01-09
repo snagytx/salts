@@ -1531,10 +1531,8 @@ def make_dir_from_list(section, list_data, slug=None, query = None, page = None)
         if section == SECTIONS.MOVIES:
             show['watched'] = watched.get(show['ids']['slug'], False)
         else:
-            try:
-                show['watched'] = watched[show['ids']['slug']] >= show['aired_episodes']
-            except:
-                show['watched'] = False
+            try: show['watched'] = watched[show['ids']['slug']] >= show['aired_episodes']
+            except: show['watched'] = False
 
         show['in_collection']=in_collection.get(show['ids']['slug'],False)
             
@@ -1586,7 +1584,7 @@ def make_dir_from_cal(mode, start_date, days):
             show_date = datetime.date.fromtimestamp(utc_secs)
             
             try: episode['watched']=watched[show['ids']['slug']][episode['season']][episode['number']]
-            except: pass
+            except: episode['watched']=False
             
             if show_date < start_date.date():
                 log_utils.log('Skipping show before start: |%s| before |%s|' % (show_date, start_date.date()), xbmc.LOGDEBUG)
