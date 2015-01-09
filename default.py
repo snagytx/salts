@@ -1564,6 +1564,18 @@ def make_dir_from_cal(mode, start_date, days):
     liz_url = _SALTS.build_plugin_url({'mode': mode, 'start_date': last_str})
     xbmcplugin.addDirectoryItem(int(sys.argv[1]), liz_url, liz, isFolder=True)
     
+    cache_watched = _SALTS.get_setting('cache_watched')=='true'
+    watched={}
+    if TOKEN:
+        watched_history = trakt_api.get_watched(SECTIONS.TV, cached=cache_watched)
+        for item in watched_history:
+            slug = item['show']['ids']['slug']
+            watched[slug] = {}
+            for season in item['seasons']:
+                watched[slug][season['number']]={}
+                for episode in season['episodes']:
+                    watched[slug][season['number']][episode['number']]=True
+
     totalItems=len(days)
     for day in sorted(days.items()):
         for item in day[1]:
@@ -1572,6 +1584,9 @@ def make_dir_from_cal(mode, start_date, days):
             fanart=show['images']['fanart']['full']
             utc_secs = utils.iso_2_utc(episode['first_aired'])
             show_date = datetime.date.fromtimestamp(utc_secs)
+            
+            try: episode['watched']=watched[show['ids']['slug']][episode['season']][episode['number']]
+            except: pass
             
             if show_date < start_date.date():
                 log_utils.log('Skipping show before start: |%s| before |%s|' % (show_date, start_date.date()), xbmc.LOGDEBUG)
