@@ -27,7 +27,7 @@ from salts_lib import log_utils
 from salts_lib.constants import VIDEO_TYPES
 from salts_lib.constants import QUALITIES
 
-QUALITY_MAP = {'HD 720P': QUALITIES.HD, 'DVDRIP / STANDARD DEF': QUALITIES.HIGH}
+QUALITY_MAP = {'HD 720P': QUALITIES.HD, 'DVDRIP / STANDARD DEF': QUALITIES.HIGH, 'DVD SCREENER': QUALITIES.HIGH}
 #BROKEN_RESOLVERS = ['180UPLOAD', 'HUGEFILES', 'VIDPLAY']
 BROKEN_RESOLVERS = []
 BASE_URL='http://www.icefilms.info'
@@ -88,7 +88,7 @@ class IceFilms_Scraper(scraper.Scraper):
                     fragment=container.group(0)
                     match=re.match('<div class=ripdiv><b>(.*?)</b>', fragment)
                     if match:
-                        quality=QUALITY_MAP[match.group(1).upper()]
+                        quality=QUALITY_MAP.get(match.group(1).upper(), QUALITIES.HIGH)
                     else:
                         quality=None
                     
