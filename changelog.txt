@@ -1,3 +1,9 @@
+[B]Version 0.0.54[/B]
+- Add genres back in
+- Several metadata fixes
+- Fixed watched indicator not being retained in some views
+- Increase trakt cache times in key areas
+
 [B]Version 0.0.53[/B]
 - Disable genres to workaround api issue (temporarily)
 - Fix items missing a title
