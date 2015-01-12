@@ -350,4 +350,18 @@ class Scraper(object):
 
         return quality
 
+    def _get_quality(self, base_quality, host):
+        quality = base_quality
+        host_quality=None
+        if host:
+            for key in HOST_Q:
+                if any(host in hostname for hostname in HOST_Q[key]):
+                    host_quality=key
+        
+        #log_utils.log('q_str: %s, host: %s, post q: %s, host q: %s' % (q_str, host, post_quality, host_quality), xbmc.LOGDEBUG)
+        if host_quality is not None and Q_ORDER[host_quality] < Q_ORDER[quality]:
+            quality=host_quality
+
+        return quality
+
     

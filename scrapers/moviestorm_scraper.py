@@ -27,7 +27,7 @@ from salts_lib.constants import HOST_Q
 from salts_lib.constants import Q_ORDER
 
 BASE_URL = 'http://moviestorm.eu'
-QUALITY = {'HD': QUALITIES.HIGH, 'CAM': QUALITIES.LOW, 'BRRIP': QUALITIES.HD, 'UNKNOWN': QUALITIES.MEDIUM, 'DVDRIP': QUALITIES.HIGH}
+QUALITY_MAP = {'HD': QUALITIES.HIGH, 'CAM': QUALITIES.LOW, 'BRRIP': QUALITIES.HD, 'UNKNOWN': QUALITIES.MEDIUM, 'DVDRIP': QUALITIES.HIGH}
 
 class MovieStorm_Scraper(scraper.Scraper):
     base_url=BASE_URL
@@ -68,33 +68,9 @@ class MovieStorm_Scraper(scraper.Scraper):
             for match in re.finditer(pattern, html, re.DOTALL):
                 host, views, quality_str, stream_url = match.groups()
             
-                hoster = {'multi-part': False, 'host': host.lower(), 'class': self, 'url': stream_url, 'quality': self.__get_quality(video, QUALITY.get(quality_str.upper(), QUALITIES.LOW), host), 'views': views, 'rating': None, 'direct': False}
+                hoster = {'multi-part': False, 'host': host.lower(), 'class': self, 'url': stream_url, 'quality': self._get_quality(QUALITY_MAP.get(quality_str.upper(), QUALITIES.MEDIUM), host), 'views': views, 'rating': None, 'direct': False}
                 hosters.append(hoster)
         return hosters
-
-    def __get_quality(self, video, base_quality, host):
-        # Assume movies are low quality, tv shows are high quality
-        if video.video_type == VIDEO_TYPES.MOVIE:
-            default_quality = QUALITIES.LOW
-        else:
-            default_quality = QUALITIES.HIGH
-
-        if Q_ORDER[base_quality] > Q_ORDER[default_quality]:
-            default_quality = base_quality
-                
-        host_quality=None
-        if host:
-            for key in HOST_Q:
-                if any(host in hostname for hostname in HOST_Q[key]):
-                    host_quality=key
-        
-        #log_utils.log('q_str: %s, host: %s, post q: %s, host q: %s' % (q_str, host, post_quality, host_quality), xbmc.LOGDEBUG)
-        if host_quality is not None and Q_ORDER[host_quality] < Q_ORDER[base_quality]:
-            quality=host_quality
-        else:
-            quality=base_quality
-
-        return quality
 
     def get_url(self, video):
         return super(MovieStorm_Scraper, self)._default_get_url(video)
