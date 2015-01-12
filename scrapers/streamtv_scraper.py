@@ -24,7 +24,7 @@ from salts_lib.constants import VIDEO_TYPES
 from salts_lib.constants import QUALITIES
 
 BASE_URL = 'http://stream-tv.co'
-BASE_EP_URL = 'http://tv-series.me'
+BASE_EP_URL = 'http://stream-tv-series.me'
 
 class StreamTV_Scraper(scraper.Scraper):
     base_url=BASE_URL
@@ -67,10 +67,11 @@ class StreamTV_Scraper(scraper.Scraper):
         return super(StreamTV_Scraper, self)._default_get_url(video)
     
     def _get_episode_url(self, show_url, video):
-        episode_pattern = 'href="([^"]+s%de%d[^"]+)' % (int(video.season), int(video.episode))
+        episode_pattern = 'href="([^"]+s%d-?e%d[^"]+)' % (int(video.season), int(video.episode))
         title_pattern = 'href="([^"]+)"\s+rel="nofollow.*</a>([^<]+)'
         ep_url = super(StreamTV_Scraper, self)._default_get_episode_url(show_url, video, episode_pattern, title_pattern)
-        return ep_url.replace(BASE_EP_URL, '')
+        if ep_url:
+            return ep_url.replace(BASE_EP_URL, '')
         
     def search(self, video_type, title, year):
         url = self.base_url
