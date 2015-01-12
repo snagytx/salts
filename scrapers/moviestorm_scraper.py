@@ -68,7 +68,7 @@ class MovieStorm_Scraper(scraper.Scraper):
             for match in re.finditer(pattern, html, re.DOTALL):
                 host, views, quality_str, stream_url = match.groups()
             
-                hoster = {'multi-part': False, 'host': host.lower(), 'class': self, 'url': stream_url, 'quality': self._get_quality(QUALITY_MAP.get(quality_str.upper(), QUALITIES.MEDIUM), host), 'views': views, 'rating': None, 'direct': False}
+                hoster = {'multi-part': False, 'host': host.lower(), 'class': self, 'url': stream_url, 'quality': self._get_quality(video, host, QUALITY_MAP.get(quality_str.upper())), 'views': views, 'rating': None, 'direct': False}
                 hosters.append(hoster)
         return hosters
 
