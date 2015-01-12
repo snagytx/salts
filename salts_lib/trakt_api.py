@@ -158,24 +158,24 @@ class Trakt_API():
         url='/calendars/shows/premieres'
         if start_date: url += '/%s' % (start_date)
         params = {'extended': 'full,images', 'auth': False}
-        return self.__call_trakt(url, params=params, auth=False, cached=cached)
+        return self.__call_trakt(url, params=params, auth=False, cache_limit=24, cached=cached)
      
     def get_calendar(self, start_date=None, cached=True):
         url='/calendars/shows'
         if start_date: url += '/%s' % (start_date)
         params = {'extended': 'full,images', 'auth': False}
-        return self.__call_trakt(url, params=params, auth=False, cached=cached)
+        return self.__call_trakt(url, params=params, auth=False, cache_limit=24, cached=cached)
      
     def get_my_calendar(self, start_date=None, cached=True):
         url='/calendars/shows'
         if start_date: url += '/%s' % (start_date)
         params = {'extended': 'full,images', 'auth': True}
-        return self.__call_trakt(url, params=params, auth=True, cached=cached)
+        return self.__call_trakt(url, params=params, auth=True, cache_limit=24, cached=cached)
          
     def get_seasons(self, slug):
         url = '/shows/%s/seasons' % (slug)
         params = {'extended': 'full,images'}
-        return self.__call_trakt(url, params=params, cache_limit=8)
+        return self.__call_trakt(url, params=params, cache_limit=12)
      
     def get_episodes(self, slug, season):
         url = '/shows/%s/seasons/%s' % (slug, season)
@@ -185,7 +185,7 @@ class Trakt_API():
     def get_show_details(self, slug):
         url = '/shows/%s' % (slug)
         params = {'extended': 'full,images'}
-        return self.__call_trakt(url, params=params, cache_limit=8)
+        return self.__call_trakt(url, params=params, cache_limit=24*7)
      
     def get_episode_details(self, slug, season, episode):
         url = '/shows/%s/seasons/%s/episodes/%s' % (slug, season, episode)
@@ -200,7 +200,7 @@ class Trakt_API():
     def get_people(self, section, slug, full=False):
         url = '/%s/%s/people' % (TRAKT_SECTIONS[section], slug)
         params = {'extended': 'full,images'} if full else None
-        return self.__call_trakt(url, params=params, cache_limit=24*7)
+        return self.__call_trakt(url, params=params, cache_limit=24*30)
     
     def search(self, section, query, page = None):
         url='/search'
