@@ -325,30 +325,12 @@ class Scraper(object):
         q_str.replace(str(video.year), '')
         q_str = q_str.upper()
         
-        # Assume movies are low quality, tv shows are high quality
-        if video.video_type == VIDEO_TYPES.MOVIE:
-            quality = QUALITIES.LOW
-        else:
-            quality = QUALITIES.HIGH
-
-        post_quality = quality
+        post_quality = None
         for key in Q_LIST:
             if any(q in q_str for q in BLOG_Q_MAP[key]):
                 post_quality=key
         
-        host_quality=None
-        if host:
-            for key in HOST_Q:
-                if any(host in hostname for hostname in HOST_Q[key]):
-                    host_quality=key
-        
-        #log_utils.log('q_str: %s, host: %s, post q: %s, host q: %s' % (q_str, host, post_quality, host_quality), xbmc.LOGDEBUG)
-        if host_quality is not None and Q_ORDER[host_quality] < Q_ORDER[post_quality]:
-            quality=host_quality
-        else:
-            quality=post_quality
-
-        return quality
+        return self._get_quality(video, host, post_quality)
 
     def _get_quality(self, video, host, base_quality=None):
         # Assume movies are low quality, tv shows are high quality
@@ -359,7 +341,6 @@ class Scraper(object):
                 quality = QUALITIES.HIGH
         else:
             quality = base_quality
-
         
         host_quality=None
         if host:

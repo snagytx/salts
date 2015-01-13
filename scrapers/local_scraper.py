@@ -64,22 +64,12 @@ class Local_Scraper(scraper.Scraper):
             log_utils.log('Source Meta: %s' % (meta), xbmc.LOGDEBUG)
             if 'result' in meta and result_key in meta['result']:
                 details = meta['result'][result_key]
-                host = {'multi-part': False, 'class': self, 'url': details['file'], 'host': 'XBMC Library', 'views': details['playcount'], 'rating': None, 'direct': True}
-                host['quality']=self.__get_quality(details['streamdetails'])
+                host = {'multi-part': False, 'class': self, 'url': details['file'], 'host': 'XBMC Library', 'quality': None, 'views': details['playcount'], 'rating': None, 'direct': True}
+                stream_details=details['streamdetails']
+                if len(stream_details['video'])>0 and 'width' in stream_details['video'][0]:
+                    host['quality']=self._width_get_quality(stream_details['video'][0]['width'])
                 hosters.append(host)
         return hosters
-
-    def __get_quality(self, streamdetails):
-        quality = None
-        if len(streamdetails['video'])>0 and 'width' in streamdetails['video'][0]:
-            width = streamdetails['video'][0]['width']
-            if width>=1280:
-                quality=QUALITIES.HD
-            elif width>640:
-                quality=QUALITIES.HIGH
-            else:
-                quality=QUALITIES.MEDIUM
-        return quality
     
     def get_url(self, video):
         temp_video_type=video.video_type
