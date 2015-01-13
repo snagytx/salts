@@ -98,20 +98,10 @@ class View47_Scraper(scraper.Scraper):
                     if link['href']==media_url:
                         for video in item['media']['content']:
                             if video['type'].startswith('video/'):
-                                hoster = {'multi-part': False, 'url': video['url'], 'class': self, 'quality': self.__set_quality(video['width']), 'host': 'View47', 'rating': None, 'views': None, 'direct': True}
+                                hoster = {'multi-part': False, 'url': video['url'], 'class': self, 'quality': self._width_get_quality(video['width']), 'host': 'View47', 'rating': None, 'views': None, 'direct': True}
                                 hosters.append(hoster)
         return hosters
         
-    def __set_quality(self, width):
-        width=int(width)
-        if width>=1280:
-            quality=QUALITIES.HD
-        elif width>640:
-            quality=QUALITIES.HIGH
-        else:
-            quality=QUALITIES.MEDIUM
-        return quality
-    
     def get_url(self, video):
         return super(View47_Scraper, self)._default_get_url(video)
 

@@ -372,5 +372,17 @@ class Scraper(object):
             quality=host_quality
 
         return quality
+    
+    def _width_get_quality(self, width):
+        width=int(width)
+        if width>=1280:
+            quality=QUALITIES.HD
+        elif width>640:
+            quality=QUALITIES.HIGH
+        elif width>320:
+            quality=QUALITIES.MEDIUM
+        else:
+            quality=QUALITIES.LOW
+        return quality
 
     

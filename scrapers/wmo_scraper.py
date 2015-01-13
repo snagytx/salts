@@ -43,12 +43,14 @@ class WMO_Scraper(scraper.Scraper):
         return 'wmo.ch'
     
     def resolve_link(self, link):
-        url = urlparse.urljoin(self.base_url, link)
-        html = self._http_get(url, cache_limit=.5)
-        match = re.search('id="redirectButton[^>]+href=(?:\'|")([^"\']+)', html)
-        if match:
-            print match.group(1)
-            return match.group(1)
+        if self.base_url in link:
+            url = urlparse.urljoin(self.base_url, link)
+            html = self._http_get(url, cache_limit=.5)
+            match = re.search('id="redirectButton[^>]+href=(?:\'|")([^"\']+)', html)
+            if match:
+                return match.group(1)
+        else:
+            return link
     
     def format_source_label(self, item):
         label='[%s] %s (%s views)' % (item['quality'], item['host'], item['views'])

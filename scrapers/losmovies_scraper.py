@@ -68,20 +68,10 @@ class LosMovies_Scraper(scraper.Scraper):
                     width, url = match.groups()
                     host = urlparse.urlsplit(url).hostname.replace('embed.','')
                     url = url.replace('&amp;', '&')
-                    hoster = {'multi-part': False, 'host': host, 'class': self, 'quality': self.__set_quality(width), 'views': None, 'rating': None, 'url': url, 'direct': False}
+                    hoster = {'multi-part': False, 'host': host, 'class': self, 'quality': self._width_get_quality(width), 'views': None, 'rating': None, 'url': url, 'direct': False}
                     hosters.append(hoster)
         return hosters
 
-    def __set_quality(self, width):
-        width=int(width)
-        if width>=1280:
-            quality=QUALITIES.HD
-        elif width>640:
-            quality=QUALITIES.HIGH
-        else:
-            quality=QUALITIES.MEDIUM
-        return quality
-    
     def get_url(self, video):
         return super(LosMovies_Scraper, self)._default_get_url(video)
 

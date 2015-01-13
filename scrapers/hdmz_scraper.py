@@ -65,21 +65,11 @@ class hdmz_Scraper(scraper.Scraper):
                     js_data = json.loads(data)
                     for item in js_data['content']:
                         if 'type' in item and item['type'].lower().startswith('video'):
-                            hoster={'multi-part': False, 'host': 'hdmoviezone.net', 'url': item['url'], 'class': self, 'rating': None, 'views': None, 'quality': self.__set_quality(item['width']), 'direct': True}
+                            hoster={'multi-part': False, 'host': 'hdmoviezone.net', 'url': item['url'], 'class': self, 'rating': None, 'views': None, 'quality': self._width_get_quality(item['width']), 'direct': True}
                             hosters.append(hoster)
             
         return hosters
 
-    def __set_quality(self, width):
-        width=int(width)
-        if width>=1280:
-            quality=QUALITIES.HD
-        elif width>640:
-            quality=QUALITIES.HIGH
-        else:
-            quality=QUALITIES.MEDIUM
-        return quality
-    
     def get_url(self, video):
         return super(hdmz_Scraper, self)._default_get_url(video)
 
