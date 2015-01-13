@@ -370,6 +370,7 @@
          <setting id="wso.ch_try" type="number" default="0" visible="false"/>
          <setting id="wso.ch_fail" type="number" default="0" visible="false"/>
          <setting id="wso.ch_check" type="number" default="0" visible="false"/>
+         <setting id="wso.ch-max_pages" type="slider" range="1,50" option="int" label="     Maximum Pages" default="1" visible="eq(-6,true)"/>
     </category>
 	
     <category label="Subtitles">

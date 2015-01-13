@@ -33,6 +33,7 @@ class WSO_Scraper(scraper.Scraper):
         self.timeout=timeout
         self.db_connection = DB_Connection()
         self.base_url = xbmcaddon.Addon().getSetting('%s-base_url' % (self.get_name()))
+        self.max_pages = int(xbmcaddon.Addon().getSetting('%s-max_pages' % (self.get_name())))
    
     @classmethod
     def provides(cls):
@@ -73,6 +74,13 @@ class WSO_Scraper(scraper.Scraper):
     def get_url(self, video):
         return super(WSO_Scraper, self)._default_get_url(video)
     
+    @classmethod
+    def get_settings(cls):
+        settings = super(WSO_Scraper, cls).get_settings()
+        name=cls.get_name()
+        settings.append('         <setting id="%s-max_pages" type="slider" range="1,50" option="int" label="     Maximum Pages" default="1" visible="eq(-6,true)"/>' % (name))
+        return settings
+
     def search(self, video_type, title, year):
         url = urlparse.urljoin(self.base_url, 'http://watchseries-online.ch/2005/07/index.html')
         html = self._http_get(url, cache_limit=24)
@@ -91,9 +99,16 @@ class WSO_Scraper(scraper.Scraper):
         return results
     
     def _get_episode_url(self, show_url, video):
-        episode_pattern = 'class="PostHeader".*?href="([^"]+).*?title="[^"]+([Ss]%02d[Ee]%02d)"' % (int(video.season), int(video.episode))
+        episode_pattern = 'class="PostHeader">\s*<a\s+href="([^"]+)[^>]+title="[^"]+[Ss]%02d[Ee]%02d[ "]' % (int(video.season), int(video.episode))
+        print episode_pattern
         title_pattern=''
-        return super(WSO_Scraper, self)._default_get_episode_url(show_url, video, episode_pattern, title_pattern)
+        for page in xrange(1,self.max_pages+1):
+            url = show_url
+            if page > 1: url += '%s/page/%s' % (show_url, page)
+            print url
+            ep_url = super(WSO_Scraper, self)._default_get_episode_url(url, video, episode_pattern, title_pattern)
+            if ep_url is not None:
+                return ep_url
 
     def _http_get(self, url, data=None, cache_limit=8):
         return super(WSO_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, data=data, cache_limit=cache_limit)
