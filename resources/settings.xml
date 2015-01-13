@@ -364,6 +364,12 @@
          <setting id="zumvo.com_try" type="number" default="0" visible="false"/>
          <setting id="zumvo.com_fail" type="number" default="0" visible="false"/>
          <setting id="zumvo.com_check" type="number" default="0" visible="false"/>
+         <setting id="wso.ch-enable" type="bool" label="wso.ch Enabled" default="true" visible="true"/>
+         <setting id="wso.ch-base_url" type="text" label="     Base Url" default="http://watchseries-online.ch" visible="eq(-1,true)"/>
+         <setting id="wso.ch-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>
+         <setting id="wso.ch_try" type="number" default="0" visible="false"/>
+         <setting id="wso.ch_fail" type="number" default="0" visible="false"/>
+         <setting id="wso.ch_check" type="number" default="0" visible="false"/>
     </category>
 	
     <category label="Subtitles">

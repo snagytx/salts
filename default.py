@@ -1000,6 +1000,7 @@ def pick_source_dir(mode, hosters, video_type, slug, season='', episode=''):
         next_mode = MODES.RESOLVE_SOURCE
         folder = False
 
+    hosters_len=len(hosters)
     for item in hosters:
         if item['multi-part']:
             continue
@@ -1008,8 +1009,6 @@ def pick_source_dir(mode, hosters, video_type, slug, season='', episode=''):
         label = '[%s] %s' % (item['class'].get_name(),label)
         item['label']=label
     
-    hosters_len=len(hosters)
-    for item in hosters:
         #log_utils.log(item, xbmc.LOGDEBUG)
         queries={'mode': next_mode, 'class_url': item['url'], 'video_type': video_type, 'slug': slug, 'season': season, 'episode': episode, 'class_name': item['class'].get_name()}
         _SALTS.add_directory(queries, infolabels={'title': item['label']}, is_folder=folder, img='', fanart='', total_items=hosters_len)
