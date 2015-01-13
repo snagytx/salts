@@ -70,7 +70,7 @@ BLOG_Q_MAP[QUALITIES.HD]=['720', '1080']
 
 HOST_Q={}
 HOST_Q[QUALITIES.LOW]=['youwatch.org', 'allmyvideos.net', 'played.to']
-HOST_Q[QUALITIES.MEDIUM]=['primeshare.tv', 'www.exashare.com', 'bestreams.net', 'www.flashx.tv', 'vidto.me', 'vodlocker.com']
+HOST_Q[QUALITIES.MEDIUM]=['primeshare.tv', 'www.exashare.com', 'bestreams.net', 'www.flashx.tv', 'vidto.me', 'vodlocker.com', 'thevideo.me']
 HOST_Q[QUALITIES.HIGH]=['vidzi.tv', 'vidspot.net', 'vidbull.com', 'thevideo.me']
 HOST_Q[QUALITIES.HD]=['thefile.me', 'sharesix', 'mightyupload', 'filenuke', 'hugefiles', '180upload', 'vidxden']
 
