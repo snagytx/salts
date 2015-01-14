@@ -180,7 +180,7 @@ def force_refresh(refresh_mode, section=None, slug=None, username=None):
     now = datetime.datetime.now()
     offset = int(_SALTS.get_setting('calendar-day'))
     start_date = now + datetime.timedelta(days=offset)
-    start_date = datetime.datetime.strftime(start_date,'%Y%m%d')
+    start_date = datetime.datetime.strftime(start_date,'%Y-%m-%d')
     if refresh_mode == MODES.SHOW_COLLECTION:
         trakt_api.get_collection(section, cached=False)
     elif refresh_mode == MODES.SHOW_PROGRESS:
