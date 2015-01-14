@@ -1,3 +1,12 @@
+[B]Version 0.0.55[/B]
+- Add wmo.ch scraper
+- Add wso.ch scraper
+- Add zumvo scraper
+- Improve stream-tv scraper
+- fix quality fallback for icefilms
+- improve quality determination logic for all scrapers
+- Fix force refresh date for calendars
+
 [B]Version 0.0.54[/B]
 - Add genres back in
 - Several metadata fixes
