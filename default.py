@@ -683,8 +683,10 @@ def search_results(section, query, page = 1):
 @url_dispatcher.register(MODES.SEASONS, ['slug', 'fanart'])
 def browse_seasons(slug, fanart):
     seasons=trakt_api.get_seasons(slug)
-    progress = trakt_api.get_show_progress(slug, cached=_SALTS.get_setting('cache_watched')=='true')
-    info = utils.make_seasons_info(progress)
+    if TOKEN:
+        progress = trakt_api.get_show_progress(slug, cached=_SALTS.get_setting('cache_watched')=='true')
+        info = utils.make_seasons_info(progress)
+
     totalItems=len(seasons)
     for season in seasons:
         if _SALTS.get_setting('show_season0') == 'true' or season['number'] != 0:
@@ -699,8 +701,10 @@ def browse_seasons(slug, fanart):
 def browse_episodes(slug, season):
     show=trakt_api.get_show_details(slug)
     episodes=trakt_api.get_episodes(slug, season)
-    progress = trakt_api.get_show_progress(slug, cached=_SALTS.get_setting('cache_watched')=='true')
-    episodes = utils.make_episodes_watched(episodes, progress)
+    if TOKEN:
+        progress = trakt_api.get_show_progress(slug, cached=_SALTS.get_setting('cache_watched')=='true')
+        episodes = utils.make_episodes_watched(episodes, progress)
+
     totalItems=len(episodes)
     now=time.time()
     for episode in episodes:
