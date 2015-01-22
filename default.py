@@ -528,7 +528,7 @@ def get_progress(cache_override=False):
 @url_dispatcher.register(MODES.SHOW_PROGRESS)
 def show_progress():
     for episode in get_progress():
-        log_utils.log('Episode: Sort Keys: Tile: |%s| Last Watched: |%s| Percent: |%s%%| Completed: |%s|' % (episode['show']['title'], episode['last_watched_at'], episode['percent_completed'], episode['completed']))
+        log_utils.log('Episode: Sort Keys: Tile: |%s| Last Watched: |%s| Percent: |%s%%| Completed: |%s|' % (episode['show']['title'], episode['last_watched_at'], episode['percent_completed'], episode['completed']), xbmc.LOGDEBUG)
         first_aired_utc = utils.iso_2_utc(episode['episode']['first_aired'])
         if _SALTS.get_setting('show_unaired_next')=='true' or first_aired_utc <=time.time():
             show=episode['show']
