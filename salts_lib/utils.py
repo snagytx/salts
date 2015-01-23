@@ -35,6 +35,9 @@ use_https=ADDON.get_setting('use_https')=='true'
 trakt_timeout=int(ADDON.get_setting('trakt_timeout'))
 list_size=int(ADDON.get_setting('list_size'))
 
+next_run_time_expire = datetime.datetime.now() - datetime.timedelta(minutes=30)
+next_run_time = ""
+
 P_MODE = int(ADDON.get_setting('parallel_mode'))
 if P_MODE == P_MODES.THREADS:
     import threading
@@ -434,9 +437,16 @@ def do_startup_task(task):
     
 # Run a recurring scheduled task. Settings and mode values must match task name
 def do_scheduled_task(task, isPlaying):
+    global next_run_time_expire
+    global next_run_time
     now = datetime.datetime.now()
     if ADDON.get_setting('auto-%s' % task) == 'true':
-        next_run=get_next_run(task)
+        if(next_run_time_expire < now):
+            next_run=get_next_run(task)
+            next_run_time = next_run
+            next_run_time_expire = datetime.datetime.now() + datetime.timedelta(minutes=15)
+        else:
+            next_run = next_run_time
         #log_utils.log("Update Status on [%s]: Currently: %s Will Run: %s" % (task, now, next_run), xbmc.LOGDEBUG)
         if now >= next_run:
             is_scanning = xbmc.getCondVisibility('Library.IsScanningVideo')
