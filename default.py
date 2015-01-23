@@ -937,6 +937,12 @@ def play_source(mode, hoster_url, video_type, slug, season='', episode=''):
             path = make_path(path, video_type, item['title'], item['year'])
             file_name = utils.filename_from_title(item['title'], video_type, item['year'])
     except TransientTraktError as e:
+    
+        if video_type == VIDEO_TYPES.EPISODE:
+            show_meta = {}
+            show_meta['title'] = ""
+            show_meta['year'] = ""
+        
         log_utils.log('During Playback: %s' % (str(e)), xbmc.LOGWARNING) # just log warning if trakt calls fail and leave meta and art blank
     
     if mode in [MODES.DOWNLOAD_SOURCE, MODES.DIRECT_DOWNLOAD]:
