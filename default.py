@@ -908,6 +908,7 @@ def play_source(mode, hoster_url, video_type, slug, season='', episode=''):
 
         art={'thumb': '', 'fanart': ''}
         info={}
+        show_meta = {}
         if video_type == VIDEO_TYPES.EPISODE:
             path = _SALTS.get_setting('tv-download-folder')
             file_name = utils.filename_from_title(slug, VIDEO_TYPES.TVSHOW)
@@ -943,7 +944,7 @@ def play_source(mode, hoster_url, video_type, slug, season='', episode=''):
         utils.download_media(stream_url, path, file_name)
         return True
     
-    if video_type == VIDEO_TYPES.EPISODE and utils.srt_download_enabled():
+    if video_type == VIDEO_TYPES.EPISODE and utils.srt_download_enabled() and show_meta:
         srt_path = download_subtitles(_SALTS.get_setting('subtitle-lang'), show_meta['title'], show_meta['year'], season, episode)
         if utils.srt_show_enabled() and srt_path:
             log_utils.log('Setting srt path: %s' % (srt_path), xbmc.LOGDEBUG)
