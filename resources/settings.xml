@@ -340,6 +340,8 @@
          <setting id="niter.tv_try" type="number" default="0" visible="false"/>
          <setting id="niter.tv_fail" type="number" default="0" visible="false"/>
          <setting id="niter.tv_check" type="number" default="0" visible="false"/>
+         <setting id="niter.tv-username" type="text" label="     Username" default="" visible="eq(-6,true)"/>
+         <setting id="niter.tv-password" type="text" label="     Password" option="hidden" default="" visible="eq(-7,true)"/>
          <setting id="stream-tv.co-enable" type="bool" label="stream-tv.co Enabled" default="true" visible="true"/>
          <setting id="stream-tv.co-base_url" type="text" label="     Base Url" default="http://stream-tv.co" visible="eq(-1,true)"/>
          <setting id="stream-tv.co-sub_check" type="bool" label="     Include in Page Existence checks?" default="true" visible="eq(-2,true)"/>

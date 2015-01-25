@@ -36,6 +36,8 @@ class Niter_Scraper(scraper.Scraper):
         self.timeout=timeout
         self.db_connection = DB_Connection()
         self.base_url = xbmcaddon.Addon().getSetting('%s-base_url' % (self.get_name()))
+        self.username = xbmcaddon.Addon().getSetting('%s-username' % (self.get_name()))
+        self.password = xbmcaddon.Addon().getSetting('%s-password' % (self.get_name()))
     
     @classmethod
     def provides(cls):
@@ -53,7 +55,7 @@ class Niter_Scraper(scraper.Scraper):
         stream_url = None
         tries=1
         while tries<=MAX_TRIES:
-            html = self._http_get(url, data=data, cache_limit=0)
+            html = self._http_get(url, data=data, auth=False, cache_limit=0)
             log_utils.log('Initial Data (%s): |%s|' % (tries, html), xbmc.LOGDEBUG)
             if html.strip():
                 break 
@@ -70,7 +72,7 @@ class Niter_Scraper(scraper.Scraper):
                     captcha_result = self._do_recaptcha(js_data[0]['k'], tries, MAX_TRIES)
                     data['chall']=captcha_result['recaptcha_challenge_field']
                     data['res']=captcha_result['recaptcha_response_field']
-                    html = self._http_get(url, data=data, cache_limit=0)
+                    html = self._http_get(url, data=data, auth=False, cache_limit=0)
                     log_utils.log('2nd Data (%s): %s' % (tries, html), xbmc.LOGDEBUG)
                     if html:
                         js_data = json.loads(html)
@@ -119,5 +121,30 @@ class Niter_Scraper(scraper.Scraper):
             results.append(result)
         return results
 
-    def _http_get(self, url, data=None, cache_limit=8):
-        return super(Niter_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, data=data, cache_limit=cache_limit)
+    @classmethod
+    def get_settings(cls):
+        settings = super(Niter_Scraper, cls).get_settings()
+        name=cls.get_name()
+        settings.append('         <setting id="%s-username" type="text" label="     Username" default="" visible="eq(-6,true)"/>' % (name))
+        settings.append('         <setting id="%s-password" type="text" label="     Password" option="hidden" default="" visible="eq(-7,true)"/>' % (name))
+        return settings
+
+    def _http_get(self, url, data=None, auth=True, cache_limit=8):
+        # return all uncached blank pages if no user or pass
+        if not self.username or not self.password:
+            return ''
+         
+        html=super(Niter_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, data=data, cache_limit=cache_limit)
+        if auth and not re.search('href="[^"]+/logout"', html):
+            log_utils.log('Logging in for url (%s)' % (url), xbmc.LOGDEBUG)
+            self.__login()
+            html=super(Niter_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, data=data, cache_limit=0)
+        
+        return html
+
+    def __login(self):
+        url = urlparse.urljoin(self.base_url, '/sessions')
+        data = {'username': self.username, 'password': self.password, 'remember': 1}
+        html = super(Niter_Scraper, self)._cached_http_get(url, self.base_url, self.timeout, data=data, cache_limit=0)
+        if not re.search('href="[^"]+/logout"', html):
+            raise Exception('niter.tv login failed')
