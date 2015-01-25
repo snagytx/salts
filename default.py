@@ -146,17 +146,17 @@ def browse_menu(section):
         if utils.menu_on('subscriptions'): _SALTS.add_directory({'mode': MODES.MANAGE_SUBS, 'section': section}, {'title': 'My Subscriptions'}, img=utils.art('my_subscriptions.png'), fanart=utils.art('fanart.jpg'))
         if utils.menu_on('watchlist'): _SALTS.add_directory({'mode': MODES.SHOW_WATCHLIST, 'section': section}, {'title': 'My Watchlist'}, img=utils.art('my_watchlist.png'), fanart=utils.art('fanart.jpg'))
         if utils.menu_on('my_lists'): _SALTS.add_directory({'mode': MODES.MY_LISTS, 'section': section}, {'title': 'My Lists'}, img=utils.art('my_lists.png'), fanart=utils.art('fanart.jpg'))
-    if utils.menu_on('other_lists'): _SALTS.add_directory({'mode': MODES.OTHER_LISTS, 'section': section}, {'title': 'Other Lists'}, img=utils.art('other_lists.png'), fanart=utils.art('fanart.jpg'))
+#     if utils.menu_on('other_lists'): _SALTS.add_directory({'mode': MODES.OTHER_LISTS, 'section': section}, {'title': 'Other Lists'}, img=utils.art('other_lists.png'), fanart=utils.art('fanart.jpg'))
     if section==SECTIONS.TV:
         if TOKEN: 
             if utils.menu_on('progress'): add_refresh_item({'mode': MODES.SHOW_PROGRESS}, 'My Next Episodes', utils.art('my_progress.png'), utils.art('fanart.jpg'))
             if utils.menu_on('my_cal'): add_refresh_item({'mode': MODES.MY_CAL}, 'My Calendar', utils.art('my_calendar.png'), utils.art('fanart.jpg'))
         if utils.menu_on('general_cal'): add_refresh_item({'mode': MODES.CAL}, 'General Calendar', utils.art('calendar.png'), utils.art('fanart.jpg'))
         if utils.menu_on('premiere_cal'): add_refresh_item({'mode': MODES.PREMIERES}, 'Premiere Calendar', utils.art('premiere_calendar.png'), utils.art('fanart.jpg'))
-        if TOKEN:
-            if utils.menu_on('friends'): add_refresh_item({'mode': MODES.FRIENDS_EPISODE, 'section': section}, 'Friends Episode Activity [COLOR red][I](Temporarily Broken)[/I][/COLOR]', utils.art('friends_episode.png'), utils.art('fanart.jpg'))
-    if TOKEN:
-        if utils.menu_on('friends'): add_refresh_item({'mode': MODES.FRIENDS, 'section': section}, 'Friends Activity [COLOR red][I](Temporarily Broken)[/I][/COLOR]', utils.art('friends.png'), utils.art('fanart.jpg'))
+#         if TOKEN:
+#             if utils.menu_on('friends'): add_refresh_item({'mode': MODES.FRIENDS_EPISODE, 'section': section}, 'Friends Episode Activity [COLOR red][I](Temporarily Broken)[/I][/COLOR]', utils.art('friends_episode.png'), utils.art('fanart.jpg'))
+#     if TOKEN:
+#         if utils.menu_on('friends'): add_refresh_item({'mode': MODES.FRIENDS, 'section': section}, 'Friends Activity [COLOR red][I](Temporarily Broken)[/I][/COLOR]', utils.art('friends.png'), utils.art('fanart.jpg'))
     if utils.menu_on('search'): _SALTS.add_directory({'mode': MODES.SEARCH, 'section': section}, {'title': 'Search'}, img=utils.art(search_img), fanart=utils.art('fanart.jpg'))
     if utils.menu_on('search'): _SALTS.add_directory({'mode': MODES.RECENT_SEARCH, 'section': section}, {'title': 'Recent Searches'}, img=utils.art(search_img), fanart=utils.art('fanart.jpg'))
     if utils.menu_on('search'): _SALTS.add_directory({'mode': MODES.SAVED_SEARCHES, 'section': section}, {'title': 'Saved Searches'}, img=utils.art(search_img), fanart=utils.art('fanart.jpg'))
