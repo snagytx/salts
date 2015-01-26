@@ -62,7 +62,7 @@ class MovieTV_Scraper(scraper.Scraper):
                 quality = QUALITIES.HD
             else:
                 pattern = 'vars\.links\s*=\s*(.*?);'
-                quality = QUALITIES.HIGH
+                quality = QUALITIES.HD
 
             match = re.search(pattern, html)
             if match:
@@ -75,14 +75,6 @@ class MovieTV_Scraper(scraper.Scraper):
                     hoster = {'multi-part': False, 'host': 'movietv.to', 'class': self, 'url': stream_url, 'quality': quality, 'views': None, 'rating': None, 'direct': True}
                     hosters.append(hoster)
         return hosters
-
-#     def __get_stream_cookies(self):
-#         cj = self._set_cookies(self.base_url, {})
-#         cookies = []
-#         for cookie in cj:
-#             if 'movietv.to' in cookie.domain:
-#                 cookies.append('%s=%s' % (cookie.name,urllib.quote(cookie.value)))
-#         return '; '.join(cookies)
 
     def get_url(self, video):
         return super(MovieTV_Scraper, self)._default_get_url(video)
