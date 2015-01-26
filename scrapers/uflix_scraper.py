@@ -97,12 +97,12 @@ class UFlix_Scraper(scraper.Scraper):
             pattern2 = '<a title="Watch (.*?) Online For FREE".*?href="([^"]+)".*\((\d{1,4})\)</a>'
         else:
             pattern='id="movies".*id="series"'
-            pattern2 = 'visible-sm">\s+<a\s+title="([^"]+)\s+(\d{4})\.?".*?href="([^"]+)"'
+            pattern2 = '<a\s+title="([^"]+)\s+\d{4}\.?".*?href="([^"]+)".*?\((\d{4})\)</a>'
         match = re.search(pattern, html, re.DOTALL)
         if match:
             try:
                 fragment = match.group(0)
-                for match in re.finditer(pattern2, fragment, re.DOTALL):
+                for match in re.finditer(pattern2, fragment):
                     result={}
                     
                     if video_type == VIDEO_TYPES.MOVIE:
