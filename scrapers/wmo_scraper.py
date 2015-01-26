@@ -24,8 +24,8 @@ from salts_lib.db_utils import DB_Connection
 from salts_lib.constants import VIDEO_TYPES
 from salts_lib.constants import QUALITIES
 
-BASE_URL = 'http://movies-online.li'
-QUALITY_MAP = {'HD': QUALITIES.HIGH, 'CAM': QUALITIES.LOW, 'BR-RIP': QUALITIES.HD, 'UNKNOWN': QUALITIES.MEDIUM, 'DVD-RIP': QUALITIES.HIGH}
+BASE_URL = 'http://free-movies.li'
+QUALITY_MAP = {'HD': QUALITIES.HIGH, 'CAM': QUALITIES.LOW, 'BR-RIP': QUALITIES.HIGH, 'UNKNOWN': QUALITIES.MEDIUM, 'DVD-RIP': QUALITIES.HIGH}
 
 class WMO_Scraper(scraper.Scraper):
     base_url=BASE_URL
@@ -43,12 +43,11 @@ class WMO_Scraper(scraper.Scraper):
         return 'wmo.ch'
     
     def resolve_link(self, link):
-        if self.base_url in link:
-            url = urlparse.urljoin(self.base_url, link)
-            html = self._http_get(url, cache_limit=.5)
-            match = re.search('id="redirectButton[^>]+href=(?:\'|")([^"\']+)', html)
-            if match:
-                return match.group(1)
+        url = urlparse.urljoin(self.base_url, link)
+        html = self._http_get(url, cache_limit=.5)
+        match = re.search('id="redirectButton[^>]+href=(?:\'|")([^"\']+)', html)
+        if match:
+            return match.group(1)
         else:
             return link
     
