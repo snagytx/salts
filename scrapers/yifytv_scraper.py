@@ -26,6 +26,7 @@ from salts_lib import log_utils
 from salts_lib.constants import VIDEO_TYPES
 from salts_lib.db_utils import DB_Connection
 from salts_lib.constants import QUALITIES
+from salts_lib.constants import Q_ORDER
 
 BASE_URL = 'http://yify.tv'
 MAX_TRIES=3
@@ -81,15 +82,50 @@ class YIFY_Scraper(scraper.Scraper):
                     return None
 
             for elem in js_data:
-                if elem['type'].startswith('video'):
+                if 'type' in elem and elem['type'].startswith('video'):
                     stream_url = elem['url']
+                    break
+                if 'jscode' in elem:
+                    stream_url = self.__parse_fmt(elem['jscode'])
+                    break
         except ValueError:
             return None
 
         return stream_url
 
+    def __parse_fmt(self, js_data):
+        sources={}
+        formats={}
+        match = re.search('\("(.*?)"\)', js_data)
+        if match:
+            params = match.group(1)
+            for match in re.finditer('&?([^=]+)=([^&$]+)', params):
+                key, value = match.groups()
+                value = urllib.unquote(value)
+                if key == 'fmt_stream_map':
+                    items = value.split(',')
+                    for item in items:
+                        source_fmt, source_url = item.split('|')
+                        sources[source_url]=source_fmt
+                elif key == 'fmt_list':
+                    items = value.split(',')
+                    for item in items:
+                        format_key, q_str, _ = item.split('/', 2)
+                        w,_ = q_str.split('x')
+                        formats[format_key]=int(w)
+
+        best_width = 0
+        best_source = None
+        for source in sources:
+            if sources[source] in formats:
+                if formats[sources[source]] >= best_width:
+                    best_width = formats[sources[source]]
+                    best_source = source
+
+        return best_source
+
     def format_source_label(self, item):
-        return '[%s] %s (%s views) (%s/100)' % (item['quality'], item['host'],  item['views'], item['rating'])
+        return '[%s] %s (%s views)' % (item['quality'], item['host'],  item['views'])
     
     def get_sources(self, video):
         source_url= self.get_url(video)
