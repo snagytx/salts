@@ -55,12 +55,19 @@ class Filmikz_Scraper(scraper.Scraper):
             url = urlparse.urljoin(self.base_url,source_url)
             html = self._http_get(url, cache_limit=.5)
             
-            pattern='popUp\(\'/watch\.php\?q=([^\']+)'
+            pattern="/watch\.php\?q=([^']+)"
+            seen_hosts = {}
             for match in re.finditer(pattern, html, re.DOTALL):
                 url = match.group(1)
                 hoster = {'multi-part': False, 'url': url.decode('base-64'), 'class': self, 'quality': None, 'views': None, 'rating': None, 'direct': False}
                 hoster['host']=urlparse.urlsplit(hoster['url']).hostname
-                hoster['quality']=self._get_quality(video, hoster['host'].lower(), QUALITIES.HD)
+                # top list is HD, bottom list is SD
+                if hoster['host'] in seen_hosts:
+                    quality = QUALITIES.HIGH
+                else:
+                    quality = QUALITIES.HD
+                    seen_hosts[hoster['host']]=True                
+                hoster['quality']=self._get_quality(video, hoster['host'].lower(), quality)
                 hosters.append(hoster)
         return hosters
 
