@@ -60,7 +60,7 @@ class Filmikz_Scraper(scraper.Scraper):
                 url = match.group(1)
                 hoster = {'multi-part': False, 'url': url.decode('base-64'), 'class': self, 'quality': None, 'views': None, 'rating': None, 'direct': False}
                 hoster['host']=urlparse.urlsplit(hoster['url']).hostname
-                hoster['quality']=self._get_quality(video, hoster['host'].lower(), QUALITIES.HIGH)
+                hoster['quality']=self._get_quality(video, hoster['host'].lower(), QUALITIES.HD)
                 hosters.append(hoster)
         return hosters
 
