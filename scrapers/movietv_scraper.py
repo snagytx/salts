@@ -62,7 +62,7 @@ class MovieTV_Scraper(scraper.Scraper):
                 quality = QUALITIES.HD
             else:
                 pattern = 'vars\.links\s*=\s*(.*?);'
-                quality = QUALITIES.HD
+                quality = QUALITIES.HIGH
 
             match = re.search(pattern, html)
             if match:
