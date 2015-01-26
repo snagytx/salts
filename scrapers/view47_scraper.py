@@ -37,6 +37,7 @@ class View47_Scraper(scraper.Scraper):
         self.timeout=timeout
         self.db_connection = DB_Connection()
         self.base_url = xbmcaddon.Addon().getSetting('%s-base_url' % (self.get_name()))
+        if 'www' in self.base_url: self.base_url = BASE_URL # hack base url to work 
     
     @classmethod
     def provides(cls):
