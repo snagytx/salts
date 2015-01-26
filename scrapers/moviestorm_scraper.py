@@ -27,7 +27,7 @@ from salts_lib.constants import HOST_Q
 from salts_lib.constants import Q_ORDER
 
 BASE_URL = 'http://moviestorm.eu'
-QUALITY_MAP = {'HD': QUALITIES.HIGH, 'CAM': QUALITIES.LOW, 'BRRIP': QUALITIES.HD, 'UNKNOWN': QUALITIES.MEDIUM, 'DVDRIP': QUALITIES.HIGH}
+QUALITY_MAP = {'HD': QUALITIES.HIGH, 'CAM': QUALITIES.LOW, 'BRRIP': QUALITIES.HIGH, 'UNKNOWN': QUALITIES.MEDIUM, 'DVDRIP': QUALITIES.HIGH}
 
 class MovieStorm_Scraper(scraper.Scraper):
     base_url=BASE_URL

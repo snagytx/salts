@@ -60,7 +60,7 @@ class IceFilms_Scraper(scraper.Scraper):
             return url
     
     def format_source_label(self, item):
-        label='[%s] %s%s (%s/100) ' % (item['quality'], item['label'], item['host'], item['rating'])
+        label='[%s] %s%s' % (item['quality'], item['label'], item['host'])
         return label
     
     def get_sources(self, video):
