@@ -74,7 +74,7 @@ class UFlix_Scraper(scraper.Scraper):
     
                 up=int(up)
                 down=int(down)
-                source = {'multi-part': False, 'url': url, 'host': host.lower(), 'class': self, 'quality': quality, 'up': up, 'down': down, 'direct': False}
+                source = {'multi-part': False, 'url': url, 'host': host.lower(), 'class': self, 'quality': self._get_quality(video, host.lower(), quality), 'up': up, 'down': down, 'direct': False}
                 rating=up*100/(up+down) if (up>0 or down>0) else None
                 source['rating']=rating
                 source['views']=up+down
@@ -97,12 +97,12 @@ class UFlix_Scraper(scraper.Scraper):
             pattern2 = '<a title="Watch (.*?) Online For FREE".*?href="([^"]+)".*\((\d{1,4})\)</a>'
         else:
             pattern='id="movies".*id="series"'
-            pattern2 = 'visible-sm">\s+<a\s+title="([^"]+)\s+(\d{4})".*?href="([^"]+)"'
+            pattern2 = 'visible-sm">\s+<a\s+title="([^"]+)\s+(\d{4})\.?".*?href="([^"]+)"'
         match = re.search(pattern, html, re.DOTALL)
         if match:
             try:
                 fragment = match.group(0)
-                for match in re.finditer(pattern2, fragment):
+                for match in re.finditer(pattern2, fragment, re.DOTALL):
                     result={}
                     
                     if video_type == VIDEO_TYPES.MOVIE:
