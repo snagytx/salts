@@ -73,7 +73,7 @@ class Solar_Scraper(scraper.Scraper):
                     url = url.replace('/show/', '/play/')
                     quality=quality.strip()
                     
-                    hoster = {'multi-part': False, 'url': url, 'host': host, 'class': self, 'quality': QUALITY_MAP.get(quality,QUALITIES.MEDIUM), 'views': None, 'rating': rating, 'direct': False}
+                    hoster = {'multi-part': False, 'url': url, 'host': host, 'class': self, 'quality': self._get_quality(video, host, QUALITY_MAP.get(quality,QUALITIES.MEDIUM)), 'views': None, 'rating': rating, 'direct': False}
                     hosters.append(hoster)
             
         return hosters
