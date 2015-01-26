@@ -71,19 +71,19 @@ class MovieTV_Scraper(scraper.Scraper):
                     js_data = js_data[str(video.episode)][0] if str(video.episode) in js_data else {}
                         
                 if 'url' in js_data:
-                    stream_url = js_data['url'] + '|Cookie=%s' % (self.__get_stream_cookies())
+                    stream_url = js_data['url'] + '|referer=%s' % (url)
                     hoster = {'multi-part': False, 'host': 'movietv.to', 'class': self, 'url': stream_url, 'quality': quality, 'views': None, 'rating': None, 'direct': True}
                     hosters.append(hoster)
         return hosters
 
-    def __get_stream_cookies(self):
-        cj = self._set_cookies(self.base_url, {})
-        cookies = []
-        for cookie in cj:
-            if 'movietv.to' in cookie.domain:
-                cookies.append('%s=%s' % (cookie.name,urllib.quote(cookie.value)))
-        return '; '.join(cookies)
-    
+#     def __get_stream_cookies(self):
+#         cj = self._set_cookies(self.base_url, {})
+#         cookies = []
+#         for cookie in cj:
+#             if 'movietv.to' in cookie.domain:
+#                 cookies.append('%s=%s' % (cookie.name,urllib.quote(cookie.value)))
+#         return '; '.join(cookies)
+
     def get_url(self, video):
         return super(MovieTV_Scraper, self)._default_get_url(video)
     
@@ -92,27 +92,33 @@ class MovieTV_Scraper(scraper.Scraper):
         return season_url
         
     def search(self, video_type, title, year):
-        url = urlparse.urljoin(self.base_url, '/titles/paginate?query=')
-        url += urllib.quote_plus(title)
-        if video_type == VIDEO_TYPES.MOVIE:
-            url += '&type=movie'
-        else:
-            url += '&type=series'
-        url += '&order=mc_num_of_votesDesc'
-        html = self._http_get(url, headers={'X-Requested-With': 'XMLHttpRequest'}, cache_limit=.25)
-
         results=[]
-        if html:
-            js_results = json.loads(html)
-            for item in js_results['items']:
-                if not year or not item['year'] or int(year) == int(item['year']):
-                    if video_type == VIDEO_TYPES.MOVIE:
-                        url = '/movies'
-                    else:
-                        url = '/series'
-                    url += '/%s-%s' % (item['id'], item['title'].lower().replace(' ', '-'))
-                    result = {'url': url, 'title': item['title'], 'year': item['year']}
-                    results.append(result)
+        html = self._http_get(self.base_url, cache_limit=0)
+        r = re.search("token\s*:\s*'([^']+)", html)
+        if r:
+            url = urlparse.urljoin(self.base_url, '/titles1/paginate?_token=%s&query=' % (r.group(1)))
+            url += urllib.quote_plus(title)
+            if video_type == VIDEO_TYPES.MOVIE:
+                url += '&type=movie'
+            else:
+                url += '&type=series'
+            url += '&order=mc_num_of_votesDesc'
+            html = self._http_get(url, headers={'X-Requested-With': 'XMLHttpRequest'}, cache_limit=.25)
+    
+            if html:
+                try:
+                    js_results = json.loads(html)
+                    for item in js_results['items']:
+                        if not year or not item['year'] or int(year) == int(item['year']):
+                            if video_type == VIDEO_TYPES.MOVIE:
+                                url = '/movies'
+                            else:
+                                url = '/series'
+                            url += '/%s-%s' % (item['id'], item['title'].lower().replace(' ', '-'))
+                            result = {'url': url, 'title': item['title'], 'year': item['year']}
+                            results.append(result)
+                except:
+                    pass    
             
         return results
     
