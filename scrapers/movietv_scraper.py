@@ -85,7 +85,7 @@ class MovieTV_Scraper(scraper.Scraper):
         
     def search(self, video_type, title, year):
         results=[]
-        html = self._http_get(self.base_url, cache_limit=0)
+        html = self._http_get(self.base_url)
         r = re.search("token\s*:\s*'([^']+)", html)
         if r:
             url = urlparse.urljoin(self.base_url, '/titles1/paginate?_token=%s&query=' % (r.group(1)))
