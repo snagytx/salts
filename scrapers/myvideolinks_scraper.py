@@ -26,10 +26,7 @@ from salts_lib import log_utils
 from salts_lib.constants import VIDEO_TYPES
 from salts_lib.db_utils import DB_Connection
 from salts_lib.constants import QUALITIES
-from salts_lib.constants import HOST_Q
 from salts_lib.constants import Q_ORDER
-from salts_lib.constants import BLOG_Q_MAP
-
 
 BASE_URL = 'http://myvideolinks.eu'
 
