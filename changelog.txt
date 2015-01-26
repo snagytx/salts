@@ -1,3 +1,11 @@
+[B]Version 0.0.56[/B]
+- Fix for when no account is configured
+- Add some theme icons
+- Fix playback on trakt failure
+- Require login for niter.tv
+- Temporarily remove broken menu items
+- Add pop-up when url resolution fails.
+
 [B]Version 0.0.55[/B]
 - Add wmo.ch scraper
 - Add wso.ch scraper
