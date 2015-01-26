@@ -65,7 +65,24 @@ class ClickPlay_Scraper(scraper.Scraper):
                 if 'vk.com' in stream_url.lower():
                     hoster = {'multi-part': False, 'host': 'vk.com', 'class': self, 'url': stream_url, 'quality': QUALITIES.HD, 'views': None, 'rating': None, 'direct': False}
                     hosters.append(hoster)
+                elif 'picasaweb' in stream_url.lower():
+                    html = self._http_get(stream_url, cache_limit=.5)                    
+                    sources = self.__parse_google(html)
+                    if sources:
+                        for source in sources:
+                            hoster = {'multi-part': False, 'url': source, 'class': self, 'quality': sources[source], 'host': 'clickplay.to', 'rating': None, 'views': None, 'direct': True}
+                            hosters.append(hoster)
+                    
         return hosters
+
+    def __parse_google(self, html):
+        pattern='"url"\s*:\s*"([^"]+)"\s*,\s*"height"\s*:\s*\d+\s*,\s*"width"\s*:\s*(\d+)\s*,\s*"type"\s*:\s*"video/'
+        sources={}
+        for match in re.finditer(pattern, html):
+            url, width = match.groups()
+            url = url.replace('%3D', '=')
+            sources[url]=self._width_get_quality(width)
+        return sources
 
     def get_url(self, video):
         return super(ClickPlay_Scraper, self)._default_get_url(video)
