@@ -27,7 +27,7 @@ from salts_lib.constants import VIDEO_TYPES
 from salts_lib.db_utils import DB_Connection
 from salts_lib.constants import QUALITIES
 
-BASE_URL = 'http://www.view47.com'
+BASE_URL = 'http://view47.com'
 EPID_URL = '/ip.temp/swf/plugins/ipplugins.php'
 JSON_URL = '/ip.temp/swf/plugins/plugins_player.php'
 
@@ -47,14 +47,10 @@ class View47_Scraper(scraper.Scraper):
         return 'view47'
     
     def resolve_link(self, link):
-        if EPID_URL  in link:
-            ep_id = urlparse.parse_qs(link.split('?')[1])['epid']
-            return self.__get_media_url(ep_id)
-        else:
-            return link
+        return link
 
     def format_source_label(self, item):
-        return '[%s] %s (%s/100)' % (item['quality'], item['host'], item['rating'])
+        return '[%s] %s' % (item['quality'], item['host'])
     
     def get_sources(self, video):
         source_url= self.get_url(video)
@@ -62,44 +58,10 @@ class View47_Scraper(scraper.Scraper):
         if source_url:
             url = urlparse.urljoin(self.base_url,source_url)
             html = self._http_get(url, cache_limit=.5)
-            for match in re.finditer('<img.*?/>([^<]+).*?return setupplayer\((\d+),(\d+),0\)', html):
-                host, ep_id, hoster_type = match.groups()
-                if hoster_type in ['0', '1', '2']:
-                    media_url = self.__get_media_url(ep_id)
-                    if media_url: hosters += self.__get_view47_sources(media_url)
-                else:
-                    media_url = EPID_URL + '?' + urllib.urlencode({'epid': ep_id})
-                    hosters.append({'multi-part': False, 'url': media_url, 'class': self, 'quality': QUALITIES.HD, 'host': host.lower(), 'rating': None, 'views': None, 'direct': False})
+            for match in re.finditer('file\s*:\s*"([^"]+).*?label\s*:\s*"([^p"]+)', html):
+                stream_url, height = match.groups()
+                hosters.append({'multi-part': False, 'url': stream_url, 'class': self, 'quality': self._height_get_quality(height), 'host': 'view47.com', 'rating': None, 'views': None, 'direct': True})
                 
-        return hosters
-
-    def __get_media_url(self, ep_id):
-        media_url = None
-        url = urlparse.urljoin(self.base_url, EPID_URL)
-        data = {'epid': ep_id}
-        html = self._http_get(url, data=data, cache_limit=0)
-        match = re.search('\|([^\|]+)', html)
-        if match:
-            media_url = match.group(1)
-        return media_url
-        
-    def __get_view47_sources(self, media_url):
-        hosters=[]
-        data = {'url': media_url, 'isslverify': 'true', 'ihttpheader': 'true'}
-        media_url = media_url.replace('?noredirect=1', '')
-        url = urlparse.urljoin(self.base_url, JSON_URL)
-        html = self._http_get(url, data=data, cache_limit=0)
-        match = re.search('feedPreload:\s+(.*?)},$', html, re.M)
-        if match:
-            feed = match.group(1)
-            j_feed = json.loads(feed)
-            for item in j_feed['feed']['entry']:
-                for link in item['link']:
-                    if link['href']==media_url:
-                        for video in item['media']['content']:
-                            if video['type'].startswith('video/'):
-                                hoster = {'multi-part': False, 'url': video['url'], 'class': self, 'quality': self._width_get_quality(video['width']), 'host': 'View47', 'rating': None, 'views': None, 'direct': True}
-                                hosters.append(hoster)
         return hosters
         
     def get_url(self, video):
