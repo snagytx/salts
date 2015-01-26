@@ -49,7 +49,7 @@ class MoviesHD_Scraper(scraper.Scraper):
             return 'http://videomega.tv/iframe.php?ref=%s' % (match.group(1))
 
     def format_source_label(self, item):
-        return '[%s] %s (%s views) (%s Up, %s Down) (%s/100)' % (item['quality'], item['host'],  item['views'], item['up'], item['down'], item['rating'])
+        return '[%s] %s (%s Up, %s Down) (%s/100)' % (item['quality'], item['host'],  item['up'], item['down'], item['rating'])
     
     def get_sources(self, video):
         source_url= self.get_url(video)
@@ -61,11 +61,11 @@ class MoviesHD_Scraper(scraper.Scraper):
             match = re.search ("(?:'|\")([^'\"]+hashkey=[^'\"]+)", html)
             if match:
                 hash_url = match.group(1)
+                if hash_url.startswith('//'): hash_url = 'http:' + hash_url
                 hoster = {'multi-part': False, 'url': hash_url, 'host': 'videomega.tv', 'class': self, 'quality': QUALITIES.HD, 'views': None, 'rating': None, 'up': None, 'down': None, 'direct': False}
-                match=re.search('class="views-infos">(\d+).*?class="rating">([^%]+).*?class="nb-votes">(\d+)', html, re.DOTALL)
+                match=re.search('class="rating">([^%]+).*?class="nb-votes">(\d+)', html, re.DOTALL)
                 if match:
-                    views, rating, votes = match.groups()
-                    hoster['views']=int(views)
+                    rating, votes = match.groups()
                     hoster['rating']=int(rating)
                     hoster['up']=int(round(hoster['rating']*int(votes)/100.0))
                     hoster['down']=int(int(votes)-hoster['up'])
