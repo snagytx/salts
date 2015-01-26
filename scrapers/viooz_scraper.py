@@ -48,7 +48,7 @@ class VioozAc_Scraper(scraper.Scraper):
         return link
     
     def format_source_label(self, item):
-        return '[%s] %s (%s views) (%s/100)' % (item['quality'], item['host'], item['views'], item['rating'])
+        return '[%s] %s' % (item['quality'], item['host'])
     
     def get_sources(self, video):
         source_url= self.get_url(video)

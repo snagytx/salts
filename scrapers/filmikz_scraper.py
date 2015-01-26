@@ -46,7 +46,7 @@ class Filmikz_Scraper(scraper.Scraper):
         return link
     
     def format_source_label(self, item):
-        return '[%s] %s (%s/100)' % (item['quality'], item['host'], item['rating'])
+        return '[%s] %s' % (item['quality'], item['host'])
     
     def get_sources(self, video):
         source_url= self.get_url(video)
@@ -58,8 +58,9 @@ class Filmikz_Scraper(scraper.Scraper):
             pattern='popUp\(\'/watch\.php\?q=([^\']+)'
             for match in re.finditer(pattern, html, re.DOTALL):
                 url = match.group(1)
-                hoster = {'multi-part': False, 'url': url.decode('base-64'), 'class': self, 'quality': QUALITIES.MEDIUM, 'views': None, 'rating': None, 'direct': False}
+                hoster = {'multi-part': False, 'url': url.decode('base-64'), 'class': self, 'quality': None, 'views': None, 'rating': None, 'direct': False}
                 hoster['host']=urlparse.urlsplit(hoster['url']).hostname
+                hoster['quality']=self._get_quality(video, hoster['host'].lower(), QUALITIES.HIGH)
                 hosters.append(hoster)
         return hosters
 
