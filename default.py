@@ -885,9 +885,10 @@ def play_source(mode, hoster_url, video_type, slug, season='', episode=''):
     else:
         stream_url = hmf.resolve()
         if not stream_url or not isinstance(stream_url, basestring):
-            # commenting out as it hides urlresolver notifications
-            #builtin = 'XBMC.Notification(%s,Could not Resolve Url: %s, 5000, %s)'
-            #xbmc.executebuiltin(builtin % (_SALTS.get_name(), hoster_url, ICON_PATH))
+            try: msg = stream_url.msg
+            except: msg = hoster_url
+            builtin = 'XBMC.Notification(%s,Link Resolve Failed: %s, 7500, %s)'
+            xbmc.executebuiltin(builtin % (_SALTS.get_name(), msg, ICON_PATH))
             return False
 
     resume_point = 0
